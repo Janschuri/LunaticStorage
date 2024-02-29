@@ -1,0 +1,10 @@
+Database:
+  MySQL:
+    enabled: false
+    host: localhost
+    port: 3306
+    database: chests
+    username: root
+    password:
+  SQLite:
+    Filename:

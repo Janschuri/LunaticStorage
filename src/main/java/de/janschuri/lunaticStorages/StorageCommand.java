@@ -1,5 +1,10 @@
-package de.janschuri.lunaticStorage;
+package de.janschuri.lunaticStorages;
 
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -7,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -30,63 +37,28 @@ public class StorageCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        Main pluginInstance = (Main) plugin;
-        Map<UUID, List<Inventory>> chestsClicked = pluginInstance.chestsClicked;
-
         // Initialize an inventory to display the summed inventories
-        Inventory sumInventory = player.getServer().createInventory(null, 9 * 3, "Sum of Inventories");
+        Inventory inventory = Bukkit.getServer().createInventory(null, 9 * 6);
 
-        // Initialize a map to store the summed inventory
-        Map<ItemStack, Integer> summedInventory = new HashMap<>();
 
-        // Iterate over the entries of the map
-        for (Map.Entry<UUID, List<Inventory>> entry : chestsClicked.entrySet()) {
-            List<Inventory> inventories = entry.getValue();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
-            // Iterate over the inventories
-            for (Inventory inventory : inventories) {
-                // Convert the inventory to a map
-                Map<ItemStack, Integer> inventoryMap = InventoryUtils.inventoryToMap(inventory);
+        ItemMeta diamondMeta = itemInHand.getItemMeta();
 
-                // Sum the inventory map with the summedInventory map
-                for (Map.Entry<ItemStack, Integer> itemEntry : inventoryMap.entrySet()) {
-                    ItemStack itemStack = itemEntry.getKey();
-                    int amount = itemEntry.getValue();
+        World world = player.getWorld();
 
-                    summedInventory.merge(itemStack, amount, Integer::sum);
-                }
-            }
-        }
+        NamespacedKey key = new NamespacedKey(plugin, "invs");
 
-        // Sort the summed inventory map by amount
-        List<Map.Entry<ItemStack, Integer>> sortedEntries = summedInventory.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                .collect(Collectors.toList());
+        PersistentDataContainer dataContainer = diamondMeta.getPersistentDataContainer();
+        int[] chests = dataContainer.get(key, PersistentDataType.INTEGER_ARRAY);
 
-        // Add items to the sum inventory (sorted by amount)
-        for (Map.Entry<ItemStack, Integer> entry : sortedEntries) {
-            ItemStack itemStack = entry.getKey();
-            int amount = entry.getValue();
+        List<Map.Entry<ItemStack, Integer>> storage = InventoryUtils.getStorage(chests, world);
 
-            ItemStack singleStack = itemStack.clone();
-            singleStack.setAmount(1); // Set amount to 1
+        inventory = InventoryUtils.addMaptoInventory(inventory, storage);
 
-            ItemMeta meta = singleStack.getItemMeta();
-            if (meta != null) {
-                List<String> lore = meta.getLore();
-                if (lore == null) {
-                    lore = new ArrayList<>();
-                }
-                lore.add("Amount: " + amount);
-                meta.setLore(lore);
-                singleStack.setItemMeta(meta);
-            }
-
-            sumInventory.addItem(singleStack);
-        }
 
         // Open the sum inventory to the player
-        player.openInventory(sumInventory);
+        player.openInventory(inventory);
 
         return true;
     }

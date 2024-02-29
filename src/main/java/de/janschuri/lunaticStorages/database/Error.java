@@ -1,6 +1,6 @@
-package de.janschuri.lunaticStorage.database;
+package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorage.Main;
+import de.janschuri.lunaticStorages.Main;
 
 import java.util.logging.Level;
 

@@ -1,5 +1,6 @@
-package de.janschuri.lunaticStorage;
+package de.janschuri.lunaticStorages;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -16,8 +17,6 @@ import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-
-import java.util.Arrays;
 
 public class ChestClickListener implements Listener {
 
@@ -42,11 +41,6 @@ public class ChestClickListener implements Listener {
                     // Player clicked with a diamond in their main hand on a chest
                     player.sendMessage("You clicked on a chest with a diamond in your main hand!");
 
-                    Chest chest = (Chest) clickedBlock.getState();
-                    Inventory inventory = chest.getBlockInventory();
-
-                    plugin.putChests(player.getUniqueId(), inventory);
-
                     // Retrieve the chest's coordinates
                     Location chestLocation = event.getClickedBlock().getLocation();
                     int chestX = chestLocation.getBlockX();
@@ -54,7 +48,11 @@ public class ChestClickListener implements Listener {
                     int chestZ = chestLocation.getBlockZ();
                     String worldName = chestLocation.getWorld().getName();
 
-                    int uuid = Main.generateUniqueId(chestX, chestY, chestZ);
+                    String uuid = Main.generateUniqueId(chestX, chestY, chestZ);
+                    Bukkit.getLogger().info("UUID. " + uuid);
+                    Bukkit.getLogger().info("x: "+Main.parseUniqueId(uuid)[0]);
+                    Bukkit.getLogger().info("y: "+Main.parseUniqueId(uuid)[1]);
+                    Bukkit.getLogger().info("z: "+Main.parseUniqueId(uuid)[2]);
 
                     if(Main.getDatabase().isUUIDInDatabase(uuid)) {
                         player.sendMessage("kiste schon markiert");
@@ -79,6 +77,9 @@ public class ChestClickListener implements Listener {
 
                             // Add the new element at the end of the new array
                             newChests[chests.length] = chestID;
+
+                            diamondMeta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER_ARRAY, newChests);
+                            itemInHand.setItemMeta(diamondMeta);
                         } else {
                             int[] chests = {chestID};
                             diamondMeta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER_ARRAY, chests);
@@ -86,19 +87,6 @@ public class ChestClickListener implements Listener {
                         }
 
                         player.sendMessage("Diamond has been marked with the chest's location.");
-                    }
-
-
-
-                    NamespacedKey key = new NamespacedKey(plugin, "x");
-                    ItemMeta itemMeta = itemInHand.getItemMeta();
-                    CustomItemTagContainer tagContainer = itemMeta.getCustomTagContainer();
-
-
-
-                    if(tagContainer.hasCustomTag(key , ItemTagType.DOUBLE)) {
-                        double foundValue = tagContainer.getCustomTag(key, ItemTagType.DOUBLE);
-                        player.sendMessage(String.valueOf(foundValue));
                     }
 
 

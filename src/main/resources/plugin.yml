@@ -1,4 +1,10 @@
 name: LunaticStorage
 version: '${project.version}'
-main: de.janschuri.lunaticstorage.LunaticStorage
+main: de.janschuri.lunaticStorages.Main
 api-version: '1.20'
+
+commands:
+  storage:
+    description: Open storage command
+    usage: /storage
+    aliases: [store]

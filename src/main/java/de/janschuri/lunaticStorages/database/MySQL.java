@@ -1,6 +1,6 @@
-package de.janschuri.lunaticStorage.database;
+package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorage.Main;
+import de.janschuri.lunaticStorages.Main;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,7 +16,7 @@ public class MySQL extends Database {
         super(instance);
         host = plugin.getConfig().getString("Database.MySQL.Host", "localhost");
         port = plugin.getConfig().getInt("Database.MySQL.Port", 3306);
-        database = plugin.getConfig().getString("Database.MySQL.Database", "playerData");
+        database = plugin.getConfig().getString("Database.MySQL.Database", "chests");
         username = plugin.getConfig().getString("Database.MySQL.Username", "root");
         password = plugin.getConfig().getString("Database.MySQL.Password", "");
     }
@@ -43,9 +43,9 @@ public class MySQL extends Database {
         initialize();
     }
 
-    String MySQLCreateTokensTable = "CREATE TABLE IF NOT EXISTS playerData (" +
+    String MySQLCreateTokensTable = "CREATE TABLE IF NOT EXISTS chests (" +
             "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-            "`uuid` varchar(36) NOT NULL," +
+            "`uuid` varchar(36) NOT NULL" +
             ") AUTO_INCREMENT=1;";
 }
 

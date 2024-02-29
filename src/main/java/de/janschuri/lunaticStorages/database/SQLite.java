@@ -1,6 +1,6 @@
-package de.janschuri.lunaticStorage.database;
+package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorage.Main;
+import de.janschuri.lunaticStorages.Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +19,9 @@ public class SQLite extends Database{
         dbname = plugin.getConfig().getString("SQLite.Filename", "chests");
     }
 
-    public String SQLiteCreateTokensTable = "CREATE TABLE IF NOT EXISTS playerData (" +
+    public String SQLiteCreateTokensTable = "CREATE TABLE IF NOT EXISTS chests (" +
             "`id` INTEGER PRIMARY KEY," +
-            "`uuid` varchar(36) NOT NULL," +
+            "`uuid` varchar(36) NOT NULL" +
             ")";
 
     public Connection getSQLConnection() {

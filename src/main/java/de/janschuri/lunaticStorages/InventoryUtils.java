@@ -1,9 +1,18 @@
-package de.janschuri.lunaticStorage;
+package de.janschuri.lunaticStorages;
 
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import java.util.HashMap;
-import java.util.Map;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InventoryUtils {
 
@@ -38,17 +47,80 @@ public class InventoryUtils {
         return itemMap;
     }
 
-    public static <K> Map<K, Integer> sumMaps(Map<K, Integer> map1, Map<K, Integer> map2) {
-        Map<K, Integer> result = new HashMap<>(map2);
+    public static Inventory addMaptoInventory(Inventory inventory, List<Map.Entry<ItemStack, Integer>> list) {
 
-        for (Map.Entry<K, Integer> entry : map1.entrySet()) {
-            K key = entry.getKey();
-            int value = entry.getValue();
 
-            result.merge(key, value, Integer::sum);
+
+        // Add items to the sum inventory (sorted by amount)
+        for (Map.Entry<ItemStack, Integer> entry : list) {
+
+            ItemStack itemStack = entry.getKey();
+            int amount = entry.getValue();
+
+            ItemStack singleStack = itemStack.clone();
+            singleStack.setAmount(1); // Set amount to 1
+
+            ItemMeta meta = singleStack.getItemMeta();
+            if (meta != null) {
+                List<String> lore = meta.getLore();
+                if (lore == null) {
+                    lore = new ArrayList<>();
+                }
+                lore.add("Amount: " + amount);
+                meta.setLore(lore);
+                singleStack.setItemMeta(meta);
+            }
+
+            inventory.addItem(singleStack);
         }
 
-        return result;
+        return inventory;
     }
+
+    public static List<Map.Entry<ItemStack, Integer>> getStorage (int[] chests, World world){
+
+        Map<ItemStack, Integer> summedInventory = new HashMap<>();
+        List<Inventory> inventories = new ArrayList<>();
+        for (int id : chests) {
+
+            String uuid = Main.getDatabase().getUUID(id);
+            int coords[] = Main.parseUniqueId(uuid);
+
+            int x = coords[0];
+            int y = coords[1];
+            int z = coords[2];
+
+            Block block = world.getBlockAt(x, y, z);
+            Chest chest = (Chest) block.getState();
+
+            Inventory chestInv = chest.getInventory();
+            inventories.add(chestInv);
+
+        }
+
+        // Iterate over the inventories
+        for (Inventory inventory : inventories) {
+            // Convert the inventory to a map
+            Map<ItemStack, Integer> inventoryMap = InventoryUtils.inventoryToMap(inventory);
+
+            // Sum the inventory map with the summedInventory map
+            for (Map.Entry<ItemStack, Integer> itemEntry : inventoryMap.entrySet()) {
+                ItemStack itemStack = itemEntry.getKey();
+                int amount = itemEntry.getValue();
+
+                summedInventory.merge(itemStack, amount, Integer::sum);
+            }
+        }
+
+
+        // Sort the summed inventory map by amount
+        List<Map.Entry<ItemStack, Integer>> sortedEntries = summedInventory.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+
+        return sortedEntries;
+    }
+
+
 
 }
