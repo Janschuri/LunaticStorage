@@ -35,31 +35,6 @@ public class StorageCommand implements CommandExecutor {
             return true;
         }
 
-        Player player = (Player) sender;
-
-        // Initialize an inventory to display the summed inventories
-        Inventory inventory = Bukkit.getServer().createInventory(null, 9 * 6);
-
-
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-
-        ItemMeta diamondMeta = itemInHand.getItemMeta();
-
-        World world = player.getWorld();
-
-        NamespacedKey key = new NamespacedKey(plugin, "invs");
-
-        PersistentDataContainer dataContainer = diamondMeta.getPersistentDataContainer();
-        int[] chests = dataContainer.get(key, PersistentDataType.INTEGER_ARRAY);
-
-        List<Map.Entry<ItemStack, Integer>> storage = InventoryUtils.getStorage(chests, world);
-
-        inventory = InventoryUtils.addMaptoInventory(inventory, storage);
-
-
-        // Open the sum inventory to the player
-        player.openInventory(inventory);
-
         return true;
     }
 }
