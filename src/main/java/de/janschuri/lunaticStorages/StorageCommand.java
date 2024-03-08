@@ -1,6 +1,7 @@
 package de.janschuri.lunaticStorages;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -21,9 +22,9 @@ import java.util.stream.Collectors;
 
 public class StorageCommand implements CommandExecutor {
 
-    private final JavaPlugin plugin;
+    private final Main plugin;
 
-    public StorageCommand(JavaPlugin plugin) {
+    public StorageCommand(Main plugin) {
         this.plugin = plugin;
     }
 
@@ -33,6 +34,37 @@ public class StorageCommand implements CommandExecutor {
         if (!(sender instanceof Player)) {
             sender.sendMessage("Only players can use this command.");
             return true;
+        } else {
+            Player player = (Player) sender;
+
+            if (args.length < 1) {
+
+            } else if (args[0].equalsIgnoreCase("item")) {
+                ItemStack item = new ItemStack(plugin.storageItem);
+                int limit = plugin.defaultLimit;
+                if (args.length > 1) {
+                    try {
+                        limit = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage("nix zahl");
+                    }
+                }
+
+
+                ItemMeta meta = item.getItemMeta();
+                meta.getPersistentDataContainer().set(plugin.keyLimit, PersistentDataType.INTEGER, limit);
+                item.setItemMeta(meta);
+
+                player.getInventory().addItem(item);
+            } else if (args[0].equalsIgnoreCase("panel")) {
+                ItemStack item = new ItemStack(plugin.panelBlock);
+
+
+                ItemMeta meta = item.getItemMeta();
+                meta.getPersistentDataContainer().set(plugin.keyPanelBlock, PersistentDataType.BOOLEAN, true);
+                item.setItemMeta(meta);
+                player.getInventory().addItem(item);
+            }
         }
 
         return true;

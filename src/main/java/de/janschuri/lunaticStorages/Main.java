@@ -3,22 +3,17 @@ package de.janschuri.lunaticStorages;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.database.MySQL;
 import de.janschuri.lunaticStorages.database.SQLite;
-import net.md_5.bungee.api.chat.hover.content.Item;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockDataMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,6 +33,20 @@ public final class Main extends JavaPlugin {
 
     private static Database db;
     private static FileConfiguration config;
+
+    public Material storageItem;
+    public Material panelBlock;
+    public int defaultLimit;
+
+    NamespacedKey keyPanelID = new NamespacedKey(this, "panelID");
+    NamespacedKey keyPane = new NamespacedKey(this, "gui_pane");
+    NamespacedKey keyStoragePane = new NamespacedKey(this, "gui_storage_pane");
+    NamespacedKey keyStorageContent = new NamespacedKey(this, "gui_storage_content");
+    NamespacedKey keyLimit = new NamespacedKey(this, "limit");
+
+    NamespacedKey keyPanelBlock = new NamespacedKey(this, "panel_block");
+    NamespacedKey keyStorage = new NamespacedKey(this, "invs");
+
 
 
     @Override
@@ -67,6 +76,7 @@ public final class Main extends JavaPlugin {
 
 
         // Plugin startup logic
+        getServer().getPluginManager().registerEvents(new PlaceBlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(this), this);
         getCommand("storage").setExecutor(new StorageCommand(this));
     }
@@ -81,6 +91,10 @@ public final class Main extends JavaPlugin {
         File cfgfile = new File(plugin.getDataFolder().getAbsolutePath() + "/config.yml");
         config = YamlConfiguration.loadConfiguration(cfgfile);
 
+        storageItem = Material.matchMaterial(getConfig().getString("storage_item", "DIAMOND"));
+        panelBlock = Material.matchMaterial(getConfig().getString("panel_block", "LODESTONE"));
+        defaultLimit = getConfig().getInt("default_limit", 10);
+
     }
 
     public static Database getDatabase() {
@@ -88,33 +102,25 @@ public final class Main extends JavaPlugin {
 
     }
 
-    public static String generateUniqueId(int x, int y, int z) {
+    public static String getCoordsAsString(Block block) {
+        int x = block.getX();
+        int y = block.getY();
+        int z = block.getZ();
+
         return x + "," + y + "," + z;
     }
 
-    public static int[] parseUniqueId(String uniqueId) {
+    public static int[] parseCoords(String coords) {
         // Splitting the uniqueId string at ","
-        String[] coordStrings = uniqueId.split(",");
+        String[] coordStrings = coords.split(",");
 
         // Parsing the string elements into integers
-        int[] coords = new int[coordStrings.length];
+        int[] coordsInt = new int[coordStrings.length];
         for (int i = 0; i < coordStrings.length; i++) {
-            coords[i] = Integer.parseInt(coordStrings[i]);
+            coordsInt[i] = Integer.parseInt(coordStrings[i]);
         }
 
-        return coords;
-    }
-    
-    public ItemMeta setKey (ItemMeta meta, String keyString, byte[] serializedItem) {
-        NamespacedKey key = new NamespacedKey(this, keyString);
-        meta.getPersistentDataContainer().set(key, PersistentDataType.BYTE_ARRAY, serializedItem);
-        return meta;
-    }
-
-    public ItemMeta setKey (ItemMeta meta, String keyString, boolean boo) {
-        NamespacedKey key = new NamespacedKey(this, keyString);
-        meta.getPersistentDataContainer().set(key, PersistentDataType.BOOLEAN, boo);
-        return meta;
+        return coordsInt;
     }
 
     // Method to serialize an ItemStack
@@ -177,7 +183,7 @@ public final class Main extends JavaPlugin {
         return itemMap;
     }
 
-    public Inventory addMaptoInventory(Inventory inventory, List<Map.Entry<ItemStack, Integer>> list) {
+    public Inventory addMaptoInventory(Inventory inventory, List<Map.Entry<ItemStack, Integer>> list, int id) {
 
         // Add items to the sum inventory (sorted by amount)
         for (Map.Entry<ItemStack, Integer> entry : list) {
@@ -191,7 +197,8 @@ public final class Main extends JavaPlugin {
             byte[] itemSerialized = serializeItemStack(itemStack);
 
             ItemMeta meta = singleStack.getItemMeta();
-            meta = this.setKey(meta, "guiStorageItem", itemSerialized);
+            meta.getPersistentDataContainer().set(this.keyStorageContent, PersistentDataType.BYTE_ARRAY, itemSerialized);
+            meta.getPersistentDataContainer().set(this.keyPanelID, PersistentDataType.INTEGER, id);
             if (meta != null) {
                 List<String> lore = meta.getLore();
                 if (lore == null) {
@@ -214,12 +221,12 @@ public final class Main extends JavaPlugin {
         List<Inventory> inventories = new ArrayList<>();
         for (int id : chests) {
 
-            String uuid = Main.getDatabase().getUUID(id);
-            int coords[] = Main.parseUniqueId(uuid);
+            String coords = Main.getDatabase().getChestCoords(id);
+            int coordsArray[] = Main.parseCoords(coords);
 
-            int x = coords[0];
-            int y = coords[1];
-            int z = coords[2];
+            int x = coordsArray[0];
+            int y = coordsArray[1];
+            int z = coordsArray[2];
 
             Block block = world.getBlockAt(x, y, z);
             Chest chest = (Chest) block.getState();
@@ -243,30 +250,28 @@ public final class Main extends JavaPlugin {
             }
         }
 
-
         // Sort the summed inventory map by amount
         List<Map.Entry<ItemStack, Integer>> sortedEntries = summedInventory.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
+
+
         return sortedEntries;
     }
 
     public ItemStack getItemsFromStorage(int[] chests, World world, ItemStack item) {
-        Bukkit.getLogger().info("1");
         ItemStack clone = item.clone();
         ItemMeta meta = clone.getItemMeta();
-        NamespacedKey key = new NamespacedKey(this, "guiStorageItem");
 
-        byte[] serializedItem = meta.getPersistentDataContainer().get(key, PersistentDataType.BYTE_ARRAY);
+        byte[] serializedItem = meta.getPersistentDataContainer().get(this.keyStorageContent, PersistentDataType.BYTE_ARRAY);
         ItemStack searchedItem = deserializeItemStack(serializedItem);
+        int stackSize = searchedItem.getMaxStackSize();
+        int foundItems = 0;
 
-        boolean itemfound = false;
-        Bukkit.getLogger().info("2");
         for (int id : chests) {
-            Bukkit.getLogger().info("3");
-            String uuid = Main.getDatabase().getUUID(id);
-            int coords[] = Main.parseUniqueId(uuid);
+            String uuid = Main.getDatabase().getChestCoords(id);
+            int coords[] = Main.parseCoords(uuid);
 
             int x = coords[0];
             int y = coords[1];
@@ -279,24 +284,35 @@ public final class Main extends JavaPlugin {
 
             for (ItemStack i : chestInv.getContents()) {
                 if (i != null) {
-
                     if (i.isSimilar(searchedItem)) {
-                        // Found the item in the chest
-                        itemfound = true;
-                        chest.getSnapshotInventory().removeItem(i);
-                        i.setAmount(i.getAmount()-1);
-                        chest.getSnapshotInventory().addItem(i);
-                        chest.update();
+                        int amount = i.getAmount();
+                        int amountNeeded = stackSize-foundItems;
+                        if (amountNeeded < amount) {
+                            chest.getSnapshotInventory().removeItem(i);
+                            i.setAmount(i.getAmount()-amountNeeded);
+                            chest.getSnapshotInventory().addItem(i);
+                            chest.update();
+                            foundItems = foundItems+amountNeeded;
+                        } else if (amountNeeded == amount) {
+                            chest.getSnapshotInventory().removeItem(i);
+                            chest.update();
+                            foundItems = foundItems+amount;
+                        } else {
+                            chest.getSnapshotInventory().removeItem(i);
+                            chest.update();
+                            foundItems = foundItems+amount;
+                        }
+
+                        if (foundItems == stackSize) {
+                            break;
+                        }
                     }
                 }
             }
         }
 
-        if (itemfound) {
-            return searchedItem;
-        } else {
-            return new ItemStack(Material.DIRT);
-        }
+        searchedItem.setAmount(foundItems);
 
+        return searchedItem;
     }
 }

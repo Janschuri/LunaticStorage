@@ -3,8 +3,11 @@ Database:
     enabled: false
     host: localhost
     port: 3306
-    database: chests
+    database: lunaticfamily
     username: root
     password:
   SQLite:
     Filename:
+storage_item: DIAMOND
+panel_block: LODESTONE
+default_limit: 10

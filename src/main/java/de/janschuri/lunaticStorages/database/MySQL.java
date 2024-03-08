@@ -16,7 +16,7 @@ public class MySQL extends Database {
         super(instance);
         host = plugin.getConfig().getString("Database.MySQL.Host", "localhost");
         port = plugin.getConfig().getInt("Database.MySQL.Port", 3306);
-        database = plugin.getConfig().getString("Database.MySQL.Database", "chests");
+        database = plugin.getConfig().getString("Database.MySQL.Database", "lunaticstorage");
         username = plugin.getConfig().getString("Database.MySQL.Username", "root");
         password = plugin.getConfig().getString("Database.MySQL.Password", "");
     }
@@ -35,7 +35,8 @@ public class MySQL extends Database {
         connection = getSQLConnection();
         try {
             Statement s = connection.createStatement();
-            s.executeUpdate(MySQLCreateTokensTable);
+            s.executeUpdate(MySQLCreateChestsTable);
+            s.executeUpdate(MySQLCreatePanelsTable);
             s.close();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,9 +44,15 @@ public class MySQL extends Database {
         initialize();
     }
 
-    String MySQLCreateTokensTable = "CREATE TABLE IF NOT EXISTS chests (" +
+    String MySQLCreateChestsTable = "CREATE TABLE IF NOT EXISTS chests (" +
             "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-            "`uuid` varchar(36) NOT NULL" +
+            "`coords` varchar(36) NOT NULL" +
+            ") AUTO_INCREMENT=1;";
+
+    String MySQLCreatePanelsTable = "CREATE TABLE IF NOT EXISTS panels (" +
+            "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
+            "`coords` varchar(36) NOT NULL," +
+            "`storageItem` varbinary(1000)" +
             ") AUTO_INCREMENT=1;";
 }
 

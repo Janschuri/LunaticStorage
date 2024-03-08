@@ -16,12 +16,18 @@ public class SQLite extends Database{
     String dbname;
     public SQLite(Main instance){
         super(instance);
-        dbname = plugin.getConfig().getString("SQLite.Filename", "chests");
+        dbname = plugin.getConfig().getString("SQLite.Filename", "lunaticstorage");
     }
 
-    public String SQLiteCreateTokensTable = "CREATE TABLE IF NOT EXISTS chests (" +
+    public String SQLiteCreateChestsTable = "CREATE TABLE IF NOT EXISTS chests (" +
             "`id` INTEGER PRIMARY KEY," +
-            "`uuid` varchar(36) NOT NULL" +
+            "`coords` varchar(36) NOT NULL" +
+            ")";
+
+    public String SQLiteCreatePanelsTable = "CREATE TABLE IF NOT EXISTS panels (" +
+            "`id` INTEGER PRIMARY KEY," +
+            "`coords` varchar(36) NOT NULL," +
+            "`storageItem` varbinary(1000)" +
             ")";
 
     public Connection getSQLConnection() {
@@ -52,7 +58,8 @@ public class SQLite extends Database{
         connection = getSQLConnection();
         try {
             Statement s = connection.createStatement();
-            s.executeUpdate(SQLiteCreateTokensTable);
+            s.executeUpdate(SQLiteCreateChestsTable);
+            s.executeUpdate(SQLiteCreatePanelsTable);
             s.close();
         } catch (SQLException e) {
             e.printStackTrace();
