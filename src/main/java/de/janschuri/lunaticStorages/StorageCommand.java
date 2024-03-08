@@ -50,9 +50,11 @@ public class StorageCommand implements CommandExecutor {
                     }
                 }
 
+                int[] invs = new int[] {};
 
                 ItemMeta meta = item.getItemMeta();
                 meta.getPersistentDataContainer().set(plugin.keyLimit, PersistentDataType.INTEGER, limit);
+                meta.getPersistentDataContainer().set(Main.keyStorage, PersistentDataType.INTEGER_ARRAY, invs);
                 item.setItemMeta(meta);
 
                 player.getInventory().addItem(item);

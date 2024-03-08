@@ -1,5 +1,6 @@
 package de.janschuri.lunaticStorages;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -175,5 +176,41 @@ public class Storage {
         searchedItem.setAmount(foundItems);
 
         return searchedItem;
+    }
+
+    public static ItemStack insertItemsIntoStorage(int[] chests, World world, ItemStack item) {
+
+        ItemStack remainingItems = item.clone();
+
+
+        for (int id : chests) {
+            Bukkit.getLogger().info(remainingItems.toString());
+            String uuid = Main.getDatabase().getChestCoords(id);
+            int coords[] = Main.parseCoords(uuid);
+
+            int x = coords[0];
+            int y = coords[1];
+            int z = coords[2];
+
+            Block block = world.getBlockAt(x, y, z);
+            Chest chest = (Chest) block.getState();
+
+            Inventory chestInv = chest.getSnapshotInventory();
+
+
+            if (chestInv.addItem(remainingItems).isEmpty()) {
+                chest.update();
+                Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 1");
+                remainingItems.setAmount(0);
+                break;
+            } else {
+                chest.update();
+                Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 2");
+                remainingItems = chestInv.addItem(remainingItems).get(0);
+            }
+        }
+
+
+        return remainingItems;
     }
 }

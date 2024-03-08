@@ -151,4 +151,13 @@ public final class Main extends JavaPlugin {
             return null; // Return null or throw a custom exception if necessary
         }
     }
+
+    public static boolean containsInt(int[] array, int target) {
+        for (int num : array) {
+            if (num == target) {
+                return true; // Found the target integer in the array
+            }
+        }
+        return false; // Target integer not found in the array
+    }
 }

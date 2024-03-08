@@ -121,6 +121,7 @@ public class StoragePanelGUI implements Listener {
         public void onClick(InventoryClickEvent event) {
             Inventory gui = event.getView().getTopInventory();
             if (gui.contains(createPane())) {
+                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Main.keyPanelID, PersistentDataType.INTEGER);
                 event.setCancelled(true);
                 Player player = (Player) event.getWhoClicked();
                 World world = player.getWorld();
@@ -135,61 +136,87 @@ public class StoragePanelGUI implements Listener {
                     } else {
                         ItemMeta meta = item.getItemMeta();
                         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-                        int id = dataContainer.get(Main.keyPanelID, PersistentDataType.INTEGER);
 
-                        if (!cursorItem.isEmpty()) {
-                            if (dataContainer.has(Main.keyStoragePane)) {
-                                ItemStack itemCursor = event.getCursor();
-                                ItemMeta metaCursor = itemCursor.getItemMeta();
+                        if (event.getClickedInventory() == playerInv && event.isShiftClick()) {
+                            Bukkit.getLogger().info("test 2");
+                            if (Main.getDatabase().getPanelsStorageItem(id) != null) {
+                                Bukkit.getLogger().info("test 3");
+                                byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
+                                ItemStack storageItem = Main.deserializeItemStack(serializedItem);
+                                ItemMeta storageItemMeta = storageItem.getItemMeta();
+                                PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
+                                int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
 
-                                PersistentDataContainer dataContainerCursor = metaCursor.getPersistentDataContainer();
-                                if (dataContainerCursor.has(Main.keyStorage)) {
-                                    if (processingClickEvent) return;
-                                    processingClickEvent = true;
-                                    ItemStack cursorClone = itemCursor.clone();
-                                    cursorClone.setAmount(1);
-                                    byte[] storage = Main.serializeItemStack(cursorClone);
-                                    Main.getDatabase().savePanelsData(id, storage);
-                                    gui.setItem(8, cursorClone);
-                                    event.getCursor().subtract(1);
+                                ItemStack newItem = Storage.insertItemsIntoStorage(chests, world, item);
 
-                                    gui.clear();
-                                    gui = loadGui(gui, id, world);
-
-                                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                                        processingClickEvent = false;
-                                    }, 20L);
-                                }
-                            }
-                        } else if (dataContainer.has(Main.keyStorageContent)) {
-
-                            byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
-                            ItemStack storageItem = Main.deserializeItemStack(serializedItem);
-                            ItemMeta storageItemMeta = storageItem.getItemMeta();
-                            PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
-                            int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
-
-
-                            ItemStack newItem = Storage.getItemsFromStorage(chests, world, item);
-
-                            if (!newItem.isEmpty()) {
-                                player.setItemOnCursor(newItem);
+                                event.getClickedInventory().setItem(event.getSlot(), newItem);
 
                                 gui.clear();
                                 gui = loadGui(gui, id, world);
                             }
-                        } else if (dataContainer.has(Main.keyStorage)) {
+                        } else {
                             if (processingClickEvent) return;
                             processingClickEvent = true;
-                            Main.getDatabase().savePanelsData(id, null);
-                            player.setItemOnCursor(item);
 
-                            gui.clear();
-                            gui = loadGui(gui, id, world);
+                            if (!cursorItem.isEmpty()) {
+                                if (dataContainer.has(Main.keyStoragePane)) {
+                                    ItemStack itemCursor = event.getCursor();
+                                    ItemMeta metaCursor = itemCursor.getItemMeta();
+
+                                    PersistentDataContainer dataContainerCursor = metaCursor.getPersistentDataContainer();
+                                    if (dataContainerCursor.has(Main.keyStorage)) {
+                                        ItemStack cursorClone = itemCursor.clone();
+                                        cursorClone.setAmount(1);
+                                        byte[] storage = Main.serializeItemStack(cursorClone);
+                                        Main.getDatabase().savePanelsData(id, storage);
+                                        gui.setItem(8, cursorClone);
+                                        event.getCursor().subtract(1);
+
+                                        gui.clear();
+                                        gui = loadGui(gui, id, world);
+                                    }
+                                } else if (dataContainer.has(Main.keyStorageContent) && Main.getDatabase().getPanelsStorageItem(id) != null) {
+                                    byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
+                                    ItemStack storageItem = Main.deserializeItemStack(serializedItem);
+                                    ItemMeta storageItemMeta = storageItem.getItemMeta();
+                                    PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
+                                    int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
+
+                                    ItemStack newItem = Storage.insertItemsIntoStorage(chests, world, cursorItem);
+
+                                    player.setItemOnCursor(newItem);
+
+                                    gui.clear();
+                                    gui = loadGui(gui, id, world);
+                                }
+                            } else if (dataContainer.has(Main.keyStorageContent)) {
+
+                                byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
+                                ItemStack storageItem = Main.deserializeItemStack(serializedItem);
+                                ItemMeta storageItemMeta = storageItem.getItemMeta();
+                                PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
+                                int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
+
+
+                                ItemStack newItem = Storage.getItemsFromStorage(chests, world, item);
+
+                                if (!newItem.isEmpty()) {
+                                    player.setItemOnCursor(newItem);
+
+                                    gui.clear();
+                                    gui = loadGui(gui, id, world);
+                                }
+                            } else if (dataContainer.has(Main.keyStorage)) {
+                                Main.getDatabase().savePanelsData(id, null);
+                                player.setItemOnCursor(item);
+
+                                gui.clear();
+                                gui = loadGui(gui, id, world);
+                            }
 
                             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                                 processingClickEvent = false;
-                            }, 20L);
+                            }, 5L);
                         }
                     }
 
