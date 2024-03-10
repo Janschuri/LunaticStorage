@@ -1,6 +1,8 @@
 package de.janschuri.lunaticStorages;
 
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -10,11 +12,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public class blockListener implements Listener {
+public class BlockListener implements Listener {
 
     private final Main plugin;
 
-    public blockListener(Main plugin) {
+    public BlockListener(Main plugin) {
         this.plugin = plugin;
     }
 
@@ -38,16 +40,29 @@ public class blockListener implements Listener {
         }
     }
 
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
 
-        if (event.getBlock().getType().equals(plugin.panelBlock)) {
-            event.setCancelled(true);
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        String coords = Main.getCoordsAsString(block);
+
+        Bukkit.getLogger().info(coords);
+
+        if (Main.getDatabase().isPanelInDatabase(coords)) {
+            if (player.isSneaking()) {
+                Main.getDatabase().removePanel(coords);
+            } else {
+                event.setCancelled(true);
+            }
         }
 
-        String coords = Main.getCoordsAsString(event.getBlock());
-
         if (Main.getDatabase().isChestInDatabase(coords)) {
-            event.setCancelled(true);
+            if (player.isSneaking()) {
+                Main.getDatabase().removeChest(coords);
+            } else {
+                event.setCancelled(true);
+            }
         }
     }
 }

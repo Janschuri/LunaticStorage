@@ -9,6 +9,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -18,6 +19,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class StorageCommand implements CommandExecutor {
@@ -66,6 +68,35 @@ public class StorageCommand implements CommandExecutor {
                 meta.getPersistentDataContainer().set(plugin.keyPanelBlock, PersistentDataType.BOOLEAN, true);
                 item.setItemMeta(meta);
                 player.getInventory().addItem(item);
+            } else if (args[0].equalsIgnoreCase("random")) {
+
+                while (player.getInventory().firstEmpty() != -1) {
+                    List<String> materialNames = Arrays.stream(Material.values())
+                            .filter(material -> {
+                                return new ItemStack(material).getType().isItem();
+                            })
+                            .map(Material::name)
+                            .collect(Collectors.toList());
+
+                    int max = materialNames.size() - 1;
+
+                    int randomNum = ThreadLocalRandom.current().nextInt(0, max);
+                    int randomAmount = ThreadLocalRandom.current().nextInt(1, 65);
+
+                    sender.sendMessage("Liste:" + max);
+
+                    Material randomMaterial = Material.matchMaterial(materialNames.get(randomNum));
+
+                    ItemStack randomItem = new ItemStack(randomMaterial);
+
+                    if (randomAmount <= randomItem.getMaxStackSize()) {
+                        randomItem.setAmount(randomAmount);
+                    } else {
+                        randomItem.setAmount(randomItem.getMaxStackSize());
+                    }
+
+                    player.getInventory().addItem(randomItem);
+                }
             }
         }
 

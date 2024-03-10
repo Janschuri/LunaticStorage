@@ -77,49 +77,82 @@ public class Storage {
         return inventory;
     }
 
-    public static List<Map.Entry<ItemStack, Integer>> getStorage (int[] chests, World world){
+    public static List<Map.Entry<ItemStack, Integer>> getStorage (int[] chests, World world, int page){
 
         Map<ItemStack, Integer> summedInventory = new HashMap<>();
         List<Inventory> inventories = new ArrayList<>();
         for (int id : chests) {
+            if (Main.getDatabase().isChestInDatabase(id)) {
 
-            String coords = Main.getDatabase().getChestCoords(id);
-            int coordsArray[] = Main.parseCoords(coords);
+                String coords = Main.getDatabase().getChestCoords(id);
+                int coordsArray[] = Main.parseCoords(coords);
 
-            int x = coordsArray[0];
-            int y = coordsArray[1];
-            int z = coordsArray[2];
+                int x = coordsArray[0];
+                int y = coordsArray[1];
+                int z = coordsArray[2];
 
-            Block block = world.getBlockAt(x, y, z);
-            Chest chest = (Chest) block.getState();
+                Block block = world.getBlockAt(x, y, z);
+                Chest chest = (Chest) block.getState();
 
-            Inventory chestInv = chest.getSnapshotInventory();
-            inventories.add(chestInv);
+                Inventory chestInv = chest.getSnapshotInventory();
 
-        }
+                Map<ItemStack, Integer> inventoryMap = inventoryToMap(chestInv);
 
-        // Iterate over the inventories
-        for (Inventory inventory : inventories) {
-            // Convert the inventory to a map
-            Map<ItemStack, Integer> inventoryMap = inventoryToMap(inventory);
+                // Sum the inventory map with the summedInventory map
+                for (Map.Entry<ItemStack, Integer> itemEntry : inventoryMap.entrySet()) {
+                    ItemStack itemStack = itemEntry.getKey();
+                    int amount = itemEntry.getValue();
 
-            // Sum the inventory map with the summedInventory map
-            for (Map.Entry<ItemStack, Integer> itemEntry : inventoryMap.entrySet()) {
-                ItemStack itemStack = itemEntry.getKey();
-                int amount = itemEntry.getValue();
-
-                summedInventory.merge(itemStack, amount, Integer::sum);
+                    summedInventory.merge(itemStack, amount, Integer::sum);
+                }
             }
+
         }
+
+        int pageSize = 36;
 
         // Sort the summed inventory map by amount
         List<Map.Entry<ItemStack, Integer>> sortedEntries = summedInventory.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .skip((page-1) * pageSize) // Skip entries for previous pages
+                .limit(pageSize) // Limit the number of entries per page
                 .collect(Collectors.toList());
 
 
 
         return sortedEntries;
+    }
+
+    public static int getStoragePages (int[] chests, World world){
+
+        Map<ItemStack, Integer> summedInventory = new HashMap<>();
+        List<Inventory> inventories = new ArrayList<>();
+        for (int id : chests) {
+            if (Main.getDatabase().isChestInDatabase(id)) {
+
+                String coords = Main.getDatabase().getChestCoords(id);
+                int coordsArray[] = Main.parseCoords(coords);
+
+                int x = coordsArray[0];
+                int y = coordsArray[1];
+                int z = coordsArray[2];
+
+                Block block = world.getBlockAt(x, y, z);
+                Chest chest = (Chest) block.getState();
+                Inventory chestInv = chest.getSnapshotInventory();
+                Map<ItemStack, Integer> inventoryMap = inventoryToMap(chestInv);
+
+                // Sum the inventory map with the summedInventory map
+                for (Map.Entry<ItemStack, Integer> itemEntry : inventoryMap.entrySet()) {
+                    ItemStack itemStack = itemEntry.getKey();
+                    int amount = itemEntry.getValue();
+
+                    summedInventory.merge(itemStack, amount, Integer::sum);
+                }
+            }
+        }
+
+        return (int) Math.ceil((double) summedInventory.size() / 36);
     }
 
     public static ItemStack getItemsFromStorage(int[] chests, World world, ItemStack item) {
@@ -132,41 +165,43 @@ public class Storage {
         int foundItems = 0;
 
         for (int id : chests) {
-            String uuid = Main.getDatabase().getChestCoords(id);
-            int coords[] = Main.parseCoords(uuid);
+            if (Main.getDatabase().isChestInDatabase(id)) {
+                String uuid = Main.getDatabase().getChestCoords(id);
+                int coords[] = Main.parseCoords(uuid);
 
-            int x = coords[0];
-            int y = coords[1];
-            int z = coords[2];
+                int x = coords[0];
+                int y = coords[1];
+                int z = coords[2];
 
-            Block block = world.getBlockAt(x, y, z);
-            Chest chest = (Chest) block.getState();
+                Block block = world.getBlockAt(x, y, z);
+                Chest chest = (Chest) block.getState();
 
-            Inventory chestInv = chest.getSnapshotInventory();
+                Inventory chestInv = chest.getSnapshotInventory();
 
-            for (ItemStack i : chestInv.getContents()) {
-                if (i != null) {
-                    if (i.isSimilar(searchedItem)) {
-                        int amount = i.getAmount();
-                        int amountNeeded = stackSize-foundItems;
-                        if (amountNeeded < amount) {
-                            chest.getSnapshotInventory().removeItem(i);
-                            i.setAmount(i.getAmount()-amountNeeded);
-                            chest.getSnapshotInventory().addItem(i);
-                            chest.update();
-                            foundItems = foundItems+amountNeeded;
-                        } else if (amountNeeded == amount) {
-                            chest.getSnapshotInventory().removeItem(i);
-                            chest.update();
-                            foundItems = foundItems+amount;
-                        } else {
-                            chest.getSnapshotInventory().removeItem(i);
-                            chest.update();
-                            foundItems = foundItems+amount;
-                        }
+                for (ItemStack i : chestInv.getContents()) {
+                    if (i != null) {
+                        if (i.isSimilar(searchedItem)) {
+                            int amount = i.getAmount();
+                            int amountNeeded = stackSize - foundItems;
+                            if (amountNeeded < amount) {
+                                chest.getSnapshotInventory().removeItem(i);
+                                i.setAmount(i.getAmount() - amountNeeded);
+                                chest.getSnapshotInventory().addItem(i);
+                                chest.update();
+                                foundItems = foundItems + amountNeeded;
+                            } else if (amountNeeded == amount) {
+                                chest.getSnapshotInventory().removeItem(i);
+                                chest.update();
+                                foundItems = foundItems + amount;
+                            } else {
+                                chest.getSnapshotInventory().removeItem(i);
+                                chest.update();
+                                foundItems = foundItems + amount;
+                            }
 
-                        if (foundItems == stackSize) {
-                            break;
+                            if (foundItems == stackSize) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -184,29 +219,31 @@ public class Storage {
 
 
         for (int id : chests) {
-            Bukkit.getLogger().info(remainingItems.toString());
-            String uuid = Main.getDatabase().getChestCoords(id);
-            int coords[] = Main.parseCoords(uuid);
+            if (Main.getDatabase().isChestInDatabase(id)) {
+                Bukkit.getLogger().info(remainingItems.toString());
+                String uuid = Main.getDatabase().getChestCoords(id);
+                int coords[] = Main.parseCoords(uuid);
 
-            int x = coords[0];
-            int y = coords[1];
-            int z = coords[2];
+                int x = coords[0];
+                int y = coords[1];
+                int z = coords[2];
 
-            Block block = world.getBlockAt(x, y, z);
-            Chest chest = (Chest) block.getState();
+                Block block = world.getBlockAt(x, y, z);
+                Chest chest = (Chest) block.getState();
 
-            Inventory chestInv = chest.getSnapshotInventory();
+                Inventory chestInv = chest.getSnapshotInventory();
 
 
-            if (chestInv.addItem(remainingItems).isEmpty()) {
-                chest.update();
-                Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 1");
-                remainingItems.setAmount(0);
-                break;
-            } else {
-                chest.update();
-                Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 2");
-                remainingItems = chestInv.addItem(remainingItems).get(0);
+                if (chestInv.addItem(remainingItems).isEmpty()) {
+                    chest.update();
+                    Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 1");
+                    remainingItems.setAmount(0);
+                    break;
+                } else {
+                    chest.update();
+                    Bukkit.getLogger().info(Arrays.toString(chest.getInventory().getContents()) + " 2");
+                    remainingItems = chestInv.addItem(remainingItems).get(0);
+                }
             }
         }
 

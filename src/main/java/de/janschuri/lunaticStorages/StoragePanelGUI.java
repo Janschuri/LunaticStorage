@@ -40,7 +40,6 @@ public class StoragePanelGUI implements Listener {
         if (block != null && Main.getDatabase().isPanelInDatabase(coords)) {
             event.setCancelled(true);
             int id = Main.getDatabase().getPanelsID(coords);
-            // Open the GUI
             openGUI(player, id);
         }
     }
@@ -55,6 +54,18 @@ public class StoragePanelGUI implements Listener {
     }
     
     private Inventory loadGui (Inventory gui, int panelID, World world) {
+        int page;
+        int pages;
+
+        if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
+            page = getPage(gui);
+            Bukkit.getLogger().info("Seite oben: " + page);
+        } else {
+            page = 1;
+        }
+
+        gui.clear();
+
         for (int i = 0; i < 9; i++) {
             gui.setItem(i, createPane());
             gui.setItem(45 + i, createPane());
@@ -67,16 +78,29 @@ public class StoragePanelGUI implements Listener {
             PersistentDataContainer container = meta.getPersistentDataContainer();
 
             int[] chests = container.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
-            List<Map.Entry<ItemStack, Integer>> storage = Storage.getStorage(chests, world);
+            List<Map.Entry<ItemStack, Integer>> storage = Storage.getStorage(chests, world, page);
+            pages = Storage.getStoragePages(chests, world);
             gui = Storage.addMaptoInventory(gui, storage, panelID);
 
             container.set(plugin.keyPanelID, PersistentDataType.INTEGER, panelID);
 
             item.setItemMeta(meta);
             gui.setItem(8, item);
+
+            gui.setItem(49, createPagePane(panelID, page, pages));
+
+            if (page < pages) {
+                gui.setItem(50, createArrowRight(panelID));
+            }
+            if(page>1) {
+                gui.setItem(48, createArrowLeft(panelID));
+            }
+
         } else {
             gui.setItem(8, createStoragePane(panelID));
         }
+
+
 
         return gui;
     }
@@ -100,6 +124,61 @@ public class StoragePanelGUI implements Listener {
 
         pane.setItemMeta(meta);
         return pane;
+    }
+
+    private ItemStack createPagePane(int id, int page, int pages) {
+        ItemStack pane = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        ItemMeta meta = pane.getItemMeta();
+
+        meta.getPersistentDataContainer().set(Main.keyPage, PersistentDataType.INTEGER, page);
+        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.setDisplayName("Seite: " + page + "/" + pages);
+
+        pane.setItemMeta(meta);
+        return pane;
+    }
+
+    private ItemStack createArrowLeft(int id) {
+        ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
+        ItemMeta meta = arrow.getItemMeta();
+
+        meta.getPersistentDataContainer().set(Main.keyLeftArrow, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.setDisplayName("<<<");
+
+        arrow.setItemMeta(meta);
+        return arrow;
+    }
+
+    private ItemStack createArrowRight(int id) {
+        ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
+        ItemMeta meta = arrow.getItemMeta();
+
+        meta.getPersistentDataContainer().set(Main.keyRightArrow, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.setDisplayName(">>>");
+
+        arrow.setItemMeta(meta);
+        return arrow;
+    }
+
+    private Inventory setPage(Inventory gui, int page) {
+        ItemStack item = gui.getItem(49);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(Main.keyPage, PersistentDataType.INTEGER, page);
+        item.setItemMeta(meta);
+
+
+        Bukkit.getLogger().info("Setter Seite: " + getPage(gui));
+        return gui;
+    }
+
+    private int getPage(Inventory gui) {
+        if (gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Main.keyPage, PersistentDataType.INTEGER) == null) {
+            return 1;
+        } else {
+            return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Main.keyPage, PersistentDataType.INTEGER);
+        }
     }
 
     @EventHandler
@@ -140,6 +219,7 @@ public class StoragePanelGUI implements Listener {
                         if (event.getClickedInventory() == playerInv && event.isShiftClick()) {
                             Bukkit.getLogger().info("test 2");
                             if (Main.getDatabase().getPanelsStorageItem(id) != null) {
+                                if (processingClickEvent) return;
                                 Bukkit.getLogger().info("test 3");
                                 byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
                                 ItemStack storageItem = Main.deserializeItemStack(serializedItem);
@@ -151,7 +231,14 @@ public class StoragePanelGUI implements Listener {
 
                                 event.getClickedInventory().setItem(event.getSlot(), newItem);
 
-                                gui.clear();
+                                if (!newItem.isEmpty()) {
+                                    processingClickEvent = true;
+                                    Bukkit.getLogger().info("jajajaja");
+                                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                                        processingClickEvent = false;
+                                    }, 20L);
+                                }
+
                                 gui = loadGui(gui, id, world);
                             }
                         } else {
@@ -172,7 +259,6 @@ public class StoragePanelGUI implements Listener {
                                         gui.setItem(8, cursorClone);
                                         event.getCursor().subtract(1);
 
-                                        gui.clear();
                                         gui = loadGui(gui, id, world);
                                     }
                                 } else if (dataContainer.has(Main.keyStorageContent) && Main.getDatabase().getPanelsStorageItem(id) != null) {
@@ -186,7 +272,6 @@ public class StoragePanelGUI implements Listener {
 
                                     player.setItemOnCursor(newItem);
 
-                                    gui.clear();
                                     gui = loadGui(gui, id, world);
                                 }
                             } else if (dataContainer.has(Main.keyStorageContent)) {
@@ -203,14 +288,22 @@ public class StoragePanelGUI implements Listener {
                                 if (!newItem.isEmpty()) {
                                     player.setItemOnCursor(newItem);
 
-                                    gui.clear();
                                     gui = loadGui(gui, id, world);
                                 }
                             } else if (dataContainer.has(Main.keyStorage)) {
                                 Main.getDatabase().savePanelsData(id, null);
                                 player.setItemOnCursor(item);
 
-                                gui.clear();
+                                gui = loadGui(gui, id, world);
+                            } else if (dataContainer.has(Main.keyRightArrow)) {
+                                int page = getPage(gui) + 1;
+                                gui = setPage(gui, page);
+                                Bukkit.getLogger().info("Seite: " + getPage(gui));
+                                gui = loadGui(gui, id, world);
+                            } else if (dataContainer.has(Main.keyLeftArrow)) {
+                                int page = getPage(gui) - 1;
+                                gui = setPage(gui, page);
+                                Bukkit.getLogger().info("Seite: " + getPage(gui));
                                 gui = loadGui(gui, id, world);
                             }
 

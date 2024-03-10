@@ -6,17 +6,15 @@ import de.janschuri.lunaticStorages.database.SQLite;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
@@ -24,9 +22,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.UUID;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 
 public final class Main extends JavaPlugin {
@@ -46,6 +45,9 @@ public final class Main extends JavaPlugin {
     static NamespacedKey keyLimit = new NamespacedKey(pluginNamespace, "limit");
     static NamespacedKey keyPanelBlock = new NamespacedKey(pluginNamespace, "panel_block");
     static NamespacedKey keyStorage = new NamespacedKey(pluginNamespace, "invs");
+    static NamespacedKey keyLeftArrow = new NamespacedKey(pluginNamespace, "left_arrow");
+    static NamespacedKey keyRightArrow = new NamespacedKey(pluginNamespace, "right_arrow");
+    static NamespacedKey keyPage = new NamespacedKey(pluginNamespace, "page");
 
 
 
@@ -76,7 +78,7 @@ public final class Main extends JavaPlugin {
 
 
         // Plugin startup logic
-        getServer().getPluginManager().registerEvents(new blockListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(this), this);
         getCommand("storage").setExecutor(new StorageCommand(this));
     }
@@ -159,5 +161,30 @@ public final class Main extends JavaPlugin {
             }
         }
         return false; // Target integer not found in the array
+    }
+
+    public static ItemStack getSkull(String url) {
+
+        PlayerProfile pProfile = getProfile(url);
+        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        SkullMeta meta = (SkullMeta) head.getItemMeta();
+        meta.setOwnerProfile(pProfile);
+        head.setItemMeta(meta);
+
+        return head;
+    }
+
+    private static PlayerProfile getProfile(String url) {
+        PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
+        PlayerTextures textures = profile.getTextures();
+        URL urlObject;
+        try {
+            urlObject = new URL(url);
+        } catch (MalformedURLException exception) {
+            throw new RuntimeException("Invalid URL", exception);
+        }
+        textures.setSkin(urlObject);
+        profile.setTextures(textures);
+        return profile;
     }
 }
