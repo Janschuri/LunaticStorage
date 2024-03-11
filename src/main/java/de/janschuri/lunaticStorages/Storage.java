@@ -15,6 +15,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Storage {
@@ -29,11 +30,34 @@ public class Storage {
         loadStorage(chests);
     }
 
-    public List<Map.Entry<ItemStack, Integer>> getStorageList() {
-        List<Map.Entry<ItemStack, Integer>> storageList = new ArrayList<>();
+    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc) {
+        List<Map.Entry<ItemStack, Integer>> storageList = new ArrayList<>(storageMap.entrySet());
+
+        Comparator<Map.Entry<ItemStack, Integer>> comparator = null;
+
+        if (sorter == 1) {
+            comparator = Comparator.comparing(entry -> Main.getLanguage(entry.getKey(), locale));
+        } else {
+            comparator = Comparator.comparing(Map.Entry::getValue);
+        }
+
+        if (desc) {
+            comparator = comparator.reversed();
+        }
+
+//        String filterString = "log";
+//
+//        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
+//            String language = Main.getLanguage(entry.getKey(), locale);
+//            return language.toLowerCase().contains(filterString.toLowerCase());
+//        };
+
+
+
 
         storageList = storageMap.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+//                .filter(filter)
+                .sorted(comparator)
                 .collect(Collectors.toList());
 
         return storageList;
@@ -64,11 +88,9 @@ public class Storage {
         boolean empty = false;
         for (ItemStack item : inventory.getContents()) {
             if (item != null) {
-                // Clone the item to avoid modifying the original
                 ItemStack clone = item.clone();
-                clone.setAmount(1); // Set amount to 1 to treat each item stack as a unique key
+                clone.setAmount(1);
 
-                // Check if item already exists in the map with the same metadata
                 boolean found = false;
                 for (Map.Entry<ItemStack, Integer> entry : storageMap.entrySet()) {
                     ItemStack existingItem = entry.getKey();
@@ -89,7 +111,6 @@ public class Storage {
                     }
                 }
 
-                // If item not found, add it to the map
                 if (!found) {
                     storageMap.put(clone, item.getAmount());
 
@@ -116,8 +137,8 @@ public class Storage {
 
     public static Inventory addMaptoInventory(Inventory inventory, List<Map.Entry<ItemStack, Integer>> list, int id, int page) {
         int pageSize = 36;
-        int startIndex = page * pageSize; // Calculate the starting index for the current page
-        int endIndex = Math.min((page + 1) * pageSize, list.size()); // Calculate the ending index for the current page
+        int startIndex = page * pageSize;
+        int endIndex = Math.min((page + 1) * pageSize, list.size());
 
         for (int i = startIndex; i < endIndex; i++) {
             Map.Entry<ItemStack, Integer> entry = list.get(i);
@@ -125,7 +146,7 @@ public class Storage {
             int amount = entry.getValue();
 
             ItemStack singleStack = itemStack.clone();
-            singleStack.setAmount(1); // Set amount to 1
+            singleStack.setAmount(1);
 
             byte[] itemSerialized = Main.serializeItemStack(itemStack);
 
@@ -186,12 +207,12 @@ public class Storage {
                 .toArray();
 
 
+
         int stackSize = searchedItem.getMaxStackSize();
         int foundItems = 0;
 
         for (int id : chests) {
 
-            Bukkit.getLogger().info("Id "+id);
             if (Main.getDatabase().isChestInDatabase(id)) {
                 String uuid = Main.getDatabase().getChestCoords(id);
                 int coords[] = Main.parseCoords(uuid);

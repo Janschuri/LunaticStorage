@@ -17,8 +17,6 @@ import org.bukkit.persistence.PersistentDataType;
 
 
 public class StoragePanelGUI implements Listener {
-
-
     private final Main plugin;
     private boolean processingClickEvent = false;
 
@@ -47,20 +45,34 @@ public class StoragePanelGUI implements Listener {
         Inventory gui = Bukkit.createInventory(null, 54, "Storage");
         World world = player.getWorld();
 
-
-        gui = loadGui(gui, id, world);
+        String locale = player.getLocale().toLowerCase();
+        gui = loadGui(gui, id, world, locale);
 
         player.openInventory(gui);
     }
     
-    private Inventory loadGui (Inventory gui, int panelID, World world) {
+    private Inventory loadGui (Inventory gui, int panelID, World world, String locale) {
         int page;
         int pages;
+        boolean desc;
+        int sorter;
 
         if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
             page = getPage(gui);
         } else {
             page = 1;
+        }
+
+        if (gui.getItem(6) != null && !gui.getItem(6).isEmpty()) {
+            desc = getDesc(gui);
+        } else {
+            desc = true;
+        }
+
+        if (gui.getItem(5) != null && !gui.getItem(5).isEmpty()) {
+            sorter = getSorter(gui);
+        } else {
+            sorter = 0;
         }
 
         gui.clear();
@@ -87,8 +99,7 @@ public class StoragePanelGUI implements Listener {
             }
 
             pages = storage.getPages();
-
-            gui = Storage.addMaptoInventory(gui, storage.getStorageList(), panelID, page-1);
+            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc), panelID, page-1);
 
             container.set(plugin.keyPanelID, PersistentDataType.INTEGER, panelID);
 
@@ -96,6 +107,8 @@ public class StoragePanelGUI implements Listener {
             gui.setItem(8, item);
 
             gui.setItem(49, createPagePane(panelID, page, pages));
+            gui.setItem(6, createSortArrow(panelID, desc));
+            gui.setItem(5, createSorter(panelID, sorter));
 
             if (page < pages) {
                 gui.setItem(50, createArrowRight(panelID));
@@ -170,6 +183,60 @@ public class StoragePanelGUI implements Listener {
         return arrow;
     }
 
+    private ItemStack createSortArrow(int id, boolean desc) {
+
+
+        if(desc) {
+            ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
+            ItemMeta meta = arrow.getItemMeta();
+            meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.setDisplayName("Descended");
+            arrow.setItemMeta(meta);
+            return arrow;
+        } else {
+            ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
+            ItemMeta meta = arrow.getItemMeta();
+            meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.setDisplayName("Ascended");
+            arrow.setItemMeta(meta);
+            return arrow;
+        }
+    }
+
+    private ItemStack createSorter(int id, int sorter) {
+        if (sorter == 1) {
+            ItemStack sorterItem = Main.getSkull("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
+            ItemMeta meta = sorterItem.getItemMeta();
+            meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+            meta.setDisplayName("by name");
+            sorterItem.setItemMeta(meta);
+            return sorterItem;
+        } else {
+            ItemStack sorterItem = Main.getSkull("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
+            ItemMeta meta = sorterItem.getItemMeta();
+            meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+            meta.setDisplayName("by amount");
+            sorterItem.setItemMeta(meta);
+            return sorterItem;
+        }
+    }
+
+    private Inventory setSorter(Inventory gui, int sorter) {
+        ItemStack item = gui.getItem(5);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+        item.setItemMeta(meta);
+        return gui;
+    }
+
+    private int getSorter(Inventory gui) {
+        if (gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Main.keySorter, PersistentDataType.INTEGER) == null) {
+            return 0;
+        } else {
+            return gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Main.keySorter, PersistentDataType.INTEGER);
+        }
+    }
+
     private Inventory setPage(Inventory gui, int page) {
         ItemStack item = gui.getItem(49);
         ItemMeta meta = item.getItemMeta();
@@ -185,6 +252,23 @@ public class StoragePanelGUI implements Listener {
             return 1;
         } else {
             return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Main.keyPage, PersistentDataType.INTEGER);
+        }
+    }
+
+    private Inventory setDesc(Inventory gui, boolean desc) {
+        ItemStack item = gui.getItem(6);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+        item.setItemMeta(meta);
+        return gui;
+    }
+
+
+    private boolean getDesc(Inventory gui) {
+        if (gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Main.keyDesc, PersistentDataType.BOOLEAN) == null) {
+            return true;
+        } else {
+            return gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Main.keyDesc, PersistentDataType.BOOLEAN);
         }
     }
 
@@ -210,6 +294,7 @@ public class StoragePanelGUI implements Listener {
                 int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Main.keyPanelID, PersistentDataType.INTEGER);
                 event.setCancelled(true);
                 Player player = (Player) event.getWhoClicked();
+                String locale = player.getLocale().toLowerCase();
                 World world = player.getWorld();
                 ItemStack item = event.getCurrentItem();
                 ItemStack cursorItem = event.getCursor();
@@ -248,7 +333,7 @@ public class StoragePanelGUI implements Listener {
                                 storage.updateStorageMap(item, amount);
                                 Main.storages.put(id, storage);
 
-                                gui = loadGui(gui, id, world);
+                                gui = loadGui(gui, id, world, locale);
                             }
                         } else {
                             if (processingClickEvent) return;
@@ -268,7 +353,7 @@ public class StoragePanelGUI implements Listener {
                                         gui.setItem(8, cursorClone);
                                         event.getCursor().subtract(1);
 
-                                        gui = loadGui(gui, id, world);
+                                        gui = loadGui(gui, id, world, locale);
                                     }
                                 } else if (dataContainer.has(Main.keyStorageContent) && Main.getDatabase().getPanelsStorageItem(id) != null) {
                                     Storage storage = Main.storages.get(id);
@@ -282,7 +367,7 @@ public class StoragePanelGUI implements Listener {
                                     storage.updateStorageMap(cursorItem, amount);
                                     Main.storages.put(id, storage);
 
-                                    gui = loadGui(gui, id, world);
+                                    gui = loadGui(gui, id, world, locale);
                                 }
                             } else if (dataContainer.has(Main.keyStorageContent)) {
                                 Storage storage = Main.storages.get(id);
@@ -300,21 +385,36 @@ public class StoragePanelGUI implements Listener {
                                     int amount = newItem.getAmount();
                                     storage.updateStorageMap(newItem, -(amount));
                                     Main.storages.put(id, storage);
-                                    gui = loadGui(gui, id, world);
+                                    gui = loadGui(gui, id, world, locale);
                                 }
                             } else if (dataContainer.has(Main.keyStorage)) {
                                 Main.getDatabase().savePanelsData(id, null);
                                 player.setItemOnCursor(item);
                                 Main.storages.remove(id);
-                                gui = loadGui(gui, id, world);
+                                gui = loadGui(gui, id, world, locale);
                             } else if (dataContainer.has(Main.keyRightArrow)) {
                                 int page = getPage(gui) + 1;
                                 gui = setPage(gui, page);
-                                gui = loadGui(gui, id, world);
+                                gui = loadGui(gui, id, world, locale);
                             } else if (dataContainer.has(Main.keyLeftArrow)) {
                                 int page = getPage(gui) - 1;
                                 gui = setPage(gui, page);
-                                gui = loadGui(gui, id, world);
+                                gui = loadGui(gui, id, world, locale);
+                            } else if (dataContainer.has(Main.keyDesc)) {
+                                boolean desc = dataContainer.get(Main.keyDesc, PersistentDataType.BOOLEAN);
+                                setDesc(gui, !desc);
+
+
+                                gui = loadGui(gui, id, world, locale);
+                            } else if (dataContainer.has(Main.keySorter)) {
+                                int sorter = dataContainer.get(Main.keySorter, PersistentDataType.INTEGER);
+
+                                sorter = (sorter+1) % 2;
+
+                                setSorter(gui, sorter);
+
+
+                                gui = loadGui(gui, id, world, locale);
                             }
 
                             Bukkit.getScheduler().runTaskLater(plugin, () -> {

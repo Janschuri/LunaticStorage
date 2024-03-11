@@ -11,10 +11,8 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
@@ -23,6 +21,7 @@ import org.bukkit.util.io.BukkitObjectOutputStream;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,10 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.logging.Level;
 
 
@@ -41,6 +38,7 @@ public final class Main extends JavaPlugin {
 
     private static Database db;
     private static FileConfiguration config;
+    private static Map<String, JSONObject> languages = new HashMap<>();
 
     public Material storageItem;
     public Material panelBlock;
@@ -58,6 +56,9 @@ public final class Main extends JavaPlugin {
     static NamespacedKey keyLeftArrow = new NamespacedKey(pluginNamespace, "left_arrow");
     static NamespacedKey keyRightArrow = new NamespacedKey(pluginNamespace, "right_arrow");
     static NamespacedKey keyPage = new NamespacedKey(pluginNamespace, "page");
+    static NamespacedKey keyDesc = new NamespacedKey(pluginNamespace, "desc");
+    static NamespacedKey keySorter = new NamespacedKey(pluginNamespace, "sorter");
+
 
 
 
@@ -98,7 +99,7 @@ public final class Main extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public void loadConfig(Plugin plugin) {
+    public void loadConfig(Main plugin) {
 
         File cfgfile = new File(plugin.getDataFolder().getAbsolutePath() + "/config.yml");
         config = YamlConfiguration.loadConfiguration(cfgfile);
@@ -107,6 +108,39 @@ public final class Main extends JavaPlugin {
         panelBlock = Material.matchMaterial(getConfig().getString("panel_block", "LODESTONE"));
         defaultLimit = getConfig().getInt("default_limit", 10);
 
+        File mclangDE = new File(plugin.getDataFolder().getAbsolutePath() + "/mclang/de_de.json");
+
+
+        if (!mclangDE.exists()) {
+            mclangDE.getParentFile().mkdirs();
+            plugin.saveResource("mclang/de_de.json", false);
+        }
+
+
+
+        try {
+            File directory = new File(plugin.getDataFolder().getAbsolutePath() + "/mclang");
+            File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+
+            if (files != null) {
+                for (File file : files) {
+                    String fileName = file.getName();
+                    String jsonString = new String(Files.readAllBytes(file.toPath()));
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    languages.put(fileName, jsonObject);
+                }
+            } else {
+                System.out.println("No files found in the directory.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject language = languages.get("de_de.json");
+        JSONObject languageES = languages.get("es_es.json");
+        Bukkit.getLogger().info(languages.keySet().toString());
+        Bukkit.getLogger().info(languageES.getString("block.minecraft.amethyst_block"));
+        Bukkit.getLogger().info(language.getString("block.minecraft.amethyst_block"));
     }
 
     public static Database getDatabase() {
@@ -200,12 +234,42 @@ public final class Main extends JavaPlugin {
 
     public static boolean isAllowed(Player player, Location location) {
 
-            Bukkit.getLogger().info("blub");
             WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
             Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
-            if (!flag.isPresent()) Bukkit.getLogger().info("Nice rechte");
+            if (!flag.isPresent()) Bukkit.getLogger().info("WorldGuard flag 'chest-access' is not present!");
             WrappedState state = flag.map(f -> wgWrapper.queryFlag(player, location, f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
             return state == WrappedState.ALLOW;
 
+    }
+
+    public static String getLanguage(ItemStack itemStack, String locale) {
+        String nameKey = getKey(itemStack);
+        JSONObject language = languages.get(locale + ".json");
+
+        if (itemStack.getItemMeta().hasDisplayName()) {
+            return itemStack.getItemMeta().getDisplayName();
+        } else {
+            if (language != null) {
+                String name = language.getString(nameKey);
+                return name;
+            } else {
+                return itemStack.getType().toString();
+            }
+        }
+    }
+
+    public static String getKey(ItemStack itemStack){
+        Material material = itemStack.getType();
+
+        if(material.isBlock()){
+            String id = material.getKey().getKey();
+
+            return "block.minecraft."+id;
+        } else if(material.isItem()){
+            String id = material.getKey().getKey();
+
+            return "item.minecraft."+id;
+        }
+        return "block.minecraft.dirt";
     }
 }
