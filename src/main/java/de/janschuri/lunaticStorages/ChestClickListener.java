@@ -26,12 +26,9 @@ public class ChestClickListener implements Listener {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
-        // Check if the player is holding a diamond in their main hand
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand != null && itemInHand.getType() != Material.AIR && itemInHand.getItemMeta().getPersistentDataContainer().has(Main.keyStorage)) {
-            // Check if the player clicked on a block (e.g., chest)
             if (clickedBlock != null) {
-                // Check if the clicked block is a chest
                 if (clickedBlock.getType() == Material.CHEST) {
                     event.setCancelled(true);
 

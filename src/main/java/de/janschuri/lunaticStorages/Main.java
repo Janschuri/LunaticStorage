@@ -4,11 +4,14 @@ import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.database.MySQL;
 import de.janschuri.lunaticStorages.database.SQLite;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
@@ -17,6 +20,9 @@ import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import org.codemc.worldguardwrapper.flag.IWrappedFlag;
+import org.codemc.worldguardwrapper.flag.WrappedState;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -36,6 +45,7 @@ public final class Main extends JavaPlugin {
     public Material storageItem;
     public Material panelBlock;
     public int defaultLimit;
+    public static Map<Integer, Storage> storages = new HashMap<>();
 
     static String pluginNamespace = "lunaticstorage";
     static NamespacedKey keyPanelID = new NamespacedKey(pluginNamespace, "panel_id");
@@ -186,5 +196,16 @@ public final class Main extends JavaPlugin {
         textures.setSkin(urlObject);
         profile.setTextures(textures);
         return profile;
+    }
+
+    public static boolean isAllowed(Player player, Location location) {
+
+            Bukkit.getLogger().info("blub");
+            WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
+            Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
+            if (!flag.isPresent()) Bukkit.getLogger().info("Nice rechte");
+            WrappedState state = flag.map(f -> wgWrapper.queryFlag(player, location, f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
+            return state == WrappedState.ALLOW;
+
     }
 }

@@ -297,7 +297,6 @@ public abstract class Database {
     public void savePanelsData(int id, byte[] storageItem) {
         Connection conn = null;
         PreparedStatement ps = null;
-        Bukkit.getLogger().info("Save: " + Arrays.toString(storageItem));
         try {
             conn = getSQLConnection();
             ps = conn.prepareStatement("UPDATE " + panels + " SET storageItem = ? WHERE id = ?");
