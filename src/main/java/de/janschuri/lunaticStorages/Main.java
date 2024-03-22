@@ -3,11 +3,9 @@ package de.janschuri.lunaticStorages;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.database.MySQL;
 import de.janschuri.lunaticStorages.database.SQLite;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -40,9 +38,13 @@ public final class Main extends JavaPlugin {
     private static FileConfiguration config;
     private static Map<String, JSONObject> languages = new HashMap<>();
 
+    private static FileConfiguration lang;
+    public String language;
+    public String prefix;
     public Material storageItem;
     public Material panelBlock;
-    public int defaultLimit;
+    public static boolean worldguard;
+    public Map<String, String> messages = new HashMap<>();
     public static Map<Integer, Storage> storages = new HashMap<>();
 
     static String pluginNamespace = "lunaticstorage";
@@ -86,9 +88,6 @@ public final class Main extends JavaPlugin {
         db.load();
 
         getServer().getPluginManager().registerEvents(new StoragePanelGUI(this), this);
-
-
-        // Plugin startup logic
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(this), this);
         getCommand("storage").setExecutor(new StorageCommand(this));
@@ -106,7 +105,45 @@ public final class Main extends JavaPlugin {
 
         storageItem = Material.matchMaterial(getConfig().getString("storage_item", "DIAMOND"));
         panelBlock = Material.matchMaterial(getConfig().getString("panel_block", "LODESTONE"));
-        defaultLimit = getConfig().getInt("default_limit", 10);
+        worldguard = getConfig().getBoolean("worldguard", true);
+
+        File langfileEN = new File(plugin.getDataFolder().getAbsolutePath() + "/langEN.yml");
+        File langfileDE = new File(plugin.getDataFolder().getAbsolutePath() + "/langDE.yml");
+        language = config.getString("language", "EN");
+
+        if (!langfileEN.exists()) {
+            langfileEN.getParentFile().mkdirs();
+            plugin.saveResource("langEN.yml", false);
+        }
+
+        if (!langfileDE.exists()) {
+            langfileDE.getParentFile().mkdirs();
+            plugin.saveResource("langDE.yml", false);
+        }
+
+
+        if (language.equalsIgnoreCase("EN"))
+        {
+            lang = YamlConfiguration.loadConfiguration(langfileEN);
+        }
+
+        if (language.equalsIgnoreCase("DE"))
+        {
+            lang = YamlConfiguration.loadConfiguration(langfileDE);
+        }
+
+        prefix = ChatColor.translateAlternateColorCodes('&', lang.getString("prefix"));
+
+        //messages
+        ConfigurationSection messagesSection = lang.getConfigurationSection("messages");
+        if (messagesSection != null) {
+            for (String key : messagesSection.getKeys(false)) {
+                messages.put(key, ChatColor.translateAlternateColorCodes('&', messagesSection.getString(key, key)));
+            }
+        } else {
+            getLogger().warning("Could not find 'messages' section in lang.yml");
+        }
+
 
         File mclangDE = new File(plugin.getDataFolder().getAbsolutePath() + "/mclang/de_de.json");
 
@@ -135,12 +172,6 @@ public final class Main extends JavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        JSONObject language = languages.get("de_de.json");
-        JSONObject languageES = languages.get("es_es.json");
-        Bukkit.getLogger().info(languages.keySet().toString());
-        Bukkit.getLogger().info(languageES.getString("block.minecraft.amethyst_block"));
-        Bukkit.getLogger().info(language.getString("block.minecraft.amethyst_block"));
     }
 
     public static Database getDatabase() {
@@ -157,10 +188,8 @@ public final class Main extends JavaPlugin {
     }
 
     public static int[] parseCoords(String coords) {
-        // Splitting the uniqueId string at ","
         String[] coordStrings = coords.split(",");
 
-        // Parsing the string elements into integers
         int[] coordsInt = new int[coordStrings.length];
         for (int i = 0; i < coordStrings.length; i++) {
             coordsInt[i] = Integer.parseInt(coordStrings[i]);
@@ -169,7 +198,6 @@ public final class Main extends JavaPlugin {
         return coordsInt;
     }
 
-    // Method to serialize an ItemStack
     public static byte[] serializeItemStack(ItemStack item) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -178,9 +206,8 @@ public final class Main extends JavaPlugin {
             dataOutput.close();
             return outputStream.toByteArray();
         } catch (IOException e) {
-            // Handle the IOException
-            e.printStackTrace(); // Or handle it in another appropriate way
-            return null; // Return null or throw a custom exception if necessary
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -192,23 +219,21 @@ public final class Main extends JavaPlugin {
             dataInput.close();
             return item;
         } catch (IOException | ClassNotFoundException e) {
-            // Handle the IOException or ClassNotFoundException
-            e.printStackTrace(); // Or handle it in another appropriate way
-            return null; // Return null or throw a custom exception if necessary
+            e.printStackTrace();
+            return null;
         }
     }
 
-    public static boolean containsInt(int[] array, int target) {
+    public static boolean containsChestsID(int[] array, int target) {
         for (int num : array) {
             if (num == target) {
-                return true; // Found the target integer in the array
+                return true;
             }
         }
-        return false; // Target integer not found in the array
+        return false;
     }
 
     public static ItemStack getSkull(String url) {
-
         PlayerProfile pProfile = getProfile(url);
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta meta = (SkullMeta) head.getItemMeta();
@@ -233,13 +258,11 @@ public final class Main extends JavaPlugin {
     }
 
     public static boolean isAllowed(Player player, Location location) {
-
             WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
             Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
             if (!flag.isPresent()) Bukkit.getLogger().info("WorldGuard flag 'chest-access' is not present!");
             WrappedState state = flag.map(f -> wgWrapper.queryFlag(player, location, f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
             return state == WrappedState.ALLOW;
-
     }
 
     public static String getLanguage(ItemStack itemStack, String locale) {
@@ -260,14 +283,11 @@ public final class Main extends JavaPlugin {
 
     public static String getKey(ItemStack itemStack){
         Material material = itemStack.getType();
-
         if(material.isBlock()){
             String id = material.getKey().getKey();
-
             return "block.minecraft."+id;
         } else if(material.isItem()){
             String id = material.getKey().getKey();
-
             return "item.minecraft."+id;
         }
         return "block.minecraft.dirt";

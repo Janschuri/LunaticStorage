@@ -1,11 +1,10 @@
 package de.janschuri.lunaticStorages;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import net.md_5.bungee.api.chat.*;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,6 +12,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -43,19 +43,10 @@ public class StorageCommand implements CommandExecutor {
 
             } else if (args[0].equalsIgnoreCase("item")) {
                 ItemStack item = new ItemStack(plugin.storageItem);
-                int limit = plugin.defaultLimit;
-                if (args.length > 1) {
-                    try {
-                        limit = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage("nix zahl");
-                    }
-                }
 
                 int[] invs = new int[] {};
 
                 ItemMeta meta = item.getItemMeta();
-                meta.getPersistentDataContainer().set(plugin.keyLimit, PersistentDataType.INTEGER, limit);
                 meta.getPersistentDataContainer().set(Main.keyStorage, PersistentDataType.INTEGER_ARRAY, invs);
                 item.setItemMeta(meta);
 
@@ -72,9 +63,7 @@ public class StorageCommand implements CommandExecutor {
 
                 while (player.getInventory().firstEmpty() != -1) {
                     List<String> materialNames = Arrays.stream(Material.values())
-                            .filter(material -> {
-                                return new ItemStack(material).getType().isItem();
-                            })
+                            .filter(material -> new ItemStack(material).getType().isItem())
                             .map(Material::name)
                             .collect(Collectors.toList());
 
@@ -96,6 +85,13 @@ public class StorageCommand implements CommandExecutor {
                     }
 
                     player.getInventory().addItem(randomItem);
+                }
+            } else if (args[0].equalsIgnoreCase("reload")) {
+                if (!sender.hasPermission("lunaticstorage.admin")) {
+                    sender.sendMessage(plugin.prefix + plugin.messages.get("no_permission"));
+                } else {
+                    plugin.loadConfig(plugin);
+                    sender.sendMessage(plugin.prefix + plugin.messages.get("reload"));
                 }
             }
         }

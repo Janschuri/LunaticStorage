@@ -15,6 +15,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class StoragePanelGUI implements Listener {
     private final Main plugin;
@@ -56,6 +59,7 @@ public class StoragePanelGUI implements Listener {
         int pages;
         boolean desc;
         int sorter;
+        String totalAmount;
 
         if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
             page = getPage(gui);
@@ -84,7 +88,7 @@ public class StoragePanelGUI implements Listener {
 
         if (Main.getDatabase().getPanelsStorageItem(panelID) != null) {
             byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(panelID);
-            ItemStack item = plugin.deserializeItemStack(serializedItem);
+            ItemStack item = Main.deserializeItemStack(serializedItem);
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer container = meta.getPersistentDataContainer();
 
@@ -99,14 +103,15 @@ public class StoragePanelGUI implements Listener {
             }
 
             pages = storage.getPages();
+            totalAmount = storage.getTotalAmount();
             gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc), panelID, page-1);
 
-            container.set(plugin.keyPanelID, PersistentDataType.INTEGER, panelID);
+            container.set(Main.keyPanelID, PersistentDataType.INTEGER, panelID);
 
             item.setItemMeta(meta);
             gui.setItem(8, item);
 
-            gui.setItem(49, createPagePane(panelID, page, pages));
+            gui.setItem(49, createPagePane(panelID, page, pages, totalAmount));
             gui.setItem(6, createSortArrow(panelID, desc));
             gui.setItem(5, createSorter(panelID, sorter));
 
@@ -147,13 +152,17 @@ public class StoragePanelGUI implements Listener {
         return pane;
     }
 
-    private ItemStack createPagePane(int id, int page, int pages) {
+    private ItemStack createPagePane(int id, int page, int pages, String totalAmount) {
         ItemStack pane = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
         meta.getPersistentDataContainer().set(Main.keyPage, PersistentDataType.INTEGER, page);
         meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
         meta.setDisplayName("Seite: " + page + "/" + pages);
+        List<String> lore = meta.getLore();
+        lore = new ArrayList<>();
+        lore.add("Total items: " + totalAmount);
+        meta.setLore(lore);
 
         pane.setItemMeta(meta);
         return pane;
@@ -291,8 +300,8 @@ public class StoragePanelGUI implements Listener {
         public void onClick(InventoryClickEvent event) {
             Inventory gui = event.getView().getTopInventory();
             if (gui.contains(createPane())) {
-                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Main.keyPanelID, PersistentDataType.INTEGER);
                 event.setCancelled(true);
+                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Main.keyPanelID, PersistentDataType.INTEGER);
                 Player player = (Player) event.getWhoClicked();
                 String locale = player.getLocale().toLowerCase();
                 World world = player.getWorld();
@@ -403,17 +412,12 @@ public class StoragePanelGUI implements Listener {
                             } else if (dataContainer.has(Main.keyDesc)) {
                                 boolean desc = dataContainer.get(Main.keyDesc, PersistentDataType.BOOLEAN);
                                 setDesc(gui, !desc);
-
-
                                 gui = loadGui(gui, id, world, locale);
                             } else if (dataContainer.has(Main.keySorter)) {
                                 int sorter = dataContainer.get(Main.keySorter, PersistentDataType.INTEGER);
 
                                 sorter = (sorter+1) % 2;
-
                                 setSorter(gui, sorter);
-
-
                                 gui = loadGui(gui, id, world, locale);
                             }
 

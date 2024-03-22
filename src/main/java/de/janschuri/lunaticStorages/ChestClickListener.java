@@ -1,8 +1,6 @@
 package de.janschuri.lunaticStorages;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,42 +32,32 @@ public class ChestClickListener implements Listener {
 
                     String coords = Main.getCoordsAsString(event.getClickedBlock());
 
-                    if(!Main.getDatabase().isChestInDatabase(coords)) {
+                    if (!Main.getDatabase().isChestInDatabase(coords)) {
                         Main.getDatabase().saveChestData(coords);
                     }
 
 
-                        int chestID = Main.getDatabase().getChestID(coords);
+                    int chestID = Main.getDatabase().getChestID(coords);
 
-                        // Modify the NBT data of the diamond item
-                        ItemMeta storageMeta = itemInHand.getItemMeta();
+                    ItemMeta storageMeta = itemInHand.getItemMeta();
 
-                        PersistentDataContainer dataContainer = storageMeta.getPersistentDataContainer();
+                    PersistentDataContainer dataContainer = storageMeta.getPersistentDataContainer();
 
-                            int[] chests = dataContainer.get(plugin.keyStorage, PersistentDataType.INTEGER_ARRAY);
+                    int[] chests = dataContainer.get(plugin.keyStorage, PersistentDataType.INTEGER_ARRAY);
 
-                            if (Main.containsInt(chests, chestID)) {
-                                player.sendMessage("Diamond is already marked with the chest's location!");
-                            } else {
-                                int[] newChests = new int[chests.length + 1];
+                    if (Main.containsChestsID(chests, chestID)) {
+                        player.sendMessage("Diamond is already marked with the chest's location!");
+                    } else {
+                        int[] newChests = new int[chests.length + 1];
+                        System.arraycopy(chests, 0, newChests, 0, chests.length);
+                        newChests[chests.length] = chestID;
 
-                                // Copy elements from the original array to the new array
-                                System.arraycopy(chests, 0, newChests, 0, chests.length);
+                        storageMeta.getPersistentDataContainer().set(plugin.keyStorage, PersistentDataType.INTEGER_ARRAY, newChests);
+                        itemInHand.setItemMeta(storageMeta);
 
-                                // Add the new element at the end of the new array
-                                newChests[chests.length] = chestID;
-
-                                storageMeta.getPersistentDataContainer().set(plugin.keyStorage, PersistentDataType.INTEGER_ARRAY, newChests);
-                                itemInHand.setItemMeta(storageMeta);
-
-                                player.sendMessage("Diamond has been marked with the chest's location.");
-                            }
-
-
-
+                        player.sendMessage("Diamond has been marked with the chest's location.");
                     }
-
-
+                }
             }
         }
     }

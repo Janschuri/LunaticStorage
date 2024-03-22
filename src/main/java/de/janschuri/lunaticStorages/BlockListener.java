@@ -47,7 +47,6 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
         String coords = Main.getCoordsAsString(block);
 
-
         if (Main.getDatabase().isPanelInDatabase(coords)) {
             if (player.isSneaking()) {
                 Main.getDatabase().removePanel(coords);

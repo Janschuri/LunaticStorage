@@ -245,31 +245,6 @@ public abstract class Database {
         return 0;
     }
 
-    public void saveChestData(int id, String coords) {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = getSQLConnection();
-            ps = conn.prepareStatement("REPLACE INTO " + chests + " (id,coords) VALUES(?,?)");
-            ps.setInt(1, id);
-            ps.setString(2, coords);
-            ps.executeUpdate();
-            return;
-        } catch (SQLException ex) {
-            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-                if (conn != null)
-                    conn.close();
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
-            }
-        }
-        return;
-    }
-
     public void saveChestData(String coords) {
         Connection conn = null;
         PreparedStatement ps = null;

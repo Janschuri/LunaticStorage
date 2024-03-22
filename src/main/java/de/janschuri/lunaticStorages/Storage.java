@@ -1,21 +1,16 @@
 package de.janschuri.lunaticStorages;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.codemc.worldguardwrapper.WorldGuardWrapper;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Storage {
@@ -67,6 +62,16 @@ public class Storage {
         return (int) Math.ceil((double) storageMap.size() / 36);
     }
 
+    public String getTotalAmount() {
+        int sum = 0;
+        for (int value : storageMap.values()) {
+            sum += value;
+        }
+        // Formatting the sum into a string with comma as thousands separator
+        String formattedSum = String.format("%,d", sum);
+        return formattedSum;
+    }
+
     public void updateStorageMap(ItemStack item, int difference) {
         ItemStack clone = item.clone();
         clone.setAmount(1);
@@ -104,8 +109,6 @@ public class Storage {
                                 itemsChests.put(id, false);
                             }
                             this.storageItems.put(existingItem, itemsChests);
-
-
                         found = true;
                         break;
                     }
@@ -186,8 +189,6 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
 
                 Inventory chestInv = chest.getSnapshotInventory();
-
-
                 storageMap = addInventoryToMap(storageMap, chestInv, id);
 
             }
@@ -225,7 +226,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (Main.isAllowed(player, location)) {
+                if (!Main.worldguard || Main.isAllowed(player, location)) {
 
                     Inventory chestInv = chest.getSnapshotInventory();
 
@@ -288,7 +289,7 @@ public class Storage {
 
         for (Map<Integer, Boolean> innerMap : storageItems.values()) {
             for (Map.Entry<Integer, Boolean> entry : innerMap.entrySet()) {
-                if (!entry.getValue()) { // Check if the value is false
+                if (!entry.getValue()) {
                     allIntegersSet.add(entry.getKey());
                 }
             }
@@ -308,7 +309,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (Main.isAllowed(player, location)) {
+                if (!Main.worldguard || Main.isAllowed(player, location)) {
                     Inventory chestInv = chest.getSnapshotInventory();
                     Map<Integer, Boolean> itemsChests = new HashMap<>();
                     if (this.storageItems.get(itemKey) != null) {
@@ -326,7 +327,7 @@ public class Storage {
                         for (ItemStack stack : chestInv.getContents()) {
                             if (stack != null && stack.isSimilar(item)) {
                                 if (stack.getAmount() < stack.getMaxStackSize()) {
-                                    foundNonFullStack = true; // Found a non-full stack
+                                    foundNonFullStack = true;
                                 }
                             } else if (stack == null || stack.isEmpty()) {
                                 isEmptyChest = true;
