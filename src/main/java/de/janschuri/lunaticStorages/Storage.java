@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class Storage {
@@ -25,13 +26,13 @@ public class Storage {
         loadStorage(chests);
     }
 
-    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc) {
+    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
         List<Map.Entry<ItemStack, Integer>> storageList = new ArrayList<>(storageMap.entrySet());
 
         Comparator<Map.Entry<ItemStack, Integer>> comparator = null;
 
         if (sorter == 1) {
-            comparator = Comparator.comparing(entry -> Main.getLanguage(entry.getKey(), locale));
+            comparator = Comparator.comparing(entry -> LunaticStorage.getLanguage(entry.getKey(), locale));
         } else {
             comparator = Comparator.comparing(Map.Entry::getValue);
         }
@@ -40,18 +41,24 @@ public class Storage {
             comparator = comparator.reversed();
         }
 
-//        String filterString = "log";
-//
-//        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
-//            String language = Main.getLanguage(entry.getKey(), locale);
-//            return language.toLowerCase().contains(filterString.toLowerCase());
-//        };
+        if (search == null) {
+            search = "";
+        }
+
+        String finalSearch = search;
+        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
+            if (finalSearch == "") {
+                return true;
+            }
+            String language = LunaticStorage.getLanguage(entry.getKey(), locale);
+            return language.toLowerCase().contains(finalSearch.toLowerCase());
+        };
 
 
 
 
         storageList = storageMap.entrySet().stream()
-//                .filter(filter)
+                .filter(filter)
                 .sorted(comparator)
                 .collect(Collectors.toList());
 
@@ -151,11 +158,11 @@ public class Storage {
             ItemStack singleStack = itemStack.clone();
             singleStack.setAmount(1);
 
-            byte[] itemSerialized = Main.serializeItemStack(itemStack);
+            byte[] itemSerialized = LunaticStorage.serializeItemStack(itemStack);
 
             ItemMeta meta = singleStack.getItemMeta();
-            meta.getPersistentDataContainer().set(Main.keyStorageContent, PersistentDataType.BYTE_ARRAY, itemSerialized);
-            meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyStorageContent, PersistentDataType.BYTE_ARRAY, itemSerialized);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
 
             if (meta != null) {
                 List<String> lore = meta.getLore();
@@ -176,10 +183,10 @@ public class Storage {
 
     public void loadStorage (int[] chests){
         for (int id : chests) {
-            if (Main.getDatabase().isChestInDatabase(id)) {
+            if (LunaticStorage.getDatabase().isChestInDatabase(id)) {
 
-                String coords = Main.getDatabase().getChestCoords(id);
-                int coordsArray[] = Main.parseCoords(coords);
+                String coords = LunaticStorage.getDatabase().getChestCoords(id);
+                int coordsArray[] = LunaticStorage.parseCoords(coords);
 
                 int x = coordsArray[0];
                 int y = coordsArray[1];
@@ -200,8 +207,8 @@ public class Storage {
         ItemStack clone = item.clone();
         ItemMeta meta = clone.getItemMeta();
 
-        byte[] serializedItem = meta.getPersistentDataContainer().get(Main.keyStorageContent, PersistentDataType.BYTE_ARRAY);
-        ItemStack searchedItem = Main.deserializeItemStack(serializedItem);
+        byte[] serializedItem = meta.getPersistentDataContainer().get(LunaticStorage.keyStorageContent, PersistentDataType.BYTE_ARRAY);
+        ItemStack searchedItem = LunaticStorage.deserializeItemStack(serializedItem);
 
         int[] chests = storageItems.getOrDefault(searchedItem, Collections.emptyMap()).entrySet().stream()
                 .mapToInt(Map.Entry::getKey)
@@ -214,9 +221,9 @@ public class Storage {
 
         for (int id : chests) {
 
-            if (Main.getDatabase().isChestInDatabase(id)) {
-                String uuid = Main.getDatabase().getChestCoords(id);
-                int coords[] = Main.parseCoords(uuid);
+            if (LunaticStorage.getDatabase().isChestInDatabase(id)) {
+                String uuid = LunaticStorage.getDatabase().getChestCoords(id);
+                int coords[] = LunaticStorage.parseCoords(uuid);
 
                 int x = coords[0];
                 int y = coords[1];
@@ -226,7 +233,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (!Main.worldguard || Main.isAllowed(player, location)) {
+                if (!LunaticStorage.worldguard || LunaticStorage.isAllowed(player, location)) {
 
                     Inventory chestInv = chest.getSnapshotInventory();
 
@@ -297,9 +304,9 @@ public class Storage {
         int[] chests = allIntegersSet.stream().mapToInt(Integer::intValue).toArray();
 
         for (int id : chests) {
-            if (Main.getDatabase().isChestInDatabase(id)) {
-                String uuid = Main.getDatabase().getChestCoords(id);
-                int coords[] = Main.parseCoords(uuid);
+            if (LunaticStorage.getDatabase().isChestInDatabase(id)) {
+                String uuid = LunaticStorage.getDatabase().getChestCoords(id);
+                int coords[] = LunaticStorage.parseCoords(uuid);
 
                 int x = coords[0];
                 int y = coords[1];
@@ -309,7 +316,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (!Main.worldguard || Main.isAllowed(player, location)) {
+                if (!LunaticStorage.worldguard || LunaticStorage.isAllowed(player, location)) {
                     Inventory chestInv = chest.getSnapshotInventory();
                     Map<Integer, Boolean> itemsChests = new HashMap<>();
                     if (this.storageItems.get(itemKey) != null) {

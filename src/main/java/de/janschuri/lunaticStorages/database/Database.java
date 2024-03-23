@@ -1,19 +1,17 @@
 package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorages.Main;
-import org.bukkit.Bukkit;
+import de.janschuri.lunaticStorages.LunaticStorage;
 
 import java.sql.*;
-import java.util.Arrays;
 import java.util.logging.Level;
 
 
 public abstract class Database {
-    Main plugin;
+    LunaticStorage plugin;
     Connection connection;
     public String chests = "chests";
     public String panels = "panels";
-    public Database(Main instance){
+    public Database(LunaticStorage instance){
         plugin = instance;
     }
 

@@ -1,6 +1,6 @@
 package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorages.Main;
+import de.janschuri.lunaticStorages.LunaticStorage;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.logging.Level;
 
 public class SQLite extends Database{
     String dbname;
-    public SQLite(Main instance){
+    public SQLite(LunaticStorage instance){
         super(instance);
         dbname = plugin.getConfig().getString("SQLite.Filename", "lunaticstorage");
     }

@@ -3,6 +3,7 @@ package de.janschuri.lunaticStorages;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.database.MySQL;
 import de.janschuri.lunaticStorages.database.SQLite;
+import de.janschuri.lunaticStorages.listener.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -32,7 +33,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 
-public final class Main extends JavaPlugin {
+public final class LunaticStorage extends JavaPlugin {
 
     private static Database db;
     private static FileConfiguration config;
@@ -48,18 +49,19 @@ public final class Main extends JavaPlugin {
     public static Map<Integer, Storage> storages = new HashMap<>();
 
     static String pluginNamespace = "lunaticstorage";
-    static NamespacedKey keyPanelID = new NamespacedKey(pluginNamespace, "panel_id");
-    static NamespacedKey keyPane = new NamespacedKey(pluginNamespace, "gui_pane");
-    static NamespacedKey keyStoragePane = new NamespacedKey(pluginNamespace, "gui_storage_pane");
-    static NamespacedKey keyStorageContent = new NamespacedKey(pluginNamespace, "gui_storage_content");
-    static NamespacedKey keyLimit = new NamespacedKey(pluginNamespace, "limit");
-    static NamespacedKey keyPanelBlock = new NamespacedKey(pluginNamespace, "panel_block");
-    static NamespacedKey keyStorage = new NamespacedKey(pluginNamespace, "invs");
-    static NamespacedKey keyLeftArrow = new NamespacedKey(pluginNamespace, "left_arrow");
-    static NamespacedKey keyRightArrow = new NamespacedKey(pluginNamespace, "right_arrow");
-    static NamespacedKey keyPage = new NamespacedKey(pluginNamespace, "page");
-    static NamespacedKey keyDesc = new NamespacedKey(pluginNamespace, "desc");
-    static NamespacedKey keySorter = new NamespacedKey(pluginNamespace, "sorter");
+    public static NamespacedKey keyPanelID = new NamespacedKey(pluginNamespace, "panel_id");
+    public static NamespacedKey keyPane = new NamespacedKey(pluginNamespace, "gui_pane");
+    public static NamespacedKey keyStoragePane = new NamespacedKey(pluginNamespace, "gui_storage_pane");
+    public static NamespacedKey keyStorageContent = new NamespacedKey(pluginNamespace, "gui_storage_content");
+    public static NamespacedKey keyLimit = new NamespacedKey(pluginNamespace, "limit");
+    public static NamespacedKey keyPanelBlock = new NamespacedKey(pluginNamespace, "panel_block");
+    public static NamespacedKey keyStorage = new NamespacedKey(pluginNamespace, "invs");
+    public static NamespacedKey keyLeftArrow = new NamespacedKey(pluginNamespace, "left_arrow");
+    public static NamespacedKey keyRightArrow = new NamespacedKey(pluginNamespace, "right_arrow");
+    public static NamespacedKey keyPage = new NamespacedKey(pluginNamespace, "page");
+    public static NamespacedKey keySearch = new NamespacedKey(pluginNamespace, "search");
+    public static NamespacedKey keyDesc = new NamespacedKey(pluginNamespace, "desc");
+    public static NamespacedKey keySorter = new NamespacedKey(pluginNamespace, "sorter");
 
 
 
@@ -87,9 +89,12 @@ public final class Main extends JavaPlugin {
 
         db.load();
 
-        getServer().getPluginManager().registerEvents(new StoragePanelGUI(this), this);
+        getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(this), this);
+        getServer().getPluginManager().registerEvents(new JoinListener(this), this);
+        getServer().getPluginManager().registerEvents(new QuitListener(this), this);
+        getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
         getCommand("storage").setExecutor(new StorageCommand(this));
     }
 
@@ -98,7 +103,7 @@ public final class Main extends JavaPlugin {
         // Plugin shutdown logic
     }
 
-    public void loadConfig(Main plugin) {
+    public void loadConfig(LunaticStorage plugin) {
 
         File cfgfile = new File(plugin.getDataFolder().getAbsolutePath() + "/config.yml");
         config = YamlConfiguration.loadConfiguration(cfgfile);
@@ -175,7 +180,7 @@ public final class Main extends JavaPlugin {
     }
 
     public static Database getDatabase() {
-        return Main.db;
+        return LunaticStorage.db;
 
     }
 

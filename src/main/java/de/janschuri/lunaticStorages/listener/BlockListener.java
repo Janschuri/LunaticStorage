@@ -1,6 +1,6 @@
-package de.janschuri.lunaticStorages;
+package de.janschuri.lunaticStorages.listener;
 
-import org.bukkit.Bukkit;
+import de.janschuri.lunaticStorages.LunaticStorage;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -14,9 +14,9 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class BlockListener implements Listener {
 
-    private final Main plugin;
+    private final LunaticStorage plugin;
 
-    public BlockListener(Main plugin) {
+    public BlockListener(LunaticStorage plugin) {
         this.plugin = plugin;
     }
 
@@ -28,14 +28,14 @@ public class BlockListener implements Listener {
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-            if (dataContainer.has(plugin.keyPanelBlock, PersistentDataType.BOOLEAN)) {
+            if (dataContainer.has(LunaticStorage.keyPanelBlock, PersistentDataType.BOOLEAN)) {
                 event.getPlayer().sendMessage("Test");
                 Block block = event.getBlockPlaced();
 
 
-                String coords = Main.getCoordsAsString(block);
+                String coords = LunaticStorage.getCoordsAsString(block);
 
-                Main.getDatabase().savePanelsData(coords, null);
+                LunaticStorage.getDatabase().savePanelsData(coords, null);
             }
         }
     }
@@ -45,19 +45,19 @@ public class BlockListener implements Listener {
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        String coords = Main.getCoordsAsString(block);
+        String coords = LunaticStorage.getCoordsAsString(block);
 
-        if (Main.getDatabase().isPanelInDatabase(coords)) {
+        if (LunaticStorage.getDatabase().isPanelInDatabase(coords)) {
             if (player.isSneaking()) {
-                Main.getDatabase().removePanel(coords);
+                LunaticStorage.getDatabase().removePanel(coords);
             } else {
                 event.setCancelled(true);
             }
         }
 
-        if (Main.getDatabase().isChestInDatabase(coords)) {
+        if (LunaticStorage.getDatabase().isChestInDatabase(coords)) {
             if (player.isSneaking()) {
-                Main.getDatabase().removeChest(coords);
+                LunaticStorage.getDatabase().removeChest(coords);
             } else {
                 event.setCancelled(true);
             }

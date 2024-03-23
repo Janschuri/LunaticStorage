@@ -1,6 +1,6 @@
 package de.janschuri.lunaticStorages.database;
 
-import de.janschuri.lunaticStorages.Main;
+import de.janschuri.lunaticStorages.LunaticStorage;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,7 +12,7 @@ public class MySQL extends Database {
     String host, database, username, password;
     int port;
 
-    public MySQL(Main instance) {
+    public MySQL(LunaticStorage instance) {
         super(instance);
         host = plugin.getConfig().getString("Database.MySQL.Host", "localhost");
         port = plugin.getConfig().getInt("Database.MySQL.Port", 3306);

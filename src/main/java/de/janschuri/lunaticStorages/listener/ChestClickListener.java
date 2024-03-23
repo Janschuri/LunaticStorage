@@ -1,5 +1,6 @@
-package de.janschuri.lunaticStorages;
+package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -14,9 +15,9 @@ import org.bukkit.persistence.PersistentDataType;
 public class ChestClickListener implements Listener {
 
 
-    private final Main plugin;
+    private final LunaticStorage plugin;
 
-    public ChestClickListener(Main plugin) {
+    public ChestClickListener(LunaticStorage plugin) {
         this.plugin = plugin;
     }
     @EventHandler
@@ -25,19 +26,19 @@ public class ChestClickListener implements Listener {
         Block clickedBlock = event.getClickedBlock();
 
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        if (itemInHand != null && itemInHand.getType() != Material.AIR && itemInHand.getItemMeta().getPersistentDataContainer().has(Main.keyStorage)) {
+        if (itemInHand != null && itemInHand.getType() != Material.AIR && itemInHand.getItemMeta().getPersistentDataContainer().has(LunaticStorage.keyStorage)) {
             if (clickedBlock != null) {
                 if (clickedBlock.getType() == Material.CHEST) {
                     event.setCancelled(true);
 
-                    String coords = Main.getCoordsAsString(event.getClickedBlock());
+                    String coords = LunaticStorage.getCoordsAsString(event.getClickedBlock());
 
-                    if (!Main.getDatabase().isChestInDatabase(coords)) {
-                        Main.getDatabase().saveChestData(coords);
+                    if (!LunaticStorage.getDatabase().isChestInDatabase(coords)) {
+                        LunaticStorage.getDatabase().saveChestData(coords);
                     }
 
 
-                    int chestID = Main.getDatabase().getChestID(coords);
+                    int chestID = LunaticStorage.getDatabase().getChestID(coords);
 
                     ItemMeta storageMeta = itemInHand.getItemMeta();
 
@@ -45,7 +46,7 @@ public class ChestClickListener implements Listener {
 
                     int[] chests = dataContainer.get(plugin.keyStorage, PersistentDataType.INTEGER_ARRAY);
 
-                    if (Main.containsChestsID(chests, chestID)) {
+                    if (LunaticStorage.containsChestsID(chests, chestID)) {
                         player.sendMessage("Diamond is already marked with the chest's location!");
                     } else {
                         int[] newChests = new int[chests.length + 1];

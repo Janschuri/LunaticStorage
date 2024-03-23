@@ -1,22 +1,14 @@
 package de.janschuri.lunaticStorages;
 
-import net.md_5.bungee.api.chat.*;
+import de.janschuri.lunaticStorages.nms.SignGUI;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,9 +16,9 @@ import java.util.stream.Collectors;
 
 public class StorageCommand implements CommandExecutor {
 
-    private final Main plugin;
+    private final LunaticStorage plugin;
 
-    public StorageCommand(Main plugin) {
+    public StorageCommand(LunaticStorage plugin) {
         this.plugin = plugin;
     }
 
@@ -47,7 +39,7 @@ public class StorageCommand implements CommandExecutor {
                 int[] invs = new int[] {};
 
                 ItemMeta meta = item.getItemMeta();
-                meta.getPersistentDataContainer().set(Main.keyStorage, PersistentDataType.INTEGER_ARRAY, invs);
+                meta.getPersistentDataContainer().set(LunaticStorage.keyStorage, PersistentDataType.INTEGER_ARRAY, invs);
                 item.setItemMeta(meta);
 
                 player.getInventory().addItem(item);
@@ -59,6 +51,13 @@ public class StorageCommand implements CommandExecutor {
                 meta.getPersistentDataContainer().set(plugin.keyPanelBlock, PersistentDataType.BOOLEAN, true);
                 item.setItemMeta(meta);
                 player.getInventory().addItem(item);
+            } else if (args[0].equalsIgnoreCase("sign")) {
+                SignGUI signGui = new SignGUI(plugin);
+                signGui.sendSign(player, lines -> {
+                    // The lines array will always have a length of 4, filling empty prompts with empty strings
+                    String name = String.join(" ", lines).trim(); // Join lines to get a single message, then trim it
+                    player.sendMessage("Your message was: " + name);
+                });
             } else if (args[0].equalsIgnoreCase("random")) {
 
                 while (player.getInventory().firstEmpty() != -1) {

@@ -1,14 +1,11 @@
 package de.janschuri.lunaticStorages;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
+import de.janschuri.lunaticStorages.Storage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,33 +15,11 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.ArrayList;
 import java.util.List;
 
+public class StoragePanelGUI {
 
-public class StoragePanelGUI implements Listener {
-    private final Main plugin;
-    private boolean processingClickEvent = false;
+    public static ItemStack GUI_PANE = createPane();
 
-    public StoragePanelGUI(Main plugin) {
-        this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Block block = event.getClickedBlock();
-        String coords = "";
-        if (block != null) {
-            coords = Main.getCoordsAsString(block);
-        }
-
-        if (block != null && Main.getDatabase().isPanelInDatabase(coords)) {
-            event.setCancelled(true);
-            int id = Main.getDatabase().getPanelsID(coords);
-            openGUI(player, id);
-        }
-    }
-
-    private void openGUI(Player player, int id) {
+    public static void openGUI(Player player, int id) {
         Inventory gui = Bukkit.createInventory(null, 54, "Storage");
         World world = player.getWorld();
 
@@ -53,12 +28,13 @@ public class StoragePanelGUI implements Listener {
 
         player.openInventory(gui);
     }
-    
-    private Inventory loadGui (Inventory gui, int panelID, World world, String locale) {
+
+    public static Inventory loadGui(Inventory gui, int panelID, World world, String locale) {
         int page;
         int pages;
         boolean desc;
         int sorter;
+        String search;
         String totalAmount;
 
         if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
@@ -78,7 +54,11 @@ public class StoragePanelGUI implements Listener {
         } else {
             sorter = 0;
         }
-
+        if (gui.getItem(0) != null && !gui.getItem(0).isEmpty()) {
+            search = StoragePanelGUI.getSearch(gui);
+        } else {
+            search = "";
+        }
         gui.clear();
 
         for (int i = 0; i < 9; i++) {
@@ -86,31 +66,31 @@ public class StoragePanelGUI implements Listener {
             gui.setItem(45 + i, createPane());
         }
 
-        if (Main.getDatabase().getPanelsStorageItem(panelID) != null) {
-            byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(panelID);
-            ItemStack item = Main.deserializeItemStack(serializedItem);
+        if (LunaticStorage.getDatabase().getPanelsStorageItem(panelID) != null) {
+            byte[] serializedItem = LunaticStorage.getDatabase().getPanelsStorageItem(panelID);
+            ItemStack item = LunaticStorage.deserializeItemStack(serializedItem);
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer container = meta.getPersistentDataContainer();
 
-            int[] chests = container.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
+            int[] chests = container.get(LunaticStorage.keyStorage, PersistentDataType.INTEGER_ARRAY);
             Storage storage;
 
-            if (Main.storages.containsKey(panelID)) {
-                storage = Main.storages.get(panelID);
+            if (LunaticStorage.storages.containsKey(panelID)) {
+                storage = LunaticStorage.storages.get(panelID);
             } else {
                 storage = new Storage(chests, world);
-                Main.storages.put(panelID, storage);
+                LunaticStorage.storages.put(panelID, storage);
             }
 
             pages = storage.getPages();
             totalAmount = storage.getTotalAmount();
-            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc), panelID, page-1);
+            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc, search), panelID, page-1);
 
-            container.set(Main.keyPanelID, PersistentDataType.INTEGER, panelID);
+            container.set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, panelID);
 
             item.setItemMeta(meta);
             gui.setItem(8, item);
-
+            gui.setItem(0, createSearch(panelID, search));
             gui.setItem(49, createPagePane(panelID, page, pages, totalAmount));
             gui.setItem(6, createSortArrow(panelID, desc));
             gui.setItem(5, createSorter(panelID, sorter));
@@ -131,35 +111,49 @@ public class StoragePanelGUI implements Listener {
         return gui;
     }
 
-    private ItemStack createPane() {
+    private static ItemStack createPane() {
         ItemStack pane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Main.keyPane, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPane, PersistentDataType.BOOLEAN, true);
 
         pane.setItemMeta(meta);
         return pane;
     }
 
-    private ItemStack createStoragePane(int id) {
+    private static ItemStack createStoragePane(int id) {
         ItemStack pane = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Main.keyStoragePane, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyStoragePane, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
 
         pane.setItemMeta(meta);
         return pane;
     }
 
-    private ItemStack createPagePane(int id, int page, int pages, String totalAmount) {
+    private static ItemStack createSearch(int id, String search) {
+        ItemStack item = new ItemStack(Material.SPYGLASS);
+        ItemMeta meta = item.getItemMeta();
+        if (search == null) {
+            meta.getPersistentDataContainer().set(LunaticStorage.keySearch, PersistentDataType.STRING, "");
+        } else {
+            meta.getPersistentDataContainer().set(LunaticStorage.keySearch, PersistentDataType.STRING, search);
+        }
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private static ItemStack createPagePane(int id, int page, int pages, String totalAmount) {
         ItemStack pane = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Main.keyPage, PersistentDataType.INTEGER, page);
-        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPage, PersistentDataType.INTEGER, page);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
         meta.setDisplayName("Seite: " + page + "/" + pages);
-        List<String> lore = meta.getLore();
+        List<String> lore;
         lore = new ArrayList<>();
         lore.add("Total items: " + totalAmount);
         meta.setLore(lore);
@@ -168,265 +162,128 @@ public class StoragePanelGUI implements Listener {
         return pane;
     }
 
-    private ItemStack createArrowLeft(int id) {
-        ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
+    public static Inventory setSearch(Inventory gui, String search) {
+        ItemStack item = gui.getItem(0);
+        ItemMeta meta = item.getItemMeta();
+        meta.getPersistentDataContainer().set(LunaticStorage.keySearch, PersistentDataType.STRING, search);
+        item.setItemMeta(meta);
+        return gui;
+    }
+
+    public static String getSearch(Inventory gui) {
+        return gui.getItem(0).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keySearch, PersistentDataType.STRING);
+    }
+
+    private static ItemStack createArrowLeft(int id) {
+        ItemStack arrow = LunaticStorage.getSkull("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
         ItemMeta meta = arrow.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Main.keyLeftArrow, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyLeftArrow, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
         meta.setDisplayName("<<<");
 
         arrow.setItemMeta(meta);
         return arrow;
     }
 
-    private ItemStack createArrowRight(int id) {
-        ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
+    private static ItemStack createArrowRight(int id) {
+        ItemStack arrow = LunaticStorage.getSkull("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
         ItemMeta meta = arrow.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Main.keyRightArrow, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Main.keyPanelID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyRightArrow, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
         meta.setDisplayName(">>>");
 
         arrow.setItemMeta(meta);
         return arrow;
     }
 
-    private ItemStack createSortArrow(int id, boolean desc) {
-
-
+    private static ItemStack createSortArrow(int id, boolean desc) {
         if(desc) {
-            ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
+            ItemStack arrow = LunaticStorage.getSkull("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
             ItemMeta meta = arrow.getItemMeta();
-            meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
             meta.setDisplayName("Descended");
             arrow.setItemMeta(meta);
             return arrow;
         } else {
-            ItemStack arrow = Main.getSkull("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
+            ItemStack arrow = LunaticStorage.getSkull("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
             ItemMeta meta = arrow.getItemMeta();
-            meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(LunaticStorage.keyPanelID, PersistentDataType.INTEGER, id);
             meta.setDisplayName("Ascended");
             arrow.setItemMeta(meta);
             return arrow;
         }
     }
 
-    private ItemStack createSorter(int id, int sorter) {
+    private static ItemStack createSorter(int id, int sorter) {
         if (sorter == 1) {
-            ItemStack sorterItem = Main.getSkull("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
+            ItemStack sorterItem = LunaticStorage.getSkull("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
             ItemMeta meta = sorterItem.getItemMeta();
-            meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+            meta.getPersistentDataContainer().set(LunaticStorage.keySorter, PersistentDataType.INTEGER, sorter);
             meta.setDisplayName("by name");
             sorterItem.setItemMeta(meta);
             return sorterItem;
         } else {
-            ItemStack sorterItem = Main.getSkull("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
+            ItemStack sorterItem = LunaticStorage.getSkull("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
             ItemMeta meta = sorterItem.getItemMeta();
-            meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+            meta.getPersistentDataContainer().set(LunaticStorage.keySorter, PersistentDataType.INTEGER, sorter);
             meta.setDisplayName("by amount");
             sorterItem.setItemMeta(meta);
             return sorterItem;
         }
     }
 
-    private Inventory setSorter(Inventory gui, int sorter) {
+    public static Inventory setSorter(Inventory gui, int sorter) {
         ItemStack item = gui.getItem(5);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Main.keySorter, PersistentDataType.INTEGER, sorter);
+        meta.getPersistentDataContainer().set(LunaticStorage.keySorter, PersistentDataType.INTEGER, sorter);
         item.setItemMeta(meta);
         return gui;
     }
 
-    private int getSorter(Inventory gui) {
-        if (gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Main.keySorter, PersistentDataType.INTEGER) == null) {
+    public static int getSorter(Inventory gui) {
+        if (gui.getItem(5).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keySorter, PersistentDataType.INTEGER) == null) {
             return 0;
         } else {
-            return gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Main.keySorter, PersistentDataType.INTEGER);
+            return gui.getItem(5).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keySorter, PersistentDataType.INTEGER);
         }
     }
 
-    private Inventory setPage(Inventory gui, int page) {
+    public static Inventory setPage(Inventory gui, int page) {
         ItemStack item = gui.getItem(49);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Main.keyPage, PersistentDataType.INTEGER, page);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyPage, PersistentDataType.INTEGER, page);
         item.setItemMeta(meta);
 
 
         return gui;
     }
 
-    private int getPage(Inventory gui) {
-        if (gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Main.keyPage, PersistentDataType.INTEGER) == null) {
+    public static int getPage(Inventory gui) {
+        if (gui.getItem(49).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keyPage, PersistentDataType.INTEGER) == null) {
             return 1;
         } else {
-            return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Main.keyPage, PersistentDataType.INTEGER);
+            return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keyPage, PersistentDataType.INTEGER);
         }
     }
 
-    private Inventory setDesc(Inventory gui, boolean desc) {
+    public static Inventory setDesc(Inventory gui, boolean desc) {
         ItemStack item = gui.getItem(6);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Main.keyDesc, PersistentDataType.BOOLEAN, desc);
+        meta.getPersistentDataContainer().set(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN, desc);
         item.setItemMeta(meta);
         return gui;
     }
 
 
-    private boolean getDesc(Inventory gui) {
-        if (gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Main.keyDesc, PersistentDataType.BOOLEAN) == null) {
+    public static boolean getDesc(Inventory gui) {
+        if (gui.getItem(6).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN) == null) {
             return true;
         } else {
-            return gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Main.keyDesc, PersistentDataType.BOOLEAN);
+            return gui.getItem(6).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN);
         }
     }
-
-    @EventHandler
-    public void onDrag(InventoryDragEvent event) {
-        Inventory gui = event.getInventory();
-        Inventory playerInv = event.getWhoClicked().getInventory();
-
-        if (gui.contains(createPane())) {
-            event.setCancelled(true);
-        }
-        if (event.getInventory().equals(playerInv)) {
-            event.setCancelled(false);
-        }
-
-    }
-
-
-    @EventHandler
-        public void onClick(InventoryClickEvent event) {
-            Inventory gui = event.getView().getTopInventory();
-            if (gui.contains(createPane())) {
-                event.setCancelled(true);
-                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Main.keyPanelID, PersistentDataType.INTEGER);
-                Player player = (Player) event.getWhoClicked();
-                String locale = player.getLocale().toLowerCase();
-                World world = player.getWorld();
-                ItemStack item = event.getCurrentItem();
-                ItemStack cursorItem = event.getCursor();
-                Inventory playerInv = event.getView().getBottomInventory();
-
-                    if (event.getClickedInventory() == playerInv && !event.isShiftClick()) {
-                        event.setCancelled(false);
-                    } else if (item == null || item.isEmpty() || item.getType() == Material.AIR) {
-
-                    } else {
-                        ItemMeta meta = item.getItemMeta();
-                        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-
-                        if (event.getClickedInventory() == playerInv && event.isShiftClick()) {
-                            if (Main.getDatabase().getPanelsStorageItem(id) != null) {
-                                if (processingClickEvent) return;
-                                Storage storage = Main.storages.get(id);
-                                byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
-                                ItemStack storageItem = Main.deserializeItemStack(serializedItem);
-                                ItemMeta storageItemMeta = storageItem.getItemMeta();
-                                PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
-                                int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
-
-                                ItemStack newItem = storage.insertItemsIntoStorage(item, player);
-
-                                event.getClickedInventory().setItem(event.getSlot(), newItem);
-
-                                if (!newItem.isEmpty()) {
-                                    processingClickEvent = true;
-                                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                                        processingClickEvent = false;
-                                    }, 20L);
-                                }
-
-                                int amount = item.getAmount() - newItem.getAmount();
-                                storage.updateStorageMap(item, amount);
-                                Main.storages.put(id, storage);
-
-                                gui = loadGui(gui, id, world, locale);
-                            }
-                        } else {
-                            if (processingClickEvent) return;
-                            processingClickEvent = true;
-
-                            if (!cursorItem.isEmpty()) {
-                                if (dataContainer.has(Main.keyStoragePane)) {
-                                    ItemStack itemCursor = event.getCursor();
-                                    ItemMeta metaCursor = itemCursor.getItemMeta();
-
-                                    PersistentDataContainer dataContainerCursor = metaCursor.getPersistentDataContainer();
-                                    if (dataContainerCursor.has(Main.keyStorage)) {
-                                        ItemStack cursorClone = itemCursor.clone();
-                                        cursorClone.setAmount(1);
-                                        byte[] storage = Main.serializeItemStack(cursorClone);
-                                        Main.getDatabase().savePanelsData(id, storage);
-                                        gui.setItem(8, cursorClone);
-                                        event.getCursor().subtract(1);
-
-                                        gui = loadGui(gui, id, world, locale);
-                                    }
-                                } else if (dataContainer.has(Main.keyStorageContent) && Main.getDatabase().getPanelsStorageItem(id) != null) {
-                                    Storage storage = Main.storages.get(id);
-
-
-
-                                    ItemStack newItem = storage.insertItemsIntoStorage(cursorItem, player);
-
-                                    player.setItemOnCursor(newItem);
-                                    int amount = cursorItem.getAmount() - newItem.getAmount();
-                                    storage.updateStorageMap(cursorItem, amount);
-                                    Main.storages.put(id, storage);
-
-                                    gui = loadGui(gui, id, world, locale);
-                                }
-                            } else if (dataContainer.has(Main.keyStorageContent)) {
-                                Storage storage = Main.storages.get(id);
-                                byte[] serializedItem = Main.getDatabase().getPanelsStorageItem(id);
-                                ItemStack storageItem = Main.deserializeItemStack(serializedItem);
-                                ItemMeta storageItemMeta = storageItem.getItemMeta();
-                                PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
-                                int[] chests = dataContainerStorageItem.get(Main.keyStorage, PersistentDataType.INTEGER_ARRAY);
-
-
-                                ItemStack newItem = storage.getItemsFromStorage(item, player);
-
-                                if (!newItem.isEmpty()) {
-                                    player.setItemOnCursor(newItem);
-                                    int amount = newItem.getAmount();
-                                    storage.updateStorageMap(newItem, -(amount));
-                                    Main.storages.put(id, storage);
-                                    gui = loadGui(gui, id, world, locale);
-                                }
-                            } else if (dataContainer.has(Main.keyStorage)) {
-                                Main.getDatabase().savePanelsData(id, null);
-                                player.setItemOnCursor(item);
-                                Main.storages.remove(id);
-                                gui = loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(Main.keyRightArrow)) {
-                                int page = getPage(gui) + 1;
-                                gui = setPage(gui, page);
-                                gui = loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(Main.keyLeftArrow)) {
-                                int page = getPage(gui) - 1;
-                                gui = setPage(gui, page);
-                                gui = loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(Main.keyDesc)) {
-                                boolean desc = dataContainer.get(Main.keyDesc, PersistentDataType.BOOLEAN);
-                                setDesc(gui, !desc);
-                                gui = loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(Main.keySorter)) {
-                                int sorter = dataContainer.get(Main.keySorter, PersistentDataType.INTEGER);
-
-                                sorter = (sorter+1) % 2;
-                                setSorter(gui, sorter);
-                                gui = loadGui(gui, id, world, locale);
-                            }
-
-                            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                                processingClickEvent = false;
-                            }, 5L);
-                        }
-                    }
-            }
-    }
-
 }
