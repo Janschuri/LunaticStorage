@@ -44,7 +44,7 @@ public final class LunaticStorage extends JavaPlugin {
     public String prefix;
     public Material storageItem;
     public Material panelBlock;
-    public static boolean worldguard;
+    public static boolean worldguardEnabled;
     public Map<String, String> messages = new HashMap<>();
     public static Map<Integer, Storage> storages = new HashMap<>();
 
@@ -72,6 +72,7 @@ public final class LunaticStorage extends JavaPlugin {
         saveDefaultConfig();
 
         loadConfig(this);
+        checkSoftDepends();
 
         if (config.getBoolean("Database.MySQL.enabled")) {
             db = new MySQL(this);
@@ -110,7 +111,7 @@ public final class LunaticStorage extends JavaPlugin {
 
         storageItem = Material.matchMaterial(getConfig().getString("storage_item", "DIAMOND"));
         panelBlock = Material.matchMaterial(getConfig().getString("panel_block", "LODESTONE"));
-        worldguard = getConfig().getBoolean("worldguard", true);
+        worldguardEnabled = getConfig().getBoolean("worldguard", true);
 
         File langfileEN = new File(plugin.getDataFolder().getAbsolutePath() + "/langEN.yml");
         File langfileDE = new File(plugin.getDataFolder().getAbsolutePath() + "/langDE.yml");
@@ -263,11 +264,17 @@ public final class LunaticStorage extends JavaPlugin {
     }
 
     public static boolean isAllowed(Player player, Location location) {
+        Bukkit.getLogger().info(String.valueOf(worldguardEnabled));
+        if (worldguardEnabled) {
             WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
             Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
             if (!flag.isPresent()) Bukkit.getLogger().info("WorldGuard flag 'chest-access' is not present!");
             WrappedState state = flag.map(f -> wgWrapper.queryFlag(player, location, f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
             return state == WrappedState.ALLOW;
+        } else {
+            return true;
+        }
+
     }
 
     public static String getLanguage(ItemStack itemStack, String locale) {
@@ -296,5 +303,16 @@ public final class LunaticStorage extends JavaPlugin {
             return "item.minecraft."+id;
         }
         return "block.minecraft.dirt";
+    }
+
+    public static void checkSoftDepends() {
+        try {
+            Class.forName("com.sk89q.worldguard.Worldguard");
+        } catch (ClassNotFoundException e) {
+            Bukkit.getLogger().warning("Could not find Worldguard.");
+            worldguardEnabled = false;
+        }
+
+
     }
 }

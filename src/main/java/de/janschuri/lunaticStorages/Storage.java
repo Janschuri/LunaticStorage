@@ -233,7 +233,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (!LunaticStorage.worldguard || LunaticStorage.isAllowed(player, location)) {
+                if (!LunaticStorage.worldguardEnabled || LunaticStorage.isAllowed(player, location)) {
 
                     Inventory chestInv = chest.getSnapshotInventory();
 
@@ -316,7 +316,7 @@ public class Storage {
                 Chest chest = (Chest) block.getState();
                 Location location = chest.getLocation();
 
-                if (!LunaticStorage.worldguard || LunaticStorage.isAllowed(player, location)) {
+                if (!LunaticStorage.worldguardEnabled || LunaticStorage.isAllowed(player, location)) {
                     Inventory chestInv = chest.getSnapshotInventory();
                     Map<Integer, Boolean> itemsChests = new HashMap<>();
                     if (this.storageItems.get(itemKey) != null) {

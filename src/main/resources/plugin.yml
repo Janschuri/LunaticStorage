@@ -7,3 +7,5 @@ commands:
   storage:
     description: Open storage command
     usage: /storage
+softdepend:
+  - Worldguard
