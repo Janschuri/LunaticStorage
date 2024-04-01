@@ -8,4 +8,4 @@ commands:
     description: Open storage command
     usage: /storage
 softdepend:
-  - Worldguard
+  - WorldGuard

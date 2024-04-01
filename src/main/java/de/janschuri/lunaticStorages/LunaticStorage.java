@@ -307,7 +307,7 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static void checkSoftDepends() {
         try {
-            Class.forName("com.sk89q.worldguard.Worldguard");
+            Class.forName("com.sk89q.worldguard.WorldGuard");
         } catch (ClassNotFoundException e) {
             Bukkit.getLogger().warning("Could not find Worldguard.");
             worldguardEnabled = false;
