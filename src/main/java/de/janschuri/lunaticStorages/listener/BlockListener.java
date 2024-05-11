@@ -1,6 +1,11 @@
 package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.Keys;
 import de.janschuri.lunaticStorages.LunaticStorage;
+import de.janschuri.lunaticStorages.config.PluginConfig;
+import de.janschuri.lunaticStorages.database.tables.ChestsTable;
+import de.janschuri.lunaticStorages.database.tables.PanelsTable;
+import de.janschuri.lunaticStorages.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -23,19 +28,20 @@ public class BlockListener implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
 
-        if (event.getBlockPlaced().getType().equals(plugin.panelBlock)) {
+        if (event.getBlockPlaced().getType().equals(PluginConfig.getStoragePanelBlock())) {
             ItemStack item = event.getItemInHand();
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-            if (dataContainer.has(LunaticStorage.keyPanelBlock, PersistentDataType.BOOLEAN)) {
+            if (dataContainer.has(Keys.PANEL_BLOCK, PersistentDataType.BOOLEAN)) {
                 event.getPlayer().sendMessage("Test");
                 Block block = event.getBlockPlaced();
 
 
-                String coords = LunaticStorage.getCoordsAsString(block);
+                String coords = Utils.getCoordsAsString(block);
+                String worldName = block.getWorld().getName();
 
-                LunaticStorage.getDatabase().savePanelsData(coords, null);
+                PanelsTable.savePanelsData(worldName, coords, null);
             }
         }
     }
@@ -45,19 +51,20 @@ public class BlockListener implements Listener {
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        String coords = LunaticStorage.getCoordsAsString(block);
+        String coords = Utils.getCoordsAsString(block);
+        String worldName = block.getWorld().getName();
 
-        if (LunaticStorage.getDatabase().isPanelInDatabase(coords)) {
+        if (PanelsTable.isPanelInDatabase(worldName, coords)) {
             if (player.isSneaking()) {
-                LunaticStorage.getDatabase().removePanel(coords);
+                PanelsTable.removePanel(worldName, coords);
             } else {
                 event.setCancelled(true);
             }
         }
 
-        if (LunaticStorage.getDatabase().isChestInDatabase(coords)) {
+        if (ChestsTable.isChestInDatabase(worldName, coords)) {
             if (player.isSneaking()) {
-                LunaticStorage.getDatabase().removeChest(coords);
+               ChestsTable.removeChest(worldName, coords);
             } else {
                 event.setCancelled(true);
             }

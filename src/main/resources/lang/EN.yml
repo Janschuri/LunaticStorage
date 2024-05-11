@@ -1,0 +1,14 @@
+prefix: "&9[LunaticStorage]&r "
+messages:
+  reload: "The configuration has been reloaded."
+  no_permission: "You don't have permission to do that!"
+aliases:
+  storage:
+    base_command:
+      - storage
+    item:
+      - item
+    panel:
+      - panel
+    reload:
+      - reload

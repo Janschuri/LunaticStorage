@@ -2,3 +2,13 @@ prefix: "&9[LunaticStorage]&r "
 messages:
   reload: "Konfiguration wurde neu geladen."
   no_permission: "Du keine Rechte dies zu tun!"
+aliases:
+  storage:
+    base_command:
+      - storage
+    item:
+      - item
+    panel:
+      - panel
+    reload:
+      - reload

@@ -1,9 +1,12 @@
 package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.Keys;
 import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.Storage;
 import de.janschuri.lunaticStorages.StoragePanelGUI;
+import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticStorages.nms.SignGUI;
+import de.janschuri.lunaticlib.utils.ItemStackUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -52,7 +55,7 @@ public class InventoryListener implements Listener {
             Inventory gui = event.getView().getTopInventory();
             if (gui.contains(StoragePanelGUI.GUI_PANE)) {
                 event.setCancelled(true);
-                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(LunaticStorage.keyPanelID, PersistentDataType.INTEGER);
+                int id = gui.getItem(8).getItemMeta().getPersistentDataContainer().get(Keys.PANEL_ID, PersistentDataType.INTEGER);
                 Player player = (Player) event.getWhoClicked();
                 String locale = player.getLocale().toLowerCase();
                 World world = player.getWorld();
@@ -69,14 +72,14 @@ public class InventoryListener implements Listener {
                         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
                         if (event.getClickedInventory() == playerInv && event.isShiftClick()) {
-                            if (LunaticStorage.getDatabase().getPanelsStorageItem(id) != null) {
+                            if (PanelsTable.getPanelsStorageItem(id) != null) {
                                 if (processingClickEvent) return;
-                                Storage storage = LunaticStorage.storages.get(id);
-                                byte[] serializedItem = LunaticStorage.getDatabase().getPanelsStorageItem(id);
-                                ItemStack storageItem = LunaticStorage.deserializeItemStack(serializedItem);
+                                Storage storage = LunaticStorage.getStorage(id);
+                                byte[] serializedItem =PanelsTable.getPanelsStorageItem(id);
+                                ItemStack storageItem = ItemStackUtils.deserializeItemStack(serializedItem);
                                 ItemMeta storageItemMeta = storageItem.getItemMeta();
                                 PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
-                                int[] chests = dataContainerStorageItem.get(LunaticStorage.keyStorage, PersistentDataType.INTEGER_ARRAY);
+                                int[] chests = dataContainerStorageItem.get(Keys.STORAGE, PersistentDataType.INTEGER_ARRAY);
 
                                 ItemStack newItem = storage.insertItemsIntoStorage(item, player);
 
@@ -91,7 +94,7 @@ public class InventoryListener implements Listener {
 
                                 int amount = item.getAmount() - newItem.getAmount();
                                 storage.updateStorageMap(item, amount);
-                                LunaticStorage.storages.put(id, storage);
+                                LunaticStorage.addStorage(id, storage);
 
                                 gui = StoragePanelGUI.loadGui(gui, id, world, locale);
                             }
@@ -100,23 +103,23 @@ public class InventoryListener implements Listener {
                             processingClickEvent = true;
 
                             if (!cursorItem.isEmpty()) {
-                                if (dataContainer.has(LunaticStorage.keyStoragePane)) {
+                                if (dataContainer.has(Keys.STORAGE_PANE)) {
                                     ItemStack itemCursor = event.getCursor();
                                     ItemMeta metaCursor = itemCursor.getItemMeta();
 
                                     PersistentDataContainer dataContainerCursor = metaCursor.getPersistentDataContainer();
-                                    if (dataContainerCursor.has(LunaticStorage.keyStorage)) {
+                                    if (dataContainerCursor.has(Keys.STORAGE)) {
                                         ItemStack cursorClone = itemCursor.clone();
                                         cursorClone.setAmount(1);
-                                        byte[] storage = LunaticStorage.serializeItemStack(cursorClone);
-                                        LunaticStorage.getDatabase().savePanelsData(id, storage);
+                                        byte[] storage = ItemStackUtils.serializeItemStack(cursorClone);
+                                        PanelsTable.savePanelsData(id, storage);
                                         gui.setItem(8, cursorClone);
                                         event.getCursor().subtract(1);
 
                                         gui = StoragePanelGUI.loadGui(gui, id, world, locale);
                                     }
-                                } else if (dataContainer.has(LunaticStorage.keyStorageContent) && LunaticStorage.getDatabase().getPanelsStorageItem(id) != null) {
-                                    Storage storage = LunaticStorage.storages.get(id);
+                                } else if (dataContainer.has(Keys.STORAGE_CONTENT) && PanelsTable.getPanelsStorageItem(id) != null) {
+                                    Storage storage = LunaticStorage.getStorage(id);
 
 
 
@@ -125,17 +128,17 @@ public class InventoryListener implements Listener {
                                     player.setItemOnCursor(newItem);
                                     int amount = cursorItem.getAmount() - newItem.getAmount();
                                     storage.updateStorageMap(cursorItem, amount);
-                                    LunaticStorage.storages.put(id, storage);
+                                    LunaticStorage.addStorage(id, storage);
 
                                     gui = StoragePanelGUI.loadGui(gui, id, world, locale);
                                 }
-                            } else if (dataContainer.has(LunaticStorage.keyStorageContent)) {
-                                Storage storage = LunaticStorage.storages.get(id);
-                                byte[] serializedItem = LunaticStorage.getDatabase().getPanelsStorageItem(id);
-                                ItemStack storageItem = LunaticStorage.deserializeItemStack(serializedItem);
+                            } else if (dataContainer.has(Keys.STORAGE_CONTENT)) {
+                                Storage storage = LunaticStorage.getStorage(id);
+                                byte[] serializedItem = PanelsTable.getPanelsStorageItem(id);
+                                ItemStack storageItem = ItemStackUtils.deserializeItemStack(serializedItem);
                                 ItemMeta storageItemMeta = storageItem.getItemMeta();
                                 PersistentDataContainer dataContainerStorageItem = storageItemMeta.getPersistentDataContainer();
-                                int[] chests = dataContainerStorageItem.get(LunaticStorage.keyStorage, PersistentDataType.INTEGER_ARRAY);
+                                int[] chests = dataContainerStorageItem.get(Keys.STORAGE, PersistentDataType.INTEGER_ARRAY);
 
 
                                 ItemStack newItem = storage.getItemsFromStorage(item, player);
@@ -144,10 +147,10 @@ public class InventoryListener implements Listener {
                                     player.setItemOnCursor(newItem);
                                     int amount = newItem.getAmount();
                                     storage.updateStorageMap(newItem, -(amount));
-                                    LunaticStorage.storages.put(id, storage);
+                                    LunaticStorage.addStorage(id, storage);
                                     gui = StoragePanelGUI.loadGui(gui, id, world, locale);
                                 }
-                            } else if (dataContainer.has(LunaticStorage.keySearch)) {
+                            } else if (dataContainer.has(Keys.SEARCH)) {
                                 gui.close();
                                 SignGUI signGui = new SignGUI(plugin);
 
@@ -161,25 +164,25 @@ public class InventoryListener implements Listener {
                                     player.openInventory(finalGui);
                                 });
 
-                            } else if (dataContainer.has(LunaticStorage.keyStorage)) {
-                                LunaticStorage.getDatabase().savePanelsData(id, null);
+                            } else if (dataContainer.has(Keys.STORAGE)) {
+                                PanelsTable.savePanelsData(id, null);
                                 player.setItemOnCursor(item);
-                                LunaticStorage.storages.remove(id);
+                                LunaticStorage.removeStorage(id);
                                 gui = StoragePanelGUI.loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(LunaticStorage.keyRightArrow)) {
+                            } else if (dataContainer.has(Keys.RIGHT_ARROW)) {
                                 int page = StoragePanelGUI.getPage(gui) + 1;
                                 gui = StoragePanelGUI.setPage(gui, page);
                                 gui = StoragePanelGUI.loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(LunaticStorage.keyLeftArrow)) {
+                            } else if (dataContainer.has(Keys.LEFT_ARROW)) {
                                 int page = StoragePanelGUI.getPage(gui) - 1;
                                 gui = StoragePanelGUI.setPage(gui, page);
                                 gui = StoragePanelGUI.loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(LunaticStorage.keyDesc)) {
-                                boolean desc = dataContainer.get(LunaticStorage.keyDesc, PersistentDataType.BOOLEAN);
+                            } else if (dataContainer.has(Keys.DESC)) {
+                                boolean desc = dataContainer.get(Keys.DESC, PersistentDataType.BOOLEAN);
                                 StoragePanelGUI.setDesc(gui, !desc);
                                 gui = StoragePanelGUI.loadGui(gui, id, world, locale);
-                            } else if (dataContainer.has(LunaticStorage.keySorter)) {
-                                int sorter = dataContainer.get(LunaticStorage.keySorter, PersistentDataType.INTEGER);
+                            } else if (dataContainer.has(Keys.STORAGE)) {
+                                int sorter = dataContainer.get(Keys.STORAGE, PersistentDataType.INTEGER);
 
                                 sorter = (sorter+1) % 2;
                                 StoragePanelGUI.setSorter(gui, sorter);
