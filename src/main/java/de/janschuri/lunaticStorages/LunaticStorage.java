@@ -1,11 +1,14 @@
 package de.janschuri.lunaticStorages;
 
+import de.diddiz.LogBlock.Consumer;
+import de.diddiz.LogBlock.LogBlock;
 import de.janschuri.lunaticStorages.commands.paper.StorageCommand;
-import de.janschuri.lunaticStorages.commands.subcommands.storage.*;
 import de.janschuri.lunaticStorages.config.Language;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.listener.*;
+import de.janschuri.lunaticStorages.nms.PacketHandler;
+import de.janschuri.lunaticStorages.storage.Storage;
 import de.janschuri.lunaticStorages.utils.Logger;
 import de.janschuri.lunaticStorages.utils.Utils;
 import org.bukkit.*;
@@ -22,9 +25,11 @@ import java.util.*;
 public final class LunaticStorage extends JavaPlugin {
 
     private static Map<String, JSONObject> languagesMap = new HashMap<>();
-    private static boolean debug;
+    public static boolean debug;
     private static Path dataDirectory;
     private static boolean worldguardInstalled;
+    private static boolean logBlockInstalled;
+    private static LogBlock logBlock;
     private static Map<Integer, Storage> storages = new HashMap<>();
     private static LunaticStorage instance;
     private static final String[]  commands = {
@@ -43,6 +48,11 @@ public final class LunaticStorage extends JavaPlugin {
             worldguardInstalled = true;
         }
 
+        if (Utils.classExists("de.diddiz.LogBlock.LogBlock")) {
+            logBlockInstalled = true;
+            logBlock = (LogBlock) Bukkit.getPluginManager().getPlugin("LogBlock");
+        }
+
         if (!LunaticStorage.loadConfig()) {
             disable();
             return;
@@ -52,12 +62,13 @@ public final class LunaticStorage extends JavaPlugin {
             disable();
         }
 
-        getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
-        getServer().getPluginManager().registerEvents(new BlockListener(this), this);
-        getServer().getPluginManager().registerEvents(new ChestClickListener(this), this);
-        getServer().getPluginManager().registerEvents(new JoinListener(this), this);
-        getServer().getPluginManager().registerEvents(new QuitListener(this), this);
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
+        getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
+        getServer().getPluginManager().registerEvents(new JoinListener(), this);
+        getServer().getPluginManager().registerEvents(new QuitListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
+        getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
         getCommand("storage").setExecutor(new StorageCommand());
     }
 
@@ -73,10 +84,6 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static Path getDataDirectory() {
         return dataDirectory;
-    }
-
-    public static boolean isDebug() {
-        return debug;
     }
 
     public static LunaticStorage getInstance() {
@@ -140,5 +147,13 @@ public final class LunaticStorage extends JavaPlugin {
     }
     public static void removeStorage(int id) {
         storages.remove(id);
+    }
+
+    public static boolean isLogBlockInstalled() {
+        return logBlockInstalled;
+    }
+
+    public static Consumer getConsumer() {
+        return logBlock.getConsumer();
     }
 }

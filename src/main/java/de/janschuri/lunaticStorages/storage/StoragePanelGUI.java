@@ -1,7 +1,6 @@
-package de.janschuri.lunaticStorages;
+package de.janschuri.lunaticStorages.storage;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.Storage;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticlib.utils.ItemStackUtils;
 import org.bukkit.Bukkit;
@@ -74,7 +73,7 @@ public class StoragePanelGUI {
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer container = meta.getPersistentDataContainer();
 
-            int[] chests = container.get(Keys.STORAGE, PersistentDataType.INTEGER_ARRAY);
+            int[] chests = container.get(Key.STORAGE, PersistentDataType.INTEGER_ARRAY);
             Storage storage;
 
             if (LunaticStorage.storageExists(panelID)) {
@@ -88,7 +87,7 @@ public class StoragePanelGUI {
             totalAmount = storage.getTotalAmount();
             gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc, search), panelID, page-1);
 
-            container.set(Keys.PANEL_ID, PersistentDataType.INTEGER, panelID);
+            container.set(Key.PANEL_ID, PersistentDataType.INTEGER, panelID);
 
             item.setItemMeta(meta);
             gui.setItem(8, item);
@@ -117,7 +116,7 @@ public class StoragePanelGUI {
         ItemStack pane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Keys.PANE, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.PANE, PersistentDataType.BOOLEAN, true);
 
         pane.setItemMeta(meta);
         return pane;
@@ -127,8 +126,8 @@ public class StoragePanelGUI {
         ItemStack pane = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Keys.STORAGE_PANE, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(Key.STORAGE_PANE, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
 
         pane.setItemMeta(meta);
         return pane;
@@ -138,11 +137,11 @@ public class StoragePanelGUI {
         ItemStack item = new ItemStack(Material.SPYGLASS);
         ItemMeta meta = item.getItemMeta();
         if (search == null) {
-            meta.getPersistentDataContainer().set(Keys.SEARCH, PersistentDataType.STRING, "");
+            meta.getPersistentDataContainer().set(Key.SEARCH, PersistentDataType.STRING, "");
         } else {
-            meta.getPersistentDataContainer().set(Keys.SEARCH, PersistentDataType.STRING, search);
+            meta.getPersistentDataContainer().set(Key.SEARCH, PersistentDataType.STRING, search);
         }
-        meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
 
         item.setItemMeta(meta);
         return item;
@@ -152,8 +151,8 @@ public class StoragePanelGUI {
         ItemStack pane = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         ItemMeta meta = pane.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Keys.PAGE, PersistentDataType.INTEGER, page);
-        meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(Key.PAGE, PersistentDataType.INTEGER, page);
+        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
         meta.setDisplayName("Seite: " + page + "/" + pages);
         List<String> lore;
         lore = new ArrayList<>();
@@ -167,21 +166,21 @@ public class StoragePanelGUI {
     public static Inventory setSearch(Inventory gui, String search) {
         ItemStack item = gui.getItem(0);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Keys.SEARCH, PersistentDataType.STRING, search);
+        meta.getPersistentDataContainer().set(Key.SEARCH, PersistentDataType.STRING, search);
         item.setItemMeta(meta);
         return gui;
     }
 
     public static String getSearch(Inventory gui) {
-        return gui.getItem(0).getItemMeta().getPersistentDataContainer().get(Keys.SEARCH, PersistentDataType.STRING);
+        return gui.getItem(0).getItemMeta().getPersistentDataContainer().get(Key.SEARCH, PersistentDataType.STRING);
     }
 
     private static ItemStack createArrowLeft(int id) {
         ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
         ItemMeta meta = arrow.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Keys.LEFT_ARROW, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(Key.LEFT_ARROW, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
         meta.setDisplayName("<<<");
 
         arrow.setItemMeta(meta);
@@ -192,8 +191,8 @@ public class StoragePanelGUI {
         ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
         ItemMeta meta = arrow.getItemMeta();
 
-        meta.getPersistentDataContainer().set(Keys.RIGHT_ARROW, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+        meta.getPersistentDataContainer().set(Key.RIGHT_ARROW, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
         meta.setDisplayName(">>>");
 
         arrow.setItemMeta(meta);
@@ -204,16 +203,16 @@ public class StoragePanelGUI {
         if(desc) {
             ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
             ItemMeta meta = arrow.getItemMeta();
-            meta.getPersistentDataContainer().set(Keys.DESC, PersistentDataType.BOOLEAN, desc);
-            meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+            meta.getPersistentDataContainer().set(Key.DESC, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
             meta.setDisplayName("Descended");
             arrow.setItemMeta(meta);
             return arrow;
         } else {
             ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
             ItemMeta meta = arrow.getItemMeta();
-            meta.getPersistentDataContainer().set(Keys.DESC, PersistentDataType.BOOLEAN, desc);
-            meta.getPersistentDataContainer().set(Keys.PANEL_ID, PersistentDataType.INTEGER, id);
+            meta.getPersistentDataContainer().set(Key.DESC, PersistentDataType.BOOLEAN, desc);
+            meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
             meta.setDisplayName("Ascended");
             arrow.setItemMeta(meta);
             return arrow;
@@ -224,14 +223,14 @@ public class StoragePanelGUI {
         if (sorter == 1) {
             ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
             ItemMeta meta = sorterItem.getItemMeta();
-            meta.getPersistentDataContainer().set(Keys.SORTER, PersistentDataType.INTEGER, sorter);
+            meta.getPersistentDataContainer().set(Key.SORTER, PersistentDataType.INTEGER, sorter);
             meta.setDisplayName("by name");
             sorterItem.setItemMeta(meta);
             return sorterItem;
         } else {
             ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
             ItemMeta meta = sorterItem.getItemMeta();
-            meta.getPersistentDataContainer().set(Keys.SORTER, PersistentDataType.INTEGER, sorter);
+            meta.getPersistentDataContainer().set(Key.SORTER, PersistentDataType.INTEGER, sorter);
             meta.setDisplayName("by amount");
             sorterItem.setItemMeta(meta);
             return sorterItem;
@@ -241,23 +240,23 @@ public class StoragePanelGUI {
     public static Inventory setSorter(Inventory gui, int sorter) {
         ItemStack item = gui.getItem(5);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Keys.SORTER, PersistentDataType.INTEGER, sorter);
+        meta.getPersistentDataContainer().set(Key.SORTER, PersistentDataType.INTEGER, sorter);
         item.setItemMeta(meta);
         return gui;
     }
 
     public static int getSorter(Inventory gui) {
-        if (gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Keys.SORTER, PersistentDataType.INTEGER) == null) {
+        if (gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Key.SORTER, PersistentDataType.INTEGER) == null) {
             return 0;
         } else {
-            return gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Keys.SORTER, PersistentDataType.INTEGER);
+            return gui.getItem(5).getItemMeta().getPersistentDataContainer().get(Key.SORTER, PersistentDataType.INTEGER);
         }
     }
 
     public static Inventory setPage(Inventory gui, int page) {
         ItemStack item = gui.getItem(49);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Keys.PAGE, PersistentDataType.INTEGER, page);
+        meta.getPersistentDataContainer().set(Key.PAGE, PersistentDataType.INTEGER, page);
         item.setItemMeta(meta);
 
 
@@ -265,27 +264,27 @@ public class StoragePanelGUI {
     }
 
     public static int getPage(Inventory gui) {
-        if (gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Keys.PAGE, PersistentDataType.INTEGER) == null) {
+        if (gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Key.PAGE, PersistentDataType.INTEGER) == null) {
             return 1;
         } else {
-            return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Keys.PAGE, PersistentDataType.INTEGER);
+            return gui.getItem(49).getItemMeta().getPersistentDataContainer().get(Key.PAGE, PersistentDataType.INTEGER);
         }
     }
 
     public static Inventory setDesc(Inventory gui, boolean desc) {
         ItemStack item = gui.getItem(6);
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Keys.DESC, PersistentDataType.BOOLEAN, desc);
+        meta.getPersistentDataContainer().set(Key.DESC, PersistentDataType.BOOLEAN, desc);
         item.setItemMeta(meta);
         return gui;
     }
 
 
     public static boolean getDesc(Inventory gui) {
-        if (gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Keys.DESC, PersistentDataType.BOOLEAN) == null) {
+        if (gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Key.DESC, PersistentDataType.BOOLEAN) == null) {
             return true;
         } else {
-            return gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Keys.DESC, PersistentDataType.BOOLEAN);
+            return gui.getItem(6).getItemMeta().getPersistentDataContainer().get(Key.DESC, PersistentDataType.BOOLEAN);
         }
     }
 }

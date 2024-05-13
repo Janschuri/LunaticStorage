@@ -1,7 +1,6 @@
 package de.janschuri.lunaticStorages.commands.subcommands.storage;
 
-import de.janschuri.lunaticStorages.Keys;
-import de.janschuri.lunaticStorages.LunaticStorage;
+import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticlib.senders.AbstractPlayerSender;
@@ -34,7 +33,7 @@ public class PanelSubcommand extends Subcommand {
             ItemStack item = new ItemStack(PluginConfig.getStoragePanelBlock());
 
             ItemMeta meta = item.getItemMeta();
-            meta.getPersistentDataContainer().set(Keys.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
+            meta.getPersistentDataContainer().set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
             item.setItemMeta(meta);
 
             Player p = Bukkit.getPlayer(player.getUniqueId());

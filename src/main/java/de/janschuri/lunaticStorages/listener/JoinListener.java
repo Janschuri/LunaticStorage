@@ -8,16 +8,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class JoinListener implements Listener {
-    private final LunaticStorage plugin;
-
-    public JoinListener(LunaticStorage plugin) {
-        this.plugin = plugin;
-    }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
-        PacketHandler packetHandler = new PacketHandler(plugin, p);
+        PacketHandler packetHandler = new PacketHandler(LunaticStorage.getInstance(), p);
         packetHandler.addPacketInjector(p);
     }
 }

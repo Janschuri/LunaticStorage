@@ -100,6 +100,10 @@
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>logblock-repo</id>
+            <url>https://www.iani.de/nexus/content/repositories/snapshots/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -115,11 +119,6 @@
             <version>1.20.4-R0.1-SNAPSHOT</version>
             <classifier>remapped-mojang</classifier>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codemc.worldguardwrapper</groupId>
-            <artifactId>worldguardwrapper</artifactId>
-            <version>1.2.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -142,6 +141,12 @@
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
             <version>3.3.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.diddiz</groupId>
+            <artifactId>logblock</artifactId>
+            <version>1.19.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

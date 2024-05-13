@@ -9,16 +9,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class QuitListener implements Listener {
 
-    private final LunaticStorage plugin;
-
-    public QuitListener(LunaticStorage plugin) {
-        this.plugin = plugin;
-    }
-
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        PacketHandler packetHandler = new PacketHandler(plugin, p);
+        PacketHandler packetHandler = new PacketHandler(LunaticStorage.getInstance(), p);
         packetHandler.removePacketInjector(p);
     }
 }

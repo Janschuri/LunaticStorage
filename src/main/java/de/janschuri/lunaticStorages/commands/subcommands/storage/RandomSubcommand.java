@@ -45,8 +45,6 @@ public class RandomSubcommand extends Subcommand {
                 int randomNum = ThreadLocalRandom.current().nextInt(0, max);
                 int randomAmount = ThreadLocalRandom.current().nextInt(1, 65);
 
-                sender.sendMessage("Liste:" + max);
-
                 Material randomMaterial = Material.matchMaterial(materialNames.get(randomNum));
 
                 ItemStack randomItem = new ItemStack(randomMaterial);

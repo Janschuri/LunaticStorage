@@ -1,5 +1,6 @@
 package de.janschuri.lunaticStorages.config;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticlib.config.Config;
 import org.bukkit.Material;
 
@@ -25,6 +26,7 @@ public class PluginConfig extends Config {
         languageKey = getString("language", "EN");
         storageItem = getString("storage_item", "DIAMOND");
         storagePanelBlock = getString("panel_block", "LODESTONE");
+        LunaticStorage.debug = getBoolean("debug", false);
     }
 
     public static String getLanguageKey() {

@@ -16,15 +16,9 @@ import org.bukkit.util.Consumer;
 
 public class SignGUI {
 
-    private final LunaticStorage plugin;
-    public SignGUI(LunaticStorage plugin) {
-
-        this.plugin = plugin;
-    }
-
     public void sendSign(Player p, Consumer<String[]> lines) {
 
-        PacketHandler packetHandler = new PacketHandler(plugin, p);
+        PacketHandler packetHandler = new PacketHandler(LunaticStorage.getInstance(), p);
 
         packetHandler.addPacketInjector(p); // Ensure a packet play is present
 

@@ -1,6 +1,7 @@
 package de.janschuri.lunaticStorages.database.tables;
 
 import de.janschuri.lunaticStorages.database.Database;
+import de.janschuri.lunaticStorages.utils.Utils;
 import de.janschuri.lunaticlib.database.Datatype;
 import de.janschuri.lunaticlib.database.Error;
 import de.janschuri.lunaticlib.database.Table;
@@ -68,7 +69,7 @@ public final class ChestsTable {
         return 0;
     }
 
-    public static String getChestCoords(int id) {
+    public static int[] getChestCoords(int id) {
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -79,7 +80,8 @@ public final class ChestsTable {
             rs = ps.executeQuery();
             while(rs.next()){
                 if(rs.getInt("id") == id){
-                    return rs.getString("coords");
+
+                    return Utils.parseCoords(rs.getString("coords"));
                 }
             }
         } catch (SQLException ex) {

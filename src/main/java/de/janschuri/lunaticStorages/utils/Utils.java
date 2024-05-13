@@ -2,11 +2,24 @@ package de.janschuri.lunaticStorages.utils;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticlib.utils.ItemStackUtils;
-import org.bukkit.Location;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 public class Utils extends de.janschuri.lunaticlib.utils.Utils {
 
@@ -42,34 +55,81 @@ public class Utils extends de.janschuri.lunaticlib.utils.Utils {
         return false;
     }
 
-    public static boolean isAllowed(Player player, Location location) {
-        return true;
-//        Bukkit.getLogger().info(String.valueOf(worldguardEnabled));
-//        if (worldguardEnabled) {
-//            WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
-//            Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag("chest-access", WrappedState.class);
-//            if (!flag.isPresent()) Bukkit.getLogger().info("WorldGuard flag 'chest-access' is not present!");
-//            WrappedState state = flag.map(f -> wgWrapper.queryFlag(player, location, f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
-//            return state == WrappedState.ALLOW;
-//        } else {
-//            return true;
-//        }
+    public static boolean isAllowedViewChest(Player player, Block chest) {
+        PlayerInteractEvent event = new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, new ItemStack(Material.AIR), chest, BlockFace.UP);
+        Bukkit.getPluginManager().callEvent(event);
+        boolean allowed = !event.isCancelled();
+        event.setCancelled(true);
+        return allowed;
+    }
 
+    public static boolean isAllowedTakeItem(Player player, Inventory inventory) {
+        InventoryView oldView = player.getOpenInventory();
+        ItemStack cursor = oldView.getCursor();
+        oldView.setCursor(new ItemStack(Material.AIR));
+        InventoryView view = player.openInventory(inventory);
+        player.openInventory(oldView);
+        player.setItemOnCursor(cursor);
+
+        InventoryClickEvent event = new InventoryClickEvent(view, InventoryType.SlotType.CONTAINER, 0, ClickType.LEFT, InventoryAction.PICKUP_ALL);
+        Bukkit.getPluginManager().callEvent(event);
+        boolean allowed = !event.isCancelled();
+        event.setCancelled(true);
+        return allowed;
+    }
+
+    public static boolean isAllowedPutItem(Player player, Inventory inventory) {
+        InventoryView oldView = player.getOpenInventory();
+        ItemStack cursor = oldView.getCursor();
+        oldView.setCursor(new ItemStack(Material.AIR));
+        InventoryView view = player.openInventory(inventory);
+        player.openInventory(oldView);
+        player.setItemOnCursor(cursor);
+
+        InventoryClickEvent event = new InventoryClickEvent(view, InventoryType.SlotType.CONTAINER, 0, ClickType.RIGHT, InventoryAction.PLACE_ALL);
+        Bukkit.getPluginManager().callEvent(event);
+        boolean allowed = !event.isCancelled();
+        event.setCancelled(true);
+        return allowed;
     }
 
     public static String getMCLanguage(ItemStack itemStack, String locale) {
         String nameKey = ItemStackUtils.getKey(itemStack);
         JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
+        String name;
 
-        if (itemStack.getItemMeta().hasDisplayName()) {
-            return itemStack.getItemMeta().getDisplayName();
+        if (itemStack.getItemMeta() != null && itemStack.getItemMeta().hasDisplayName()) {
+            name = itemStack.getItemMeta().getDisplayName();
         } else {
             if (language != null) {
-                String name = language.getString(nameKey);
-                return name;
+                name = language.getString(nameKey);
             } else {
-                return itemStack.getType().toString();
+                name = itemStack.getType().toString();
             }
         }
+        return name.toLowerCase();
+    }
+
+    public static boolean isContainer(Material material) {
+        return material == Material.CHEST
+                || material == Material.TRAPPED_CHEST
+                || material == Material.BARREL
+                || material == Material.SHULKER_BOX
+                || material == Material.BLACK_SHULKER_BOX
+                || material == Material.BLUE_SHULKER_BOX
+                || material == Material.BROWN_SHULKER_BOX
+                || material == Material.CYAN_SHULKER_BOX
+                || material == Material.GRAY_SHULKER_BOX
+                || material == Material.GREEN_SHULKER_BOX
+                || material == Material.LIGHT_BLUE_SHULKER_BOX
+                || material == Material.LIGHT_GRAY_SHULKER_BOX
+                || material == Material.LIME_SHULKER_BOX
+                || material == Material.MAGENTA_SHULKER_BOX
+                || material == Material.ORANGE_SHULKER_BOX
+                || material == Material.PINK_SHULKER_BOX
+                || material == Material.PURPLE_SHULKER_BOX
+                || material == Material.RED_SHULKER_BOX
+                || material == Material.WHITE_SHULKER_BOX
+                || material == Material.YELLOW_SHULKER_BOX;
     }
 }

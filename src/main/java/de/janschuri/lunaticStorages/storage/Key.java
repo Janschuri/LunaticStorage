@@ -1,8 +1,8 @@
-package de.janschuri.lunaticStorages;
+package de.janschuri.lunaticStorages.storage;
 
 import org.bukkit.NamespacedKey;
 
-public final class Keys {
+public final class Key {
 
     public static final String PLUGIN_NAMESPACE = "lunaticstorage";
     public static final NamespacedKey PANEL_ID = new NamespacedKey(PLUGIN_NAMESPACE, "panel_id");
@@ -19,7 +19,7 @@ public final class Keys {
     public static final NamespacedKey DESC = new NamespacedKey(PLUGIN_NAMESPACE, "desc");
     public static final NamespacedKey SORTER = new NamespacedKey(PLUGIN_NAMESPACE, "sorter");
 
-    private Keys() {
+    private Key() {
         // Prevent instantiation
     }
 }
