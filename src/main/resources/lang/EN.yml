@@ -2,8 +2,9 @@ prefix: "&9[LunaticStorage]&r "
 messages:
   reload: "The configuration has been reloaded."
   no_permission: "You don't have permission to do that!"
-  marked_container: "Container has been marked."
-  already_marked_container: "Container is already marked."
+  container_marked: "Container has been marked."
+  container_already_marked: "Container is already marked."
+  storage_full: "The storage is full."
 aliases:
   storage:
     base_command:

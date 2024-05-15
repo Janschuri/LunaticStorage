@@ -1,16 +1,12 @@
 package de.janschuri.lunaticStorages;
 
-import de.diddiz.LogBlock.Consumer;
-import de.diddiz.LogBlock.LogBlock;
 import de.janschuri.lunaticStorages.commands.paper.StorageCommand;
 import de.janschuri.lunaticStorages.config.Language;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.listener.*;
-import de.janschuri.lunaticStorages.nms.PacketHandler;
 import de.janschuri.lunaticStorages.storage.Storage;
 import de.janschuri.lunaticStorages.utils.Logger;
-import de.janschuri.lunaticStorages.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
@@ -27,9 +23,6 @@ public final class LunaticStorage extends JavaPlugin {
     private static Map<String, JSONObject> languagesMap = new HashMap<>();
     public static boolean debug;
     private static Path dataDirectory;
-    private static boolean worldguardInstalled;
-    private static boolean logBlockInstalled;
-    private static LogBlock logBlock;
     private static Map<Integer, Storage> storages = new HashMap<>();
     private static LunaticStorage instance;
     private static final String[]  commands = {
@@ -43,15 +36,6 @@ public final class LunaticStorage extends JavaPlugin {
         dataDirectory = getDataFolder().toPath();
 
         loadConfig();
-
-        if (Utils.classExists("com.sk89q.worldguard.WorldGuard")) {
-            worldguardInstalled = true;
-        }
-
-        if (Utils.classExists("de.diddiz.LogBlock.LogBlock")) {
-            logBlockInstalled = true;
-            logBlock = (LogBlock) Bukkit.getPluginManager().getPlugin("LogBlock");
-        }
 
         if (!LunaticStorage.loadConfig()) {
             disable();
@@ -130,10 +114,6 @@ public final class LunaticStorage extends JavaPlugin {
         return languagesMap;
     }
 
-    public static boolean isWorldguardInstalled() {
-        return worldguardInstalled;
-    }
-
     public static Storage getStorage(int id) {
         return storages.get(id);
     }
@@ -147,13 +127,5 @@ public final class LunaticStorage extends JavaPlugin {
     }
     public static void removeStorage(int id) {
         storages.remove(id);
-    }
-
-    public static boolean isLogBlockInstalled() {
-        return logBlockInstalled;
-    }
-
-    public static Consumer getConsumer() {
-        return logBlock.getConsumer();
     }
 }

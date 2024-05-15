@@ -1,5 +1,6 @@
 package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.config.Language;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.storage.Storage;
@@ -23,6 +24,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class InventoryClickListener implements Listener {
     private boolean processingClickEvent = false;
+    private boolean storageFullTimeout = false;
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
@@ -61,9 +63,22 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
+        if (storageFullTimeout) {
+            return;
+        }
+
+
         if (item == null || item.isEmpty() || item.getType() == Material.AIR) {
             Storage storage = LunaticStorage.getStorage(id);
             ItemStack newItem = storage.insertItemsIntoStorage(cursorItem, player);
+
+            if (!newItem.isEmpty()) {
+                player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                storageFullTimeout = true;
+                Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+                    storageFullTimeout = false;
+                }, 40L);
+            }
 
             player.setItemOnCursor(newItem);
             LunaticStorage.addStorage(id, storage);
@@ -88,6 +103,11 @@ public class InventoryClickListener implements Listener {
                     Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
                         processingClickEvent = false;
                     }, 2L);
+                    player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                    storageFullTimeout = true;
+                    Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+                        storageFullTimeout = false;
+                    }, 40L);
                 }
 
                 LunaticStorage.addStorage(id, storage);
@@ -142,6 +162,15 @@ public class InventoryClickListener implements Listener {
                 ItemStack newItem = storage.insertItemsIntoStorage(cursorItem, player);
 
                 player.setItemOnCursor(newItem);
+
+                if (!newItem.isEmpty()) {
+                    player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                    storageFullTimeout = true;
+                    Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+                        storageFullTimeout = false;
+                    }, 40L);
+                }
+
                 LunaticStorage.addStorage(id, storage);
 
                 StoragePanelGUI.loadGui(gui, id, world, locale);

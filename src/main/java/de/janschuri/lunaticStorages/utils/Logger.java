@@ -8,7 +8,7 @@ public class Logger extends AbstractLogger {
     private static final org.slf4j.Logger logger = AbstractLogger.getLogger("LunaticStorage");
 
     public static boolean isDebug() {
-        return LunaticStorage.debug;
+        return true;
     }
 
     public static void debugLog(String msg) {

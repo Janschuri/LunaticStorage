@@ -128,7 +128,7 @@
         <dependency>
             <groupId>de.janschuri</groupId>
             <artifactId>lunaticlib</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -141,12 +141,6 @@
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
             <version>3.3.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.diddiz</groupId>
-            <artifactId>logblock</artifactId>
-            <version>1.19.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
