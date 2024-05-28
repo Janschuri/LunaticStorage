@@ -2,11 +2,11 @@ package de.janschuri.lunaticStorages.database.tables;
 
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.utils.Utils;
-import de.janschuri.lunaticlib.database.Datatype;
-import de.janschuri.lunaticlib.database.Error;
-import de.janschuri.lunaticlib.database.Table;
-import de.janschuri.lunaticlib.database.columns.Column;
-import de.janschuri.lunaticlib.database.columns.PrimaryKey;
+import de.janschuri.lunaticlib.common.database.Datatype;
+import de.janschuri.lunaticlib.common.database.Error;
+import de.janschuri.lunaticlib.common.database.Table;
+import de.janschuri.lunaticlib.common.database.columns.Column;
+import de.janschuri.lunaticlib.common.database.columns.PrimaryKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

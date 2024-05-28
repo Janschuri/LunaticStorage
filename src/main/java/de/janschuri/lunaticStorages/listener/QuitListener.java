@@ -1,7 +1,8 @@
 package de.janschuri.lunaticStorages.listener;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.nms.PacketHandler;
+import de.janschuri.lunaticlib.nms.PacketHandler;
+import de.janschuri.lunaticlib.platform.bukkit.nms.Version;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,7 +13,7 @@ public class QuitListener implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        PacketHandler packetHandler = new PacketHandler(LunaticStorage.getInstance(), p);
+        PacketHandler packetHandler = Version.getPacketHandler(LunaticStorage.getInstance(), p);
         packetHandler.removePacketInjector(p);
     }
 }

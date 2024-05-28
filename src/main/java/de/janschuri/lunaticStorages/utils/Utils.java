@@ -1,24 +1,13 @@
 package de.janschuri.lunaticStorages.utils;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
-import org.bukkit.Bukkit;
+import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.json.JSONObject;
 
-public class Utils extends de.janschuri.lunaticlib.utils.Utils {
+public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
 
     public static String getCoordsAsString(Block block) {

@@ -1,8 +1,9 @@
 package de.janschuri.lunaticStorages.commands.subcommands.storage;
 
 import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
-import de.janschuri.lunaticlib.senders.AbstractPlayerSender;
-import de.janschuri.lunaticlib.senders.AbstractSender;
+import de.janschuri.lunaticStorages.config.LanguageConfig;
+import de.janschuri.lunaticlib.PlayerSender;
+import de.janschuri.lunaticlib.Sender;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -24,13 +25,13 @@ public class RandomSubcommand extends Subcommand {
     }
 
     @Override
-    public boolean execute(AbstractSender sender, String[] args) {
-        if (!(sender instanceof AbstractPlayerSender)) {
-            sender.sendMessage(language.getPrefix() + language.getMessage("no_console_command"));
+    public boolean execute(Sender sender, String[] args) {
+        if (!(sender instanceof PlayerSender)) {
+            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_console_command"));
         } else if (!sender.hasPermission(PERMISSION)) {
-            sender.sendMessage(language.getPrefix() + language.getMessage("no_permission"));
+            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_permission"));
         } else {
-            AbstractPlayerSender player = (AbstractPlayerSender) sender;
+            PlayerSender player = (PlayerSender) sender;
 
             Player p = Bukkit.getPlayer(player.getUniqueId());
 

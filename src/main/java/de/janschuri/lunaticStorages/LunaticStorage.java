@@ -1,12 +1,13 @@
 package de.janschuri.lunaticStorages;
 
-import de.janschuri.lunaticStorages.commands.paper.StorageCommand;
-import de.janschuri.lunaticStorages.config.Language;
+import de.janschuri.lunaticStorages.commands.subcommands.storage.StorageSubcommand;
+import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.listener.*;
 import de.janschuri.lunaticStorages.storage.Storage;
 import de.janschuri.lunaticStorages.utils.Logger;
+import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
@@ -53,7 +54,7 @@ public final class LunaticStorage extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new QuitListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
-        getCommand("storage").setExecutor(new StorageCommand());
+        new PlatformImpl().registerCommand(this, new StorageSubcommand());
     }
 
     @Override
@@ -77,7 +78,7 @@ public final class LunaticStorage extends JavaPlugin {
     public static boolean loadConfig() {
 
         new PluginConfig(dataDirectory);
-        new Language(dataDirectory, commands);
+        new LanguageConfig(dataDirectory, commands);
 
         File mclangDE = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang/de_de.json");
 

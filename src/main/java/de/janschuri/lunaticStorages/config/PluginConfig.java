@@ -1,12 +1,12 @@
 package de.janschuri.lunaticStorages.config;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticlib.config.Config;
+import de.janschuri.lunaticlib.common.config.AbstractConfig;
 import org.bukkit.Material;
 
 import java.nio.file.Path;
 
-public class PluginConfig extends Config {
+public class PluginConfig extends AbstractConfig {
 
     private static PluginConfig instance;
     private static final String CONFIG_FILE = "config.yml";

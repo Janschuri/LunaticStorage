@@ -1,11 +1,11 @@
 package de.janschuri.lunaticStorages.utils;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticlib.logger.AbstractLogger;
+
+import de.janschuri.lunaticlib.common.logger.AbstractLogger;
 
 public class Logger extends AbstractLogger {
 
-    private static final org.slf4j.Logger logger = AbstractLogger.getLogger("LunaticStorage");
+    private static final org.slf4j.Logger logger = Logger.getLogger("LunaticStorage");
 
     public static boolean isDebug() {
         return true;

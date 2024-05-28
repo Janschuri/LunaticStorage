@@ -1,18 +1,16 @@
 package de.janschuri.lunaticStorages.storage;
 
-import de.janschuri.lunaticStorages.config.Language;
 import de.janschuri.lunaticStorages.database.tables.ChestsTable;
 import de.janschuri.lunaticStorages.utils.Logger;
 import de.janschuri.lunaticStorages.utils.Utils;
-import de.janschuri.lunaticlib.external.LogBlock;
-import de.janschuri.lunaticlib.utils.BukkitEventUtils;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
+import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
+import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -250,14 +248,14 @@ public class Storage {
                 assert coords != null;
                 Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
 
-            if (!BukkitEventUtils.isAllowedViewChest(player, block)) {
+            if (!EventUtils.isAllowedViewChest(player, block)) {
                 continue;
             }
 
             Container container = (Container) block.getState();
             Inventory chestInv = container.getSnapshotInventory();
 
-            if (!BukkitEventUtils.isAllowedTakeItem(player, chestInv)) {
+            if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
                 continue;
             }
 
@@ -339,14 +337,14 @@ public class Storage {
                 assert coords != null;
                 Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
 
-                if (!BukkitEventUtils.isAllowedViewChest(player, block)) {
+                if (!EventUtils.isAllowedViewChest(player, block)) {
                     continue;
                 }
 
                 Container container = (Container) block.getState();
                 Inventory chestInv = container.getSnapshotInventory();
 
-                if (!BukkitEventUtils.isAllowedTakeItem(player, chestInv)) {
+                if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
                     continue;
                 }
 
@@ -436,14 +434,14 @@ public class Storage {
             assert coords != null;
             Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
 
-            if (!BukkitEventUtils.isAllowedViewChest(player, block)) {
+            if (!EventUtils.isAllowedViewChest(player, block)) {
                 continue;
             }
 
             Container container = (Container) block.getState();
             Inventory chestInv = container.getSnapshotInventory();
 
-            if (!BukkitEventUtils.isAllowedPutItem(player, chestInv)) {
+            if (!EventUtils.isAllowedPutItem(player, chestInv)) {
                 continue;
             }
 
@@ -482,14 +480,14 @@ public class Storage {
                 assert coords != null;
                 Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
 
-                if (!BukkitEventUtils.isAllowedViewChest(player, block)) {
+                if (!EventUtils.isAllowedViewChest(player, block)) {
                     continue;
                 }
 
                 Container container = (Container) block.getState();
                 Inventory chestInv = container.getSnapshotInventory();
 
-                if (!BukkitEventUtils.isAllowedPutItem(player, chestInv)) {
+                if (!EventUtils.isAllowedPutItem(player, chestInv)) {
                     continue;
                 }
 

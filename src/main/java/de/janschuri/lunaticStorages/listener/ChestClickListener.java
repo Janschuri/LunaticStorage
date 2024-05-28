@@ -1,10 +1,9 @@
 package de.janschuri.lunaticStorages.listener;
 
 import de.janschuri.lunaticStorages.storage.Key;
-import de.janschuri.lunaticStorages.config.Language;
+import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.database.tables.ChestsTable;
 import de.janschuri.lunaticStorages.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -52,7 +51,7 @@ public class ChestClickListener implements Listener {
             int[] chests = dataContainer.get(Key.STORAGE, PersistentDataType.INTEGER_ARRAY);
 
             if (Utils.containsChestsID(chests, chestID)) {
-                player.sendMessage(Language.getLanguage().getMessage("container_already_marked"));
+                player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("container_already_marked"));
                 return;
             }
 
@@ -63,7 +62,7 @@ public class ChestClickListener implements Listener {
             storageMeta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.INTEGER_ARRAY, newChests);
             itemInHand.setItemMeta(storageMeta);
 
-            player.sendMessage(Language.getLanguage().getMessage("container_marked"));
+            player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("container_marked"));
 
         }
     }

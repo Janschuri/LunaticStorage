@@ -1,13 +1,13 @@
 package de.janschuri.lunaticStorages.listener;
 
-import de.janschuri.lunaticStorages.config.Language;
+import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.storage.Storage;
 import de.janschuri.lunaticStorages.storage.StoragePanelGUI;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
-import de.janschuri.lunaticStorages.nms.SignGUI;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.platform.bukkit.nms.SignGUI;
+import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -20,6 +20,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.Arrays;
 
 
 public class InventoryClickListener implements Listener {
@@ -73,7 +75,7 @@ public class InventoryClickListener implements Listener {
             ItemStack newItem = storage.insertItemsIntoStorage(cursorItem, player);
 
             if (!newItem.isEmpty()) {
-                player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("storage_full"));
                 storageFullTimeout = true;
                 Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
                     storageFullTimeout = false;
@@ -103,7 +105,7 @@ public class InventoryClickListener implements Listener {
                     Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
                         processingClickEvent = false;
                     }, 2L);
-                    player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                    player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("storage_full"));
                     storageFullTimeout = true;
                     Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
                         storageFullTimeout = false;
@@ -164,7 +166,7 @@ public class InventoryClickListener implements Listener {
                 player.setItemOnCursor(newItem);
 
                 if (!newItem.isEmpty()) {
-                    player.sendMessage(Language.getLanguage().getMessage("storage_full"));
+                    player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("storage_full"));
                     storageFullTimeout = true;
                     Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
                         storageFullTimeout = false;
@@ -194,10 +196,9 @@ public class InventoryClickListener implements Listener {
 
         if (dataContainer.has(Key.SEARCH)) {
             gui.close();
-            SignGUI signGui = new SignGUI();
 
             Inventory finalGui = gui;
-            signGui.sendSign(player, lines -> {
+            SignGUI.sendSign(LunaticStorage.getInstance(), player, lines -> {
                 String search = String.join(" ", lines).trim();
                 StoragePanelGUI.setSearch(finalGui, search);
                 StoragePanelGUI.loadGui(finalGui, id, world, locale);

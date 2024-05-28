@@ -2,7 +2,7 @@ package de.janschuri.lunaticStorages.storage;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
