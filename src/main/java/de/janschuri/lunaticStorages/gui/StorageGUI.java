@@ -1,7 +1,6 @@
 package de.janschuri.lunaticStorages.gui;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.storage.Storage;
@@ -16,7 +15,6 @@ import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -105,7 +103,9 @@ public class StorageGUI extends InventoryGUI {
         loadStorage();
         addButton(createItemButton());
         addButton(createStoragePlayerInvButton());
+        addButton(48, createArrowLeft());
         addButton(49, createPageButton());
+        addButton(50, createArrowRight());
         super.decorate(player);
     }
 
@@ -147,7 +147,7 @@ public class StorageGUI extends InventoryGUI {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursor = event.getCursor().clone();
 
-                    ItemStack newItem = insertStorageItem(cursor, true);
+                    ItemStack newItem = insertStorageItem(cursor, true, event.isRightClick());
                     player.setItemOnCursor(newItem);
 
                     reloadGui();
@@ -209,6 +209,48 @@ public class StorageGUI extends InventoryGUI {
                             .replace("%pages%", String.valueOf(storage.getPages())));
                     item.setItemMeta(meta);
                     return item;
+                });
+    }
+
+    private InventoryButton createArrowLeft() {
+
+        return new InventoryButton()
+                .creator(player -> {
+                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
+                    ItemMeta meta = arrow.getItemMeta();
+                    meta.setDisplayName("<<<");
+
+                    arrow.setItemMeta(meta);
+                    return arrow;
+                })
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    setPage(page - 1);
+                    reloadGui();
+                });
+    }
+
+    private InventoryButton createArrowRight() {
+
+        return new InventoryButton()
+                .creator(player -> {
+                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
+                    ItemMeta meta = arrow.getItemMeta();
+                    meta.setDisplayName(">>>");
+
+                    arrow.setItemMeta(meta);
+                    return arrow;
+                })
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    setPage(page + 1);
+                    reloadGui();
                 });
     }
 
@@ -374,6 +416,10 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
+        return insertStorageItem(item, swapItems, false);
+    }
+
+    private ItemStack insertStorageItem(ItemStack item, boolean swapItems, boolean isRightClick) {
 
         if (!isStorageItem(item) && !item.getType().equals(Material.AIR)) {
             Logger.debugLog("insertStorageItem: not storage item");

@@ -64,7 +64,7 @@ public class Storage {
 
         Comparator<Map.Entry<ItemStack, Integer>> comparator;
 
-        if (sorter == 1) {
+        if (sorter == 0) {
             comparator = Comparator.comparing(entry -> Utils.getMCLanguage(entry.getKey(), locale));
         } else {
             comparator = Map.Entry.comparingByValue();
