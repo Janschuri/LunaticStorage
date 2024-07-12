@@ -1,21 +1,21 @@
 package de.janschuri.lunaticStorages.commands.subcommands;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticlib.common.commands.AbstractSubcommand;
+import de.janschuri.lunaticlib.LunaticCommand;
+import de.janschuri.lunaticlib.MessageKey;
+import de.janschuri.lunaticlib.common.command.AbstractLunaticCommand;
 
 import java.util.List;
 
-public abstract class Subcommand extends AbstractSubcommand {
+public abstract class Subcommand extends AbstractLunaticCommand {
 
-    protected Subcommand(String mainCommand, String name, String permission) {
-        super(LanguageConfig.getLanguageConfig(), mainCommand, name, permission);
-    }
+    protected static final MessageKey WRONG_USAGE = new MessageKey("wrong_usage");
+    protected static final MessageKey NO_PERMISSION = new MessageKey("no_permission");
+    protected static final MessageKey NO_CONSOLE_COMMAND = new MessageKey("no_console_command");
 
-    protected Subcommand(String mainCommand, String name, String permission, List<String> params) {
-        super(LanguageConfig.getLanguageConfig(), mainCommand, name, permission, params);
-    }
-
-    protected Subcommand(String mainCommand, String name, String permission, AbstractSubcommand[] subcommands) {
-        super(LanguageConfig.getLanguageConfig(), mainCommand, name, permission, subcommands);
+    @Override
+    public LanguageConfig getLanguageConfig() {
+        return LunaticStorage.getLanguageConfig();
     }
 }

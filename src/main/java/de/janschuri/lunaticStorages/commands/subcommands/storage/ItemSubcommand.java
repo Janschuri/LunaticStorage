@@ -1,9 +1,11 @@
 package de.janschuri.lunaticStorages.commands.subcommands.storage;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
 import de.janschuri.lunaticStorages.config.PluginConfig;
+import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
 import org.bukkit.Bukkit;
@@ -14,24 +16,35 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class ItemSubcommand extends Subcommand {
 
-    private static final String MAIN_COMMAND = "storage";
-    private static final String NAME = "item";
-    private static final String PERMISSION = "lunaticstorages.admin.item";
+    @Override
+    public LunaticCommand getParentCommand() {
+        return new StorageSubcommand();
+    }
 
-    protected ItemSubcommand() {
-        super(MAIN_COMMAND, NAME, PERMISSION);
+    @Override
+    public String getPermission() {
+        return "lunaticstorage.admin.item";
+    }
+
+    @Override
+    public String getName() {
+        return "item";
     }
 
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!(sender instanceof PlayerSender)) {
-            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_console_command"));
-        } else if (!sender.hasPermission(PERMISSION)) {
-            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_permission"));
-        } else {
+            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND));
+            return true;
+        }
+
+        if (!sender.hasPermission(getPermission())) {
+            sender.sendMessage(getMessage(NO_PERMISSION));
+            return true;
+        }
             PlayerSender player = (PlayerSender) sender;
 
-            ItemStack item = new ItemStack(PluginConfig.getStorageItem());
+            ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStorageItem());
 
             int[] invs = new int[]{};
 
@@ -42,7 +55,5 @@ public class ItemSubcommand extends Subcommand {
             Player p = Bukkit.getPlayer(player.getUniqueId());
             p.getInventory().addItem(item);
             return true;
-        }
-        return true;
     }
 }

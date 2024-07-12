@@ -1,5 +1,6 @@
 package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
@@ -18,7 +19,7 @@ public class BlockPlaceListener implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
 
-        if (event.getBlockPlaced().getType().equals(PluginConfig.getStoragePanelBlock())) {
+        if (event.getBlockPlaced().getType().equals(LunaticStorage.getPluginConfig().getStoragePanelBlock())) {
             ItemStack item = event.getItemInHand();
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();

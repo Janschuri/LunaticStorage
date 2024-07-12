@@ -7,6 +7,7 @@ import de.janschuri.lunaticlib.common.database.Error;
 import de.janschuri.lunaticlib.common.database.Table;
 import de.janschuri.lunaticlib.common.database.columns.Column;
 import de.janschuri.lunaticlib.common.database.columns.PrimaryKey;
+import org.bukkit.World;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -97,6 +98,36 @@ public final class ChestsTable {
             }
         }
         return null;
+    }
+
+    public static String getChestWorld(int id) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement("SELECT * FROM " + NAME + " WHERE id = ?;");
+            ps.setInt(1, id);
+
+            rs = ps.executeQuery();
+            while(rs.next()){
+                if(rs.getInt("id") == id){
+                    return rs.getString("world");
+                }
+            }
+        } catch (SQLException ex) {
+            Error.execute(ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                Error.close(ex);
+            }
+        }
+        return "world";
     }
 
     public static boolean isChestInDatabase(String world, String coords) {

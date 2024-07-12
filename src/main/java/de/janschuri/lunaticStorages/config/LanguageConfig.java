@@ -1,24 +1,11 @@
 package de.janschuri.lunaticStorages.config;
 
-import de.janschuri.lunaticlib.common.config.AbstractLanguageConfig;
+import de.janschuri.lunaticlib.common.config.LunaticLanguageConfigImpl;
 
 import java.nio.file.Path;
 
-public class LanguageConfig extends AbstractLanguageConfig {
-
-    private static LanguageConfig instance;
-
-    public LanguageConfig(Path dataDirectory, String[] commands) {
-        super(dataDirectory, commands, PluginConfig.getLanguageKey());
-        instance = this;
-        load();
-    }
-
-    public void load() {
-        super.load();
-    }
-
-    public static LanguageConfig getLanguageConfig() {
-        return instance;
+public class LanguageConfig extends LunaticLanguageConfigImpl {
+    public LanguageConfig(Path dataDirectory, String languageKey) {
+        super(dataDirectory, languageKey);
     }
 }

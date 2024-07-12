@@ -5,13 +5,24 @@ messages:
   container_marked: "Container wurde markiert."
   container_already_marked: "Container ist bereits markiert."
   storage_full: "Der Speicher ist voll."
-aliases:
+  amount: "Menge: %amount%"
+  page: "Seite: %page%/%pages%"
+  gui_title: "Speicher"
+  gui_title_full_storage: "&cSpeicher ist voll"
+commands:
   storage:
-    base_command:
-      - storage
-    item:
-      - item
-    panel:
-      - panel
-    reload:
-      - reload
+    subcommands:
+      item:
+        aliases:
+          - item
+      panel:
+        aliases:
+          - panel
+      reload:
+        aliases:
+          - reload
+        messages:
+          reloaded: "Die Konfiguration wurde neu geladen."
+      random:
+        aliases:
+          - random

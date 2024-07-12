@@ -1,11 +1,13 @@
 package de.janschuri.lunaticStorages.config;
 
 
-import de.janschuri.lunaticlib.common.config.AbstractDatabaseConfig;
+
+import de.janschuri.lunaticlib.LunaticDatabaseConfig;
+import de.janschuri.lunaticlib.common.config.LunaticDatabaseConfigImpl;
 
 import java.nio.file.Path;
 
-public class DatabaseConfig extends AbstractDatabaseConfig {
+public class DatabaseConfig extends LunaticDatabaseConfigImpl {
 
     private static final String NAME = "lunaticstorage";
     private static final String DATABASE_FILE = "database.yml";

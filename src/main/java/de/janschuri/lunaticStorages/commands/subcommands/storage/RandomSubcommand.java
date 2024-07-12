@@ -2,6 +2,7 @@ package de.janschuri.lunaticStorages.commands.subcommands.storage;
 
 import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
 import de.janschuri.lunaticStorages.config.LanguageConfig;
+import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
 import org.bukkit.Bukkit;
@@ -20,26 +21,42 @@ public class RandomSubcommand extends Subcommand {
     private static final String NAME = "random";
     private static final String PERMISSION = "lunaticstorages.admin.random";
 
-    protected RandomSubcommand() {
-        super(MAIN_COMMAND, NAME, PERMISSION);
+    @Override
+    public LunaticCommand getParentCommand() {
+        return new StorageSubcommand();
+    }
+
+    @Override
+    public String getName() {
+        return "random";
+    }
+
+    @Override
+    public String getPermission() {
+        return "lunaticstorage.admin.random";
     }
 
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!(sender instanceof PlayerSender)) {
-            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_console_command"));
-        } else if (!sender.hasPermission(PERMISSION)) {
-            sender.sendMessage(LanguageConfig.getLanguageConfig().getPrefix() + LanguageConfig.getLanguageConfig().getMessage("no_permission"));
-        } else {
+            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND));
+            return true;
+        }
+
+        if (!sender.hasPermission(getPermission())) {
+            sender.sendMessage(getMessage(NO_PERMISSION));
+            return true;
+        }
+
             PlayerSender player = (PlayerSender) sender;
 
             Player p = Bukkit.getPlayer(player.getUniqueId());
 
             while (p.getInventory().firstEmpty() != -1) {
                 List<String> materialNames = Arrays.stream(Material.values())
-                        .filter(material -> new ItemStack(material).getType().isItem())
+                        .filter(Material::isItem)
                         .map(Material::name)
-                        .collect(Collectors.toList());
+                        .toList();
 
                 int max = materialNames.size() - 1;
 
@@ -58,7 +75,7 @@ public class RandomSubcommand extends Subcommand {
 
                 p.getInventory().addItem(randomItem);
             }
-        }
+
         return true;
     }
 }

@@ -17,6 +17,7 @@ public abstract class Database {
 
     public static boolean loadDatabase() {
         DatabaseConfig databaseConfig = new DatabaseConfig(LunaticStorage.getDataDirectory());
+        databaseConfig.load();
         db = de.janschuri.lunaticlib.common.database.Database.getDatabase(databaseConfig, tables);
 
         return db != null;

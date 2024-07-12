@@ -1,11 +1,11 @@
 name: LunaticStorage
 version: '${project.version}'
 main: de.janschuri.lunaticStorages.LunaticStorage
-api-version: '1.20'
+api-version: '1.19'
 
 commands:
   storage:
     description: Open storage command
     usage: /storage
-softdepend:
-  - WorldGuard
+depend:
+  - LunaticLib

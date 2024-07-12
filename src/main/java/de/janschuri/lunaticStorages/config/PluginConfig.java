@@ -1,14 +1,13 @@
 package de.janschuri.lunaticStorages.config;
 
 import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticlib.common.config.AbstractConfig;
+import de.janschuri.lunaticlib.common.config.LunaticConfigImpl;
 import org.bukkit.Material;
 
 import java.nio.file.Path;
 
-public class PluginConfig extends AbstractConfig {
+public class PluginConfig extends LunaticConfigImpl {
 
-    private static PluginConfig instance;
     private static final String CONFIG_FILE = "config.yml";
     private String languageKey;
     private String storageItem;
@@ -17,8 +16,6 @@ public class PluginConfig extends AbstractConfig {
 
     public PluginConfig(Path dataDirectory) {
         super(dataDirectory, CONFIG_FILE, "config.yml");
-        instance = this;
-        load();
     }
 
     public void load() {
@@ -29,20 +26,16 @@ public class PluginConfig extends AbstractConfig {
         LunaticStorage.debug = getBoolean("debug", false);
     }
 
-    public static String getLanguageKey() {
-        return instance.languageKey;
+    public String getLanguageKey() {
+        return languageKey;
     }
 
-    public static PluginConfig getConfig() {
-        return instance;
+    public Material getStorageItem() {
+        return Material.getMaterial(storageItem);
     }
 
-    public static Material getStorageItem() {
-        return Material.getMaterial(instance.storageItem);
-    }
-
-    public static Material getStoragePanelBlock() {
-        return Material.getMaterial(instance.storagePanelBlock);
+    public Material getStoragePanelBlock() {
+        return Material.getMaterial(storagePanelBlock);
     }
 
 }

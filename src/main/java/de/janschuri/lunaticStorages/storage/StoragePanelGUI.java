@@ -38,28 +38,28 @@ public class StoragePanelGUI {
         String search;
         String totalAmount;
 
-        if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
-            page = getPage(gui);
-        } else {
-            page = 1;
-        }
-
-        if (gui.getItem(6) != null && !gui.getItem(6).isEmpty()) {
-            desc = getDesc(gui);
-        } else {
-            desc = true;
-        }
-
-        if (gui.getItem(5) != null && !gui.getItem(5).isEmpty()) {
-            sorter = getSorter(gui);
-        } else {
-            sorter = 0;
-        }
-        if (gui.getItem(0) != null && !gui.getItem(0).isEmpty()) {
-            search = StoragePanelGUI.getSearch(gui);
-        } else {
-            search = "";
-        }
+//        if (gui.getItem(49) != null && !gui.getItem(49).isEmpty()) {
+//            page = getPage(gui);
+//        } else {
+//            page = 1;
+//        }
+//
+//        if (gui.getItem(6) != null && !gui.getItem(6).isEmpty()) {
+//            desc = getDesc(gui);
+//        } else {
+//            desc = true;
+//        }
+//
+//        if (gui.getItem(5) != null && !gui.getItem(5).isEmpty()) {
+//            sorter = getSorter(gui);
+//        } else {
+//            sorter = 0;
+//        }
+//        if (gui.getItem(0) != null && !gui.getItem(0).isEmpty()) {
+//            search = StoragePanelGUI.getSearch(gui);
+//        } else {
+//            search = "";
+//        }
         gui.clear();
 
         for (int i = 0; i < 9; i++) {
@@ -79,29 +79,29 @@ public class StoragePanelGUI {
             if (LunaticStorage.storageExists(panelID)) {
                 storage = LunaticStorage.getStorage(panelID);
             } else {
-                storage = new Storage(chests, world);
+                storage = Storage.getStorage(panelID, serializedItem);
                 LunaticStorage.addStorage(panelID, storage);
             }
 
             pages = storage.getPages();
-            totalAmount = storage.getTotalAmount();
-            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc, search), panelID, page-1);
+            totalAmount = "5";
+//            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc, search), panelID, page-1);
 
             container.set(Key.PANEL_ID, PersistentDataType.INTEGER, panelID);
 
             item.setItemMeta(meta);
             gui.setItem(8, item);
-            gui.setItem(0, createSearch(panelID, search));
-            gui.setItem(49, createPagePane(panelID, page, pages, totalAmount));
-            gui.setItem(6, createSortArrow(panelID, desc));
-            gui.setItem(5, createSorter(panelID, sorter));
+//            gui.setItem(0, createSearch(panelID, search));
+//            gui.setItem(49, createPagePane(panelID, page, pages, totalAmount));
+//            gui.setItem(6, createSortArrow(panelID, desc));
+//            gui.setItem(5, createSorter(panelID, sorter));
 
-            if (page < pages) {
-                gui.setItem(50, createArrowRight(panelID));
-            }
-            if(page>1) {
-                gui.setItem(48, createArrowLeft(panelID));
-            }
+//            if (page < pages) {
+//                gui.setItem(50, createArrowRight(panelID));
+//            }
+//            if(page>1) {
+//                gui.setItem(48, createArrowLeft(panelID));
+//            }
 
         } else {
             gui.setItem(8, createStoragePane(panelID));

@@ -1,9 +1,12 @@
 package de.janschuri.lunaticStorages.listener;
 
+import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.database.tables.ChestsTable;
 import de.janschuri.lunaticStorages.utils.Utils;
+import de.janschuri.lunaticlib.MessageKey;
+import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -16,6 +19,10 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 public class ChestClickListener implements Listener {
+
+    private static final MessageKey containerAlreadyMarked = new MessageKey("container_already_marked");
+    private static final MessageKey containerMarked = new MessageKey("container_marked");
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -30,7 +37,7 @@ public class ChestClickListener implements Listener {
             return;
         }
 
-        if (Utils.isContainer(clickedBlock.getType()) && event.getAction().isRightClick()) {
+        if (Utils.isContainer(clickedBlock.getType()) && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);
 
             Block block = event.getClickedBlock();
@@ -51,7 +58,7 @@ public class ChestClickListener implements Listener {
             int[] chests = dataContainer.get(Key.STORAGE, PersistentDataType.INTEGER_ARRAY);
 
             if (Utils.containsChestsID(chests, chestID)) {
-                player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("container_already_marked"));
+                AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
                 return;
             }
 
@@ -62,7 +69,7 @@ public class ChestClickListener implements Listener {
             storageMeta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.INTEGER_ARRAY, newChests);
             itemInHand.setItemMeta(storageMeta);
 
-            player.sendMessage(LanguageConfig.getLanguageConfig().getMessage("container_marked"));
+            AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
 
         }
     }

@@ -1,12 +1,14 @@
 package de.janschuri.lunaticStorages;
 
 import de.janschuri.lunaticStorages.commands.subcommands.storage.StorageSubcommand;
+import de.janschuri.lunaticStorages.config.DatabaseConfig;
 import de.janschuri.lunaticStorages.config.LanguageConfig;
 import de.janschuri.lunaticStorages.config.PluginConfig;
 import de.janschuri.lunaticStorages.database.Database;
 import de.janschuri.lunaticStorages.listener.*;
 import de.janschuri.lunaticStorages.storage.Storage;
 import de.janschuri.lunaticStorages.utils.Logger;
+import de.janschuri.lunaticlib.platform.bukkit.BukkitLunaticLib;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,9 +28,9 @@ public final class LunaticStorage extends JavaPlugin {
     private static Path dataDirectory;
     private static Map<Integer, Storage> storages = new HashMap<>();
     private static LunaticStorage instance;
-    private static final String[]  commands = {
-        "storage",
-    };
+    private static DatabaseConfig databaseConfig;
+    private static LanguageConfig languageConfig;
+    private static PluginConfig pluginConfig;
 
     @Override
     public void onEnable() {
@@ -38,23 +40,17 @@ public final class LunaticStorage extends JavaPlugin {
 
         loadConfig();
 
-        if (!LunaticStorage.loadConfig()) {
-            disable();
-            return;
-        }
-
         if (!Database.loadDatabase()) {
             disable();
         }
 
+        new PlatformImpl().registerCommand(this, new StorageSubcommand());
+
         getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
-        getServer().getPluginManager().registerEvents(new JoinListener(), this);
-        getServer().getPluginManager().registerEvents(new QuitListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
-        new PlatformImpl().registerCommand(this, new StorageSubcommand());
     }
 
     @Override
@@ -77,8 +73,10 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static boolean loadConfig() {
 
-        new PluginConfig(dataDirectory);
-        new LanguageConfig(dataDirectory, commands);
+        pluginConfig = new PluginConfig(dataDirectory);
+        pluginConfig.load();
+        languageConfig = new LanguageConfig(dataDirectory, pluginConfig.getLanguageKey());
+        languageConfig.load();
 
         File mclangDE = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang/de_de.json");
 
@@ -128,5 +126,13 @@ public final class LunaticStorage extends JavaPlugin {
     }
     public static void removeStorage(int id) {
         storages.remove(id);
+    }
+
+    public static PluginConfig getPluginConfig() {
+        return pluginConfig;
+    }
+
+    public static LanguageConfig getLanguageConfig() {
+        return languageConfig;
     }
 }
