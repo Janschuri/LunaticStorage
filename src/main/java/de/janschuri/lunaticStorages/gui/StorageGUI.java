@@ -4,6 +4,7 @@ import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.storage.Storage;
+import de.janschuri.lunaticStorages.storage.StoragePanelGUI;
 import de.janschuri.lunaticStorages.utils.Logger;
 import de.janschuri.lunaticStorages.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
@@ -13,6 +14,8 @@ import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
+import de.rapha149.signgui.SignGUI;
+import de.rapha149.signgui.SignGUIAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -20,6 +23,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -32,11 +36,12 @@ public class StorageGUI extends InventoryGUI {
     private static final MessageKey PAGE = new MessageKey("page");
     private static final MessageKey GUI_TITLE = new MessageKey("gui_title");
 
-    protected static final AtomicInteger requestIdGenerator = new AtomicInteger(0);
     private static final Map<Integer, StorageGUI> storageGUIs = new HashMap<>();
+    private static final Map<UUID, Map<Integer, Integer>> playerStorageGUIs = new HashMap<>();
 
-    private String locale;
+    private static final AtomicInteger atomicInteger = new AtomicInteger(0);
     private final int id;
+    private String locale;
 
     private boolean storageFullTimeout = false;
     private boolean processingClickEvent = false;
@@ -48,6 +53,7 @@ public class StorageGUI extends InventoryGUI {
     int sorter = 0;
 
     private int page = 0;
+    private int pages = 0;
     private boolean descending = false;
     private String search = "";
     private final Player player;
@@ -56,23 +62,30 @@ public class StorageGUI extends InventoryGUI {
 
     private StorageGUI(Player player, int panelId, String locale) {
         super(createInventory());
-        this.id = requestIdGenerator.getAndIncrement();
+        this.id = atomicInteger.getAndIncrement();
         this.player = player;
         this.panelId = panelId;
         this.locale = locale;
         this.serializedStorageItem = PanelsTable.getPanelsStorageItem(panelId);
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         storageGUIs.put(id, this);
+        if (playerStorageGUIs.containsKey(player.getUniqueId())) {
+            Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
+            ids.put(panelId, id);
+            playerStorageGUIs.put(player.getUniqueId(), ids);
+        } else {
+            playerStorageGUIs.put(player.getUniqueId(), new HashMap<>(Map.of(panelId, id)));
+        }
     }
 
     private StorageGUI(StorageGUI storageGUI) {
         super(storageGUI.getInventory());
+        this.page = storageGUI.page;
         this.id = storageGUI.id;
         this.player = storageGUI.player;
         this.panelId = storageGUI.panelId;
         this.locale = storageGUI.locale;
 
-        this.page = storageGUI.page;
         this.descending = storageGUI.descending;
         this.search = storageGUI.search;
         this.sorter = storageGUI.sorter;
@@ -83,6 +96,40 @@ public class StorageGUI extends InventoryGUI {
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         decorate(player);
         storageGUIs.put(id, this);
+
+    }
+
+    private StorageGUI(int id) {
+        super(createInventory());
+        StorageGUI storageGUI = storageGUIs.get(id);
+        this.page = storageGUI.page;
+        this.id = storageGUI.id;
+        this.player = storageGUI.player;
+        this.panelId = storageGUI.panelId;
+        this.locale = storageGUI.locale;
+
+        this.descending = storageGUI.descending;
+        this.search = storageGUI.search;
+        this.sorter = storageGUI.sorter;
+        this.processingClickEvent = storageGUI.processingClickEvent;
+        this.storageFullTimeout = storageGUI.storageFullTimeout;
+
+        this.serializedStorageItem = PanelsTable.getPanelsStorageItem(panelId);
+        this.storage = Storage.getStorage(panelId,  serializedStorageItem);
+        decorate(player);
+        storageGUIs.put(id, this);
+
+    }
+
+    public static StorageGUI getStorageGUI(Player player, int panelId) {
+        if (playerStorageGUIs.containsKey(player.getUniqueId())) {
+            Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
+            if (ids.containsKey(panelId)) {
+                int id = ids.get(panelId);
+                return new StorageGUI(id);
+            }
+        }
+        return new StorageGUI(player, panelId, player.getLocale());
     }
 
     private static Inventory createInventory() {
@@ -103,9 +150,24 @@ public class StorageGUI extends InventoryGUI {
         loadStorage();
         addButton(createItemButton());
         addButton(createStoragePlayerInvButton());
-        addButton(48, createArrowLeft());
+        addButton(0, createSearchButton());
+        addButton(6, createDescendingButton());
+
+        if (page > 0) {
+            addButton(48, createArrowLeft());
+        } else {
+            addButton(48, emptyButton());
+        }
+
         addButton(49, createPageButton());
-        addButton(50, createArrowRight());
+
+        Logger.debugLog("page: " + page + " pages: " + pages);
+
+        if (page < pages) {
+            addButton(50, createArrowRight());
+        } else {
+            addButton(50, emptyButton());
+        }
         super.decorate(player);
     }
 
@@ -115,6 +177,11 @@ public class StorageGUI extends InventoryGUI {
         } else {
             this.addButton(8, createStoragePane());
         }
+    }
+
+    private InventoryButton emptyButton() {
+        return new InventoryButton()
+                .creator(player -> new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
     }
 
     private InventoryButton createStoragePane() {
@@ -206,10 +273,79 @@ public class StorageGUI extends InventoryGUI {
                     ItemMeta meta = item.getItemMeta();
                     meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE, false)
                             .replace("%page%", String.valueOf(page + 1))
-                            .replace("%pages%", String.valueOf(storage.getPages())));
+                            .replace("%pages%", String.valueOf(pages + 1)));
                     item.setItemMeta(meta);
                     return item;
                 });
+    }
+
+    private InventoryButton createDescendingButton() {
+        return new InventoryButton()
+                .creator(player -> {
+                    if (descending) {
+                        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
+                        ItemMeta meta = arrow.getItemMeta();
+                        meta.setDisplayName("Descended");
+                        arrow.setItemMeta(meta);
+                        return arrow;
+                    } else {
+                        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
+                        ItemMeta meta = arrow.getItemMeta();
+                        meta.setDisplayName("Ascended");
+                        arrow.setItemMeta(meta);
+                        return arrow;
+                    }
+                })
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    descending = !descending;
+                    reloadGui();
+                });
+    }
+
+    private InventoryButton createSearchButton() {
+        return new InventoryButton()
+                .creator(player -> {
+                    ItemStack item = new ItemStack(Material.COMPASS);
+                    ItemMeta meta = item.getItemMeta();
+                    meta.setDisplayName("Search");
+                    item.setItemMeta(meta);
+                    return item;
+                })
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    Player player = (Player) event.getWhoClicked();
+                    player.closeInventory();
+
+                    SignGUI gui = SignGUI.builder()
+                            .setType(Material.DARK_OAK_SIGN)
+                            .setHandler((p, result) -> {
+                                StringBuilder search = new StringBuilder();
+                                for (int i = 0; i < 4; i++) {
+                                    search.append(result.getLine(i));
+                                }
+
+                                return List.of(
+                                        SignGUIAction.run(() ->{
+                                                    Bukkit.getScheduler().runTask(LunaticStorage.getInstance(), () -> {
+                                                        this.search = search.toString();
+                                                        GUIManager.openGUI(new StorageGUI(this), player);
+                                                    });
+                                                })
+                                );
+                            })
+                            .build();
+
+                    gui.open(player);
+                });
+
+
     }
 
     private InventoryButton createArrowLeft() {
@@ -327,8 +463,8 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private void setPage(int page) {
-        if (page > storage.getPages()) {
-            page = storage.getPages();
+        if (page > pages) {
+            page = pages;
         }
         if (page < 0) {
             page = 0;
@@ -338,8 +474,20 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private void loadStorage() {
-        List<Map.Entry<ItemStack, Integer>> storageItems = storage.getStorageList(locale, sorter, descending, search, page);
+        List<Map.Entry<ItemStack, Integer>> allStorageItems = storage.getStorageList(locale, sorter, descending, search);
+        int pageSize = 36;
+        pages = allStorageItems.size() / pageSize;
         setPage(page);
+
+        int startIndex = page * pageSize;
+        int endIndex = startIndex + pageSize;
+
+        if (endIndex > allStorageItems.size()) {
+            endIndex = allStorageItems.size();
+        }
+
+        List<Map.Entry<ItemStack, Integer>> storageItems = allStorageItems.subList(startIndex, endIndex);
+
 
         if (serializedStorageItem != null) {
             for (int i = 0; i < 36; i++) {
@@ -355,10 +503,6 @@ public class StorageGUI extends InventoryGUI {
                 this.addButton(9 + i, createStorageContentButton(new ItemStack(Material.AIR), 0));
             }
         }
-    }
-
-    public static StorageGUI getStorageGUI(Player player, int panelId) {
-        return new StorageGUI(player, panelId, player.getLocale());
     }
 
     private void reloadGui() {

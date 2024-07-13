@@ -19,6 +19,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -31,12 +32,14 @@ public class Storage {
     private final List<Integer> emptyChests = new ArrayList<>();
     private final int panelId;
     private final byte[] storageItem;
+    protected static final AtomicInteger requestIdGenerator = new AtomicInteger(0);
 
     private Storage (int panelId, byte[] storageItem) {
         this.storageItem = storageItem;
         int[] chests = getStorageChests(storageItem);
         this.panelId = panelId;
         loadStorage(chests);
+        storages.put(panelId, this);
     }
 
     public static Storage getStorage(int panelId, byte[] storageItem) {
@@ -44,11 +47,7 @@ public class Storage {
         if (storages.containsKey(panelId)) {
             Storage storage = storages.get(panelId);
 
-            if (storage.storageItem == storageItem) {
-                return storage;
-            } else {
-                return new Storage(panelId, storageItem);
-            }
+            return storage;
 
         } else {
             return new Storage(panelId, storageItem);
@@ -59,7 +58,7 @@ public class Storage {
         return panelId;
     }
 
-    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search, int page) {
+    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
         List<Map.Entry<ItemStack, Integer>> storageList;
 
         Comparator<Map.Entry<ItemStack, Integer>> comparator;
@@ -95,19 +94,9 @@ public class Storage {
                 .sorted(comparator)
                 .collect(Collectors.toList());
 
-        int pageSize = 36;
-        int startIndex = page * pageSize;
-        int endIndex = startIndex + pageSize;
-
-        if (endIndex > storageList.size()) {
-            endIndex = storageList.size();
-        }
-
-        return storageList.subList(startIndex, endIndex);
+        return storageList;
     }
-    public int getPages() {
-        return storageMap.size() / 36;
-    }
+
     public int getTotalAmount() {
         int sum = 0;
         for (int value : storageMap.values()) {

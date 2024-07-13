@@ -83,7 +83,6 @@ public class StoragePanelGUI {
                 LunaticStorage.addStorage(panelID, storage);
             }
 
-            pages = storage.getPages();
             totalAmount = "5";
 //            gui = Storage.addMaptoInventory(gui, storage.getStorageList(locale, sorter, desc, search), panelID, page-1);
 
@@ -147,22 +146,6 @@ public class StoragePanelGUI {
         return item;
     }
 
-    private static ItemStack createPagePane(int id, int page, int pages, String totalAmount) {
-        ItemStack pane = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
-        ItemMeta meta = pane.getItemMeta();
-
-        meta.getPersistentDataContainer().set(Key.PAGE, PersistentDataType.INTEGER, page);
-        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
-        meta.setDisplayName("Seite: " + page + "/" + pages);
-        List<String> lore;
-        lore = new ArrayList<>();
-        lore.add("Total items: " + totalAmount);
-        meta.setLore(lore);
-
-        pane.setItemMeta(meta);
-        return pane;
-    }
-
     public static Inventory setSearch(Inventory gui, String search) {
         ItemStack item = gui.getItem(0);
         ItemMeta meta = item.getItemMeta();
@@ -173,30 +156,6 @@ public class StoragePanelGUI {
 
     public static String getSearch(Inventory gui) {
         return gui.getItem(0).getItemMeta().getPersistentDataContainer().get(Key.SEARCH, PersistentDataType.STRING);
-    }
-
-    private static ItemStack createArrowLeft(int id) {
-        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
-        ItemMeta meta = arrow.getItemMeta();
-
-        meta.getPersistentDataContainer().set(Key.LEFT_ARROW, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
-        meta.setDisplayName("<<<");
-
-        arrow.setItemMeta(meta);
-        return arrow;
-    }
-
-    private static ItemStack createArrowRight(int id) {
-        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
-        ItemMeta meta = arrow.getItemMeta();
-
-        meta.getPersistentDataContainer().set(Key.RIGHT_ARROW, PersistentDataType.BOOLEAN, true);
-        meta.getPersistentDataContainer().set(Key.PANEL_ID, PersistentDataType.INTEGER, id);
-        meta.setDisplayName(">>>");
-
-        arrow.setItemMeta(meta);
-        return arrow;
     }
 
     private static ItemStack createSortArrow(int id, boolean desc) {
