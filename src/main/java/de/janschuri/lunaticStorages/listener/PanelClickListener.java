@@ -1,7 +1,6 @@
 package de.janschuri.lunaticStorages.listener;
 
 import de.janschuri.lunaticStorages.gui.StorageGUI;
-import de.janschuri.lunaticStorages.storage.StoragePanelGUI;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticStorages.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
@@ -32,7 +31,6 @@ public class PanelClickListener implements Listener {
         if (PanelsTable.isPanelInDatabase(worldName, coords)) {
             event.setCancelled(true);
             int id = PanelsTable.getPanelsID(worldName, coords);
-//            StoragePanelGUI.openGUI(player, id);
             GUIManager.openGUI(StorageGUI.getStorageGUI(player, id), player);
         }
     }

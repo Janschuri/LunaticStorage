@@ -46,7 +46,6 @@ public final class LunaticStorage extends JavaPlugin {
 
         new PlatformImpl().registerCommand(this, new StorageSubcommand());
 
-        getServer().getPluginManager().registerEvents(new InventoryClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);

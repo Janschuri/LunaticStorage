@@ -4,7 +4,6 @@ import de.janschuri.lunaticStorages.LunaticStorage;
 import de.janschuri.lunaticStorages.database.tables.PanelsTable;
 import de.janschuri.lunaticStorages.storage.Key;
 import de.janschuri.lunaticStorages.storage.Storage;
-import de.janschuri.lunaticStorages.storage.StoragePanelGUI;
 import de.janschuri.lunaticStorages.utils.Logger;
 import de.janschuri.lunaticStorages.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
@@ -23,7 +22,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +149,8 @@ public class StorageGUI extends InventoryGUI {
         addButton(createItemButton());
         addButton(createStoragePlayerInvButton());
         addButton(0, createSearchButton());
-        addButton(6, createDescendingButton());
+        addButton(6, createSorterButton());
+        addButton(7, createDescendingButton());
 
         if (page > 0) {
             addButton(48, createArrowLeft());
@@ -302,6 +301,33 @@ public class StorageGUI extends InventoryGUI {
                     }
 
                     descending = !descending;
+                    reloadGui();
+                });
+    }
+
+    private InventoryButton createSorterButton() {
+        return new InventoryButton()
+                .creator(player -> {
+                    if (sorter == 0) {
+                        ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
+                        ItemMeta meta = sorterItem.getItemMeta();
+                        meta.setDisplayName("by name");
+                        sorterItem.setItemMeta(meta);
+                        return sorterItem;
+                    } else {
+                        ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
+                        ItemMeta meta = sorterItem.getItemMeta();
+                        meta.setDisplayName("by amount");
+                        sorterItem.setItemMeta(meta);
+                        return sorterItem;
+                    }
+                })
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    sorter = (sorter + 1) % 2;
                     reloadGui();
                 });
     }
