@@ -1,10 +1,14 @@
 package de.janschuri.lunaticstorage.utils;
 
+import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
+import de.janschuri.lunaticstorage.storage.Key;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.json.JSONObject;
 
 import java.util.Arrays;
@@ -105,5 +109,15 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
                 || material == Material.RED_SHULKER_BOX
                 || material == Material.WHITE_SHULKER_BOX
                 || material == Material.YELLOW_SHULKER_BOX;
+    }
+
+    public static boolean isPanel(Block block) {
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN);
+    }
+
+    public static boolean isContainer(Block block) {
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN);
     }
 }
