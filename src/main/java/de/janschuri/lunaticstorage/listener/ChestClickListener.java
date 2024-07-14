@@ -18,7 +18,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +42,7 @@ public class ChestClickListener implements Listener {
             return;
         }
 
-        if (Utils.isContainer(clickedBlock.getType()) && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+        if (Utils.isContainerBlock(clickedBlock.getType()) && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);
 
             Block block = event.getClickedBlock();

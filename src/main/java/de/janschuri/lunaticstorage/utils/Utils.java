@@ -88,7 +88,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return name.toLowerCase();
     }
 
-    public static boolean isContainer(Material material) {
+    public static boolean isContainerBlock(Material material) {
         return material == Material.CHEST
                 || material == Material.TRAPPED_CHEST
                 || material == Material.BARREL
