@@ -118,7 +118,7 @@ public class StorageGUI extends InventoryGUI {
         this.processingClickEvent = storageGUI.processingClickEvent;
         this.storageFullTimeout = storageGUI.storageFullTimeout;
 
-        this.serializedStorageItem = storageGUI.serializedStorageItem;
+        this.serializedStorageItem = getPanelsStorageItem(block);
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         decorate(player);
         storageGUIs.put(id, this);

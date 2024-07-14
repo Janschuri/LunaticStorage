@@ -51,10 +51,6 @@ public class Storage {
             return new Storage(panelId, storageItem);
     }
 
-    public int getPanelId() {
-        return panelId;
-    }
-
     public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
         List<Map.Entry<ItemStack, Integer>> storageList;
 
@@ -540,14 +536,16 @@ public class Storage {
             PersistentDataContainer container = meta.getPersistentDataContainer();
 
             String worldsString = container.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
-            List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+            if (worldsString != null) {
+                List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
 
-            for (UUID worldUUID : worlds) {
-                NamespacedKey worldKey = Key.getKey(worldUUID.toString());
-                long[] chests = container.get(worldKey, PersistentDataType.LONG_ARRAY);
-                if (chests != null) {
-                    for (long chest : chests) {
-                        storageContainers.add(new StorageContainer(worldUUID, chest));
+                for (UUID worldUUID : worlds) {
+                    NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+                    long[] chests = container.get(worldKey, PersistentDataType.LONG_ARRAY);
+                    if (chests != null) {
+                        for (long chest : chests) {
+                            storageContainers.add(new StorageContainer(worldUUID, chest));
+                        }
                     }
                 }
             }

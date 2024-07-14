@@ -18,7 +18,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.checkerframework.checker.units.qual.A;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,7 +59,11 @@ public class ChestClickListener implements Listener {
                 itemInHand.setItemMeta(storageMeta);
             } else {
                 String worldUUIDString = dataContainer.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
-                List<UUID> worlds = Utils.getUUIDListFromString(worldUUIDString);
+                List<UUID> worlds = new ArrayList<>();
+                if (worldUUIDString != null) {
+                    worlds = Utils.getUUIDListFromString(worldUUIDString);
+                }
+
                 if (!worlds.contains(worldUUID)) {
                     worlds.add(worldUUID);
                     dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, Utils.getUUIDListAsString(worlds));
