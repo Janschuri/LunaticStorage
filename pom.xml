@@ -36,7 +36,7 @@
                     <relocations>
                         <relocation>
                             <pattern>com.jeff_media.customblockdata</pattern>
-                            <shadedPattern>YOUR.PACKAGE.NAME.customblockdata</shadedPattern>
+                            <shadedPattern>de.janschuri.lunaticstorage.shaded.customblockdata</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>

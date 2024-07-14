@@ -1,4 +1,4 @@
-package de.janschuri.lunaticStorages.utils;
+package de.janschuri.lunaticstorage.utils;
 
 
 import de.janschuri.lunaticlib.common.logger.AbstractLogger;

@@ -1,4 +1,4 @@
-package de.janschuri.lunaticStorages.config;
+package de.janschuri.lunaticstorage.config;
 
 import de.janschuri.lunaticlib.common.config.LunaticLanguageConfigImpl;
 

@@ -1,10 +1,8 @@
-package de.janschuri.lunaticStorages.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.subcommands.storage;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticStorages.storage.Key;
-import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
-import de.janschuri.lunaticStorages.config.PluginConfig;
+import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -13,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.checkerframework.checker.units.qual.N;
 
 public class PanelSubcommand extends Subcommand {
 

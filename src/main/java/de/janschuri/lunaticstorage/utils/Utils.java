@@ -1,11 +1,16 @@
-package de.janschuri.lunaticStorages.utils;
+package de.janschuri.lunaticstorage.utils;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.json.JSONObject;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
@@ -39,6 +44,27 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
             }
         }
         return false;
+    }
+
+    public static List<Long> getListFromArray(long[] array) {
+        return Arrays.stream(array).boxed().collect(Collectors.toList());
+    }
+
+    public static long[] getArrayFromList(List<Long> list) {
+        return list.stream().mapToLong(i -> i).toArray();
+    }
+
+    public static String getUUIDListAsString(List<UUID> uuids) {
+        StringBuilder sb = new StringBuilder();
+        for (UUID uuid : uuids) {
+            sb.append(uuid.toString()).append(",");
+        }
+        return sb.toString();
+    }
+
+    public static List<UUID> getUUIDListFromString(String uuids) {
+        String[] uuidStrings = uuids.split(",");
+        return Arrays.stream(uuidStrings).map(UUID::fromString).collect(Collectors.toList());
     }
 
     public static String getMCLanguage(ItemStack itemStack, String locale) {

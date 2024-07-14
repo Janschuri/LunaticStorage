@@ -1,10 +1,8 @@
-package de.janschuri.lunaticStorages.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.subcommands.storage;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticStorages.storage.Key;
-import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
-import de.janschuri.lunaticStorages.config.PluginConfig;
+import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -46,10 +44,8 @@ public class ItemSubcommand extends Subcommand {
 
             ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStorageItem());
 
-            int[] invs = new int[]{};
-
             ItemMeta meta = item.getItemMeta();
-            meta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.INTEGER_ARRAY, invs);
+            meta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.BOOLEAN, true);
             item.setItemMeta(meta);
 
             Player p = Bukkit.getPlayer(player.getUniqueId());

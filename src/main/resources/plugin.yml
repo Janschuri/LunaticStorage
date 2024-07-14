@@ -1,6 +1,6 @@
 name: LunaticStorage
 version: '${project.version}'
-main: de.janschuri.lunaticStorages.LunaticStorage
+main: de.janschuri.lunaticstorage.LunaticStorage
 api-version: '1.19'
 
 commands:

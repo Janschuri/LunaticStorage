@@ -1,10 +1,8 @@
-package de.janschuri.lunaticStorages.listener;
+package de.janschuri.lunaticstorage.listener;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.storage.Key;
-import de.janschuri.lunaticStorages.config.PluginConfig;
-import de.janschuri.lunaticStorages.database.tables.PanelsTable;
-import de.janschuri.lunaticStorages.utils.Utils;
+import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.storage.Key;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,12 +24,8 @@ public class BlockPlaceListener implements Listener {
 
             if (dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN)) {
                 Block block = event.getBlockPlaced();
-
-
-                String coords = Utils.getCoordsAsString(block);
-                String worldName = block.getWorld().getName();
-
-                PanelsTable.savePanelsData(worldName, coords, null);
+                PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+                blockDataContainer.set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
             }
         }
     }

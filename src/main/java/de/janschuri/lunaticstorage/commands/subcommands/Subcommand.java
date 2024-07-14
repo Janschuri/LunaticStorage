@@ -1,12 +1,9 @@
-package de.janschuri.lunaticStorages.commands.subcommands;
+package de.janschuri.lunaticstorage.commands.subcommands;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticlib.LunaticCommand;
+import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.common.command.AbstractLunaticCommand;
-
-import java.util.List;
 
 public abstract class Subcommand extends AbstractLunaticCommand {
 

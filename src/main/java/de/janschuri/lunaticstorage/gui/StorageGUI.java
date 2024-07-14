@@ -1,11 +1,11 @@
-package de.janschuri.lunaticStorages.gui;
+package de.janschuri.lunaticstorage.gui;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.database.tables.PanelsTable;
-import de.janschuri.lunaticStorages.storage.Key;
-import de.janschuri.lunaticStorages.storage.Storage;
-import de.janschuri.lunaticStorages.utils.Logger;
-import de.janschuri.lunaticStorages.utils.Utils;
+import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.storage.Storage;
+import de.janschuri.lunaticstorage.utils.Logger;
+import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
@@ -17,11 +17,13 @@ import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,7 @@ public class StorageGUI extends InventoryGUI {
     private boolean storageFullTimeout = false;
     private boolean processingClickEvent = false;
 
+    private Block block;
     private int panelId;
     private Storage storage;
 
@@ -58,13 +61,14 @@ public class StorageGUI extends InventoryGUI {
 
 
 
-    private StorageGUI(Player player, int panelId, String locale) {
+    private StorageGUI(Player player, Block block, String locale) {
         super(createInventory());
         this.id = atomicInteger.getAndIncrement();
         this.player = player;
-        this.panelId = panelId;
+        this.block = block;
+        this.panelId = block.hashCode();
         this.locale = locale;
-        this.serializedStorageItem = PanelsTable.getPanelsStorageItem(panelId);
+        this.serializedStorageItem = getPanelsStorageItem(block);
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         storageGUIs.put(id, this);
         if (playerStorageGUIs.containsKey(player.getUniqueId())) {
@@ -81,6 +85,7 @@ public class StorageGUI extends InventoryGUI {
         this.page = storageGUI.page;
         this.id = storageGUI.id;
         this.player = storageGUI.player;
+        this.block = storageGUI.block;
         this.panelId = storageGUI.panelId;
         this.locale = storageGUI.locale;
 
@@ -90,7 +95,7 @@ public class StorageGUI extends InventoryGUI {
         this.processingClickEvent = storageGUI.processingClickEvent;
         this.storageFullTimeout = storageGUI.storageFullTimeout;
 
-        this.serializedStorageItem = PanelsTable.getPanelsStorageItem(panelId);
+        this.serializedStorageItem = storageGUI.serializedStorageItem;
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         decorate(player);
         storageGUIs.put(id, this);
@@ -103,6 +108,7 @@ public class StorageGUI extends InventoryGUI {
         this.page = storageGUI.page;
         this.id = storageGUI.id;
         this.player = storageGUI.player;
+        this.block = storageGUI.block;
         this.panelId = storageGUI.panelId;
         this.locale = storageGUI.locale;
 
@@ -112,22 +118,32 @@ public class StorageGUI extends InventoryGUI {
         this.processingClickEvent = storageGUI.processingClickEvent;
         this.storageFullTimeout = storageGUI.storageFullTimeout;
 
-        this.serializedStorageItem = PanelsTable.getPanelsStorageItem(panelId);
+        this.serializedStorageItem = storageGUI.serializedStorageItem;
         this.storage = Storage.getStorage(panelId,  serializedStorageItem);
         decorate(player);
         storageGUIs.put(id, this);
 
     }
 
-    public static StorageGUI getStorageGUI(Player player, int panelId) {
+    private byte[] getPanelsStorageItem(Block block) {
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
+            return dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY);
+        } else {
+            return null;
+        }
+    }
+
+    public static StorageGUI getStorageGUI(Player player, Block block) {
         if (playerStorageGUIs.containsKey(player.getUniqueId())) {
+            int panelId = block.hashCode();
             Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
             if (ids.containsKey(panelId)) {
                 int id = ids.get(panelId);
                 return new StorageGUI(id);
             }
         }
-        return new StorageGUI(player, panelId, player.getLocale());
+        return new StorageGUI(player, block, player.getLocale());
     }
 
     private static Inventory createInventory() {
@@ -481,7 +497,7 @@ public class StorageGUI extends InventoryGUI {
 
                     ItemStack item = event.getCurrentItem();
 
-                    ItemStack newItem = insertStorageItem(item, true);
+                    ItemStack newItem = insertStorageItem(item, false);
                     event.setCurrentItem(newItem);
 
                     reloadGui();
@@ -640,7 +656,13 @@ public class StorageGUI extends InventoryGUI {
             this.addButton(8, createStoragePane());
         }
 
-        PanelsTable.savePanelsData(panelId, serializedStorageItem);
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+        if (serializedStorageItem != null) {
+            dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, serializedStorageItem);
+        } else {
+            dataContainer.remove(Key.STORAGE_ITEM);
+        }
 
 
         Logger.debugLog("insertStorageItem: " + storageItem);

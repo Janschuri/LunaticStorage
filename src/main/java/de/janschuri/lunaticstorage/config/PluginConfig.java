@@ -1,6 +1,6 @@
-package de.janschuri.lunaticStorages.config;
+package de.janschuri.lunaticstorage.config;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticlib.common.config.LunaticConfigImpl;
 import org.bukkit.Material;
 

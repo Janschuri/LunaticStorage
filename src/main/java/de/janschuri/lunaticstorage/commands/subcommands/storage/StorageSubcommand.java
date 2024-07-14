@@ -1,9 +1,7 @@
-package de.janschuri.lunaticStorages.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.subcommands.storage;
 
-import de.janschuri.lunaticStorages.LunaticStorage;
-import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticStorages.utils.Logger;
+import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.Sender;
 

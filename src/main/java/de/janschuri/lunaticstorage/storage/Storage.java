@@ -1,16 +1,12 @@
-package de.janschuri.lunaticStorages.storage;
+package de.janschuri.lunaticstorage.storage;
 
-import de.janschuri.lunaticStorages.database.tables.ChestsTable;
-import de.janschuri.lunaticStorages.utils.Logger;
-import de.janschuri.lunaticStorages.utils.Utils;
+import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -28,15 +24,15 @@ public class Storage {
     private static final Map<Integer, Storage> storages = new HashMap<>();
 
     private Map<ItemStack, Integer> storageMap = new HashMap<>();
-    private final Map<ItemStack, Map<Integer, Boolean>> storageItems = new HashMap<>();
-    private final List<Integer> emptyChests = new ArrayList<>();
+    private final Map<ItemStack, Map<StorageContainer, Boolean>> storageItems = new HashMap<>();
+    private final List<StorageContainer> emptyChests = new ArrayList<>();
     private final int panelId;
     private final byte[] storageItem;
     protected static final AtomicInteger requestIdGenerator = new AtomicInteger(0);
 
     private Storage (int panelId, byte[] storageItem) {
         this.storageItem = storageItem;
-        int[] chests = getStorageChests(storageItem);
+        Collection<StorageContainer> chests = getStorageChests(storageItem);
         this.panelId = panelId;
         loadStorage(chests);
         storages.put(panelId, this);
@@ -47,11 +43,12 @@ public class Storage {
         if (storages.containsKey(panelId)) {
             Storage storage = storages.get(panelId);
 
-            return storage;
-
-        } else {
-            return new Storage(panelId, storageItem);
+            if (storage.storageItem == storageItem) {
+                return storage;
+            }
         }
+
+            return new Storage(panelId, storageItem);
     }
 
     public int getPanelId() {
@@ -122,7 +119,7 @@ public class Storage {
         }
     }
 
-    public Map<ItemStack, Integer> addInventoryToMap(Map<ItemStack, Integer> storageMap, Inventory inventory, int id) {
+    public Map<ItemStack, Integer> addInventoryToMap(Map<ItemStack, Integer> storageMap, Inventory inventory, StorageContainer container) {
         boolean empty = false;
         for (ItemStack item : inventory.getContents()) {
             if (item != null) {
@@ -135,17 +132,17 @@ public class Storage {
                     if (existingItem.isSimilar(clone)) {
                         int amount = entry.getValue();
                         storageMap.put(existingItem, amount + item.getAmount());
-                            Map<Integer, Boolean> itemsChests = this.storageItems.get(existingItem);
+                            Map<StorageContainer, Boolean> itemsChests = this.storageItems.get(existingItem);
 
-                            if (itemsChests.containsKey(id)) {
+                            if (itemsChests.containsKey(container)) {
                                 if (item.getAmount() != item.getMaxStackSize()) {
-                                    itemsChests.put(id, false);
+                                    itemsChests.put(container, false);
                                 }
                             } else {
                                 if (item.getAmount() != item.getMaxStackSize()) {
-                                    itemsChests.put(id, false);
+                                    itemsChests.put(container, false);
                                 } else {
-                                    itemsChests.put(id, true);
+                                    itemsChests.put(container, true);
                                 }
                             }
 
@@ -158,11 +155,11 @@ public class Storage {
                 if (!found) {
                     storageMap.put(clone, item.getAmount());
 
-                    Map<Integer, Boolean> itemsChests = new HashMap<>();
+                    Map<StorageContainer, Boolean> itemsChests = new HashMap<>();
                     if(item.getAmount() == item.getMaxStackSize()) {
-                        itemsChests.put(id, true);
+                        itemsChests.put(container, true);
                     } else {
-                        itemsChests.put(id, false);
+                        itemsChests.put(container, false);
                     }
                     this.storageItems.put(clone, itemsChests);
                 }
@@ -174,7 +171,7 @@ public class Storage {
         }
 
         if (empty) {
-            this.emptyChests.add(id);
+            this.emptyChests.add(container);
         }
 
         return storageMap;
@@ -215,61 +212,46 @@ public class Storage {
 //
 //        return inventory;
 //    }
-    public void loadStorage (int[] chests){
-        for (int id : chests) {
-            if (ChestsTable.isChestInDatabase(id)) {
-
-                int[] coords = ChestsTable.getChestCoords(id);
-                assert coords != null;
-                String worldString = ChestsTable.getChestWorld(id);
-                World world = Bukkit.getWorld(worldString);
-
-                Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
-                Container container = (Container) block.getState();
-
+    public void loadStorage (Collection<StorageContainer> chests) {
+        for (StorageContainer container : chests) {
                 Inventory chestInv = container.getSnapshotInventory();
-                storageMap = addInventoryToMap(storageMap, chestInv, id);
-
-            }
+                storageMap = addInventoryToMap(storageMap, chestInv, container);
         }
     }
     public ItemStack getItemsFromStorage(ItemStack item, Player player) {
         ItemStack searchedItem = item.clone();
 
-        int[] nonFullstackContainers;
+        List<StorageContainer> nonFullstackContainers = new ArrayList<>();
 
         if (this.storageItems.get(searchedItem) != null) {
             nonFullstackContainers = this.storageItems.get(searchedItem).entrySet().stream()
                     .filter(entry -> !entry.getValue())
-                    .mapToInt(Map.Entry::getKey)
-                    .toArray();
-        } else {
-            nonFullstackContainers = new int[0];
+                    .map(Map.Entry::getKey)
+                    .toList();
         }
 
         int stackSize = searchedItem.getMaxStackSize();
         int foundItems = 0;
 
-        for (int id : nonFullstackContainers) {
+        for (StorageContainer container : nonFullstackContainers) {
             if (foundItems == stackSize) {
                 break;
             }
-            if (!ChestsTable.isChestInDatabase(id)) {
+            if (!container.isStorageContainer()) {
                 continue;
             }
 
-                int[] coords = ChestsTable.getChestCoords(id);
-                assert coords != null;
-            String worldString = ChestsTable.getChestWorld(id);
-            World world = Bukkit.getWorld(worldString);
-                Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
+            Block block = container.getBlock();
 
             if (!EventUtils.isAllowedViewChest(player, block)) {
                 continue;
             }
 
-            Container container = (Container) block.getState();
             Inventory chestInv = container.getSnapshotInventory();
+
+            if (chestInv == null) {
+                continue;
+            }
 
             if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
                 continue;
@@ -323,41 +305,34 @@ public class Storage {
 
                 }
             }
-            updateContainer(id, chestInv, searchedItem);
+            updateContainer(container, chestInv, searchedItem);
         }
 
         if (foundItems != stackSize) {
 
-            int[] fullstackContainers;
+            List<StorageContainer> fullstackContainers = new ArrayList<>();
 
             if (this.storageItems.get(searchedItem) != null) {
                 fullstackContainers = this.storageItems.get(searchedItem).entrySet().stream()
                         .filter(Map.Entry::getValue)
-                        .mapToInt(Map.Entry::getKey)
-                        .toArray();
-            } else {
-                fullstackContainers = new int[0];
+                        .map(Map.Entry::getKey)
+                        .toList();
             }
 
-            for (int id : fullstackContainers) {
+            for (StorageContainer container : fullstackContainers) {
                 if (foundItems == stackSize) {
                     break;
                 }
-                if (!ChestsTable.isChestInDatabase(id)) {
+                if (!container.isStorageContainer()) {
                     continue;
                 }
 
-                int[] coords = ChestsTable.getChestCoords(id);
-                assert coords != null;
-                String worldString = ChestsTable.getChestWorld(id);
-                World world = Bukkit.getWorld(worldString);
-                Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
+                Block block = container.getBlock();
 
                 if (!EventUtils.isAllowedViewChest(player, block)) {
                     continue;
                 }
 
-                Container container = (Container) block.getState();
                 Inventory chestInv = container.getSnapshotInventory();
 
                 if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
@@ -411,7 +386,7 @@ public class Storage {
                         LogBlock.logChestRemove(player, block, itemStack);
                     }
                 }
-                updateContainer(id, chestInv, searchedItem);
+                updateContainer(container, chestInv, searchedItem);
             }
         }
 
@@ -428,35 +403,28 @@ public class Storage {
         ItemStack itemKey = remainingItems.clone();
         itemKey.setAmount(1);
 
-        int[] containers;
+        List<StorageContainer> containers = new ArrayList<>();
         if (this.storageItems.get(itemKey) != null) {
             containers = this.storageItems.get(itemKey).entrySet().stream()
                     .filter(entry -> !entry.getValue())
-                    .mapToInt(Map.Entry::getKey)
-                    .toArray();
-        } else {
-            containers = new int[0];
+                    .map(Map.Entry::getKey)
+                    .toList();
         }
 
-        for (int id : containers) {
+        for (StorageContainer container : containers) {
             if (remainingItems.getAmount() == 0 || remainingItems.getType() == Material.AIR) {
                 break;
             }
-            if (!ChestsTable.isChestInDatabase(id)) {
+            if (!container.isStorageContainer()) {
                 continue;
             }
 
-            int[] coords = ChestsTable.getChestCoords(id);
-            assert coords != null;
-            String worldString = ChestsTable.getChestWorld(id);
-            World world = Bukkit.getWorld(worldString);
-            Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
+            Block block = container.getBlock();
 
             if (!EventUtils.isAllowedViewChest(player, block)) {
                 continue;
             }
 
-            Container container = (Container) block.getState();
             Inventory chestInv = container.getSnapshotInventory();
 
             if (!EventUtils.isAllowedPutItem(player, chestInv)) {
@@ -477,32 +445,26 @@ public class Storage {
 
             LogBlock.logChestInsert(player, block, itemStack);
 
-            updateContainer(id, chestInv, itemKey);
+            updateContainer(container, chestInv, itemKey);
         }
 
         if (remainingItems.getAmount() != 0 && !emptyChests.isEmpty()) {
 
-            int[] emptyChests = this.emptyChests.stream().mapToInt(Integer::intValue).toArray();
+            List<StorageContainer> emptyChests = this.emptyChests.stream()
+                    .filter(StorageContainer::isStorageContainer)
+                    .toList();
 
-            for (int id : emptyChests) {
+            for (StorageContainer container : emptyChests) {
                 if (remainingItems.getAmount() == 0 || remainingItems.getType() == Material.AIR) {
                     break;
                 }
-                if (!ChestsTable.isChestInDatabase(id)) {
-                    continue;
-                }
 
-                int[] coords = ChestsTable.getChestCoords(id);
-                assert coords != null;
-                String worldString = ChestsTable.getChestWorld(id);
-                World world = Bukkit.getWorld(worldString);
-                Block block = world.getBlockAt(coords[0], coords[1], coords[2]);
+                Block block = container.getBlock();
 
                 if (!EventUtils.isAllowedViewChest(player, block)) {
                     continue;
                 }
 
-                Container container = (Container) block.getState();
                 Inventory chestInv = container.getSnapshotInventory();
 
                 if (!EventUtils.isAllowedPutItem(player, chestInv)) {
@@ -523,7 +485,7 @@ public class Storage {
 
                 LogBlock.logChestInsert(player, block, itemStack);
 
-                updateContainer(id, chestInv, itemKey);
+                updateContainer(container, chestInv, itemKey);
             }
         }
 
@@ -536,8 +498,8 @@ public class Storage {
         storages.put(panelId, this);
         return remainingItems;
     }
-    public void updateContainer(int id, Inventory containerInv, ItemStack itemKey) {
-        Map<Integer, Boolean> itemsChests = new HashMap<>();
+    public void updateContainer(StorageContainer container, Inventory containerInv, ItemStack itemKey) {
+        Map<StorageContainer, Boolean> itemsChests = new HashMap<>();
 
         if (this.storageItems.get(itemKey) != null) {
             itemsChests = this.storageItems.get(itemKey);
@@ -545,39 +507,53 @@ public class Storage {
 
         if (containerInv.containsAtLeast(itemKey, 1)) {
 
-            itemsChests.put(id, true);
+            itemsChests.put(container, true);
 
             for (ItemStack item : containerInv.getContents()) {
                 if (item != null && item.isSimilar(itemKey) && item.getAmount() != item.getMaxStackSize()){
-                    itemsChests.put(id, false);
+                    itemsChests.put(container, false);
                     break;
                 }
             }
 
         } else {
-            itemsChests.remove(id);
+            itemsChests.remove(container);
         }
 
         this.storageItems.put(itemKey, itemsChests);
 
         if (containerInv.firstEmpty() == -1) {
-            emptyChests.remove(Integer.valueOf(id));
+            emptyChests.remove(container);
         } else {
-            if (!emptyChests.contains(id)) {
-                emptyChests.add(id);
+            if (!emptyChests.contains(container)) {
+                emptyChests.add(container);
             }
         }
     }
 
-    public static int[] getStorageChests(byte[] serializedStorageItem) {
+    public static Collection<StorageContainer> getStorageChests(byte[] serializedStorageItem) {
+        Collection<StorageContainer> storageContainers = new ArrayList<>();
+
         if (serializedStorageItem != null) {
             ItemStack storageItem = ItemStackUtils.deserializeItemStack(serializedStorageItem);
             ItemMeta meta = storageItem.getItemMeta();
             PersistentDataContainer container = meta.getPersistentDataContainer();
-            return container.get(Key.STORAGE, PersistentDataType.INTEGER_ARRAY);
+
+            String worldsString = container.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+            List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+
+            for (UUID worldUUID : worlds) {
+                NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+                long[] chests = container.get(worldKey, PersistentDataType.LONG_ARRAY);
+                if (chests != null) {
+                    for (long chest : chests) {
+                        storageContainers.add(new StorageContainer(worldUUID, chest));
+                    }
+                }
+            }
         }
 
-        return new int[0];
+        return storageContainers;
     }
 
 }

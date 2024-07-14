@@ -1,7 +1,6 @@
-package de.janschuri.lunaticStorages.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.subcommands.storage;
 
-import de.janschuri.lunaticStorages.commands.subcommands.Subcommand;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
+import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -13,7 +12,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class RandomSubcommand extends Subcommand {
 

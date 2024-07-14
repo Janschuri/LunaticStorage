@@ -1,14 +1,12 @@
-package de.janschuri.lunaticStorages;
+package de.janschuri.lunaticstorage;
 
-import de.janschuri.lunaticStorages.commands.subcommands.storage.StorageSubcommand;
-import de.janschuri.lunaticStorages.config.DatabaseConfig;
-import de.janschuri.lunaticStorages.config.LanguageConfig;
-import de.janschuri.lunaticStorages.config.PluginConfig;
-import de.janschuri.lunaticStorages.database.Database;
-import de.janschuri.lunaticStorages.listener.*;
-import de.janschuri.lunaticStorages.storage.Storage;
-import de.janschuri.lunaticStorages.utils.Logger;
-import de.janschuri.lunaticlib.platform.bukkit.BukkitLunaticLib;
+import de.janschuri.lunaticstorage.commands.subcommands.storage.StorageSubcommand;
+import de.janschuri.lunaticstorage.config.DatabaseConfig;
+import de.janschuri.lunaticstorage.config.LanguageConfig;
+import de.janschuri.lunaticstorage.config.PluginConfig;
+import de.janschuri.lunaticstorage.listener.*;
+import de.janschuri.lunaticstorage.storage.Storage;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,10 +37,6 @@ public final class LunaticStorage extends JavaPlugin {
         dataDirectory = getDataFolder().toPath();
 
         loadConfig();
-
-        if (!Database.loadDatabase()) {
-            disable();
-        }
 
         new PlatformImpl().registerCommand(this, new StorageSubcommand());
 
