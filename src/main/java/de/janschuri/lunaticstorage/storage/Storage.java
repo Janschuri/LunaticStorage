@@ -98,6 +98,7 @@ public class Storage {
             dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
         }
         loadStorage();
+        StorageGUI.updateStorageGUIs(block);
     }
 
     public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
@@ -149,6 +150,7 @@ public class Storage {
     }
 
     public void updateStorageMap(ItemStack item, int difference) {
+        Logger.debugLog("Updating storage map for " + block + " with " + item + " and " + difference);
         ItemStack clone = item.clone();
         clone.setAmount(1);
 
@@ -403,6 +405,7 @@ public class Storage {
 
                 for (ItemStack i : chestInv.getContents()) {
                     if (foundItems == stackSize) {
+                        updateContainer(container, chestInv, searchedItem);
                         break;
                     }
                     if (i == null) {
