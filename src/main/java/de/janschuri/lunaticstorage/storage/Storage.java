@@ -246,7 +246,9 @@ public class Storage {
     }
 
     public long getRange() {
-        return Utils.getRangeFromItem(getRangeItem());
+        long itemRange = Utils.getRangeFromItem(getRangeItem());
+        long panelRange = Utils.getRangeFromBlock(block);
+        return Math.max(itemRange, panelRange);
     }
 
     public void updateStorageMap(ItemStack item, int difference) {
