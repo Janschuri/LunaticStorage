@@ -20,9 +20,13 @@ public class StorageContainer {
 
     private final Block block;
     private final List<Block> storageIds;
+    private ItemStack[] contents;
 
     private StorageContainer(Block block) {
         this.block = block;
+        if (block.getState() instanceof Container) {
+            this.contents = ((Container) block.getState()).getInventory().getContents();
+        }
 
         if (loadedContainers.containsKey(block)) {
             this.storageIds = loadedContainers.get(block).storageIds;
@@ -80,7 +84,54 @@ public class StorageContainer {
         }
     }
 
+    public void updateContents() {
+        if (block.getState() instanceof Container) {
+            ItemStack[] newContents = ((Container) block.getState()).getInventory().getContents();
+
+            Map<ItemStack, Integer> difference = getDifference(contents, newContents);
+
+            contents = newContents;
+            updateStorages(difference);
+        }
+    }
+
     public static boolean isLoaded(Block block) {
         return loadedContainers.containsKey(block);
+    }
+
+    public Map<ItemStack, Integer> getDifference(ItemStack[] oldItems, ItemStack[] newItems) {
+        Map<ItemStack, Integer> difference = new HashMap<>();
+
+        List<ItemStack> oldItemList = new ArrayList<>();
+        for (ItemStack oldItem : oldItems) {
+            if (oldItem != null) {
+                oldItemList.add(oldItem);
+            }
+        }
+        List<ItemStack> newItemList = new ArrayList<>();
+        for (ItemStack newItem : newItems) {
+            if (newItem != null) {
+                newItemList.add(newItem);
+            }
+        }
+
+        for (ItemStack oldItem : oldItemList) {
+            if (newItemList.contains(oldItem)) {
+                ItemStack newItem = newItemList.get(newItemList.indexOf(oldItem));
+                int differenceCount = newItem.getAmount() - oldItem.getAmount();
+                if (differenceCount != 0) {
+                    difference.put(newItem, differenceCount);
+                }
+            } else {
+                difference.put(oldItem, -oldItem.getAmount());
+            }
+            newItemList.remove(oldItem);
+        }
+
+        for (ItemStack newItem : newItemList) {
+            difference.put(newItem, newItem.getAmount());
+        }
+
+        return difference;
     }
 }

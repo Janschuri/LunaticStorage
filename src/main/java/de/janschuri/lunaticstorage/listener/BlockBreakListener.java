@@ -26,18 +26,29 @@ import java.util.List;
 
 public class BlockBreakListener implements Listener {
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBlockBreak(BlockBreakEvent event) {
+
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+
+        if (Utils.isPanel(block)) {
+            Logger.debugLog("Panel block broken");
+            if (!player.isSneaking()) {
+                Logger.debugLog("Player is not sneaking");
+                event.setCancelled(true);
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onBlockBreak(BlockDropItemEvent event) {
+    public void onBlockDrop(BlockDropItemEvent event) {
         List<Item> items = event.getItems();
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
-            if (!player.isSneaking()) {
-                event.setCancelled(true);
-                return;
-            }
 
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
             ItemStack blockItem = items.get(0).getItemStack();

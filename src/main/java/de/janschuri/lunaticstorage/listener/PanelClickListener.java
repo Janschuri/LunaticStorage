@@ -5,6 +5,7 @@ import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
+import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -29,9 +30,7 @@ public class PanelClickListener implements Listener {
         Block block = event.getClickedBlock();
         Player player = event.getPlayer();
 
-        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-
-        if (dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN)) {
+        if (Utils.isPanel(block)) {
             event.setCancelled(true);
             GUIManager.openGUI(StorageGUI.getStorageGUI(player, block), player);
         }

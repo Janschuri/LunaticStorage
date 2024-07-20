@@ -44,6 +44,7 @@ public final class LunaticStorage extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        getServer().getPluginManager().registerEvents(new ContainerEditListener(), this);
     }
 
     @Override

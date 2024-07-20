@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.storage;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.BlockUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
@@ -50,9 +51,6 @@ public class Storage {
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack storageItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
-                Logger.debugLog("Storage item: " + storageItem);
-                Logger.debugLog("Block item: " + storageItems.get(block));
-
                 boolean update = false;
 
                 if (storageItems.get(block) == null) {
@@ -99,6 +97,7 @@ public class Storage {
         } else {
             dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
         }
+        loadStorage();
     }
 
     public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
@@ -163,6 +162,8 @@ public class Storage {
         } else {
             getStorageMap().put(clone, oldAmount + difference);
         }
+
+        StorageGUI.updateStorageGUIs(block);
     }
 
     public void addInventoryToMap(Inventory inventory, StorageContainer container) {

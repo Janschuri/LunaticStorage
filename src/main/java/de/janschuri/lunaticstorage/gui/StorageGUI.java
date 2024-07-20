@@ -650,4 +650,12 @@ public class StorageGUI extends InventoryGUI {
         Logger.debugLog("insertStorageItem: " + storageItem);
         return result;
     }
+
+    public static void updateStorageGUIs(Block block) {
+        for (StorageGUI storageGUI : storageGUIs.values()) {
+            if (storageGUI.block.equals(block)) {
+                storageGUI.reloadGui();
+            }
+        }
+    }
 }
