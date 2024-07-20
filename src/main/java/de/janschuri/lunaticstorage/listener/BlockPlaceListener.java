@@ -17,7 +17,6 @@ public class BlockPlaceListener implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
 
-        if (event.getBlockPlaced().getType().equals(LunaticStorage.getPluginConfig().getStoragePanelBlock())) {
             ItemStack item = event.getItemInHand();
             ItemMeta meta = item.getItemMeta();
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
@@ -28,6 +27,5 @@ public class BlockPlaceListener implements Listener {
                 blockDataContainer.set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
                 blockDataContainer.set(Key.PANEL_RANGE, PersistentDataType.LONG, dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG));
             }
-        }
     }
 }

@@ -15,13 +15,18 @@ messages:
   total_containers: "Total containers: %amount%"
 commands:
   storage:
+    aliases:
+      - storage
     subcommands:
-      item:
+      get:
         aliases:
-          - item
-      panel:
+          - get
+      create:
         aliases:
-          - panel
+          - create
+        messages:
+          no_item_in_hand: "Du musst ein Item in der Hand halten."
+          no_block_in_hand: "Du musst einen Block in der Hand halten."
       reload:
         aliases:
           - reload

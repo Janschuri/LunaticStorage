@@ -14,7 +14,8 @@ public class Storage extends Subcommand {
         return List.of(
             new StorageRandom(),
             new StorageReload(),
-            new StorageGet()
+            new StorageGet(),
+            new StorageCreate()
         );
     }
 
