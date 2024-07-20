@@ -2,13 +2,14 @@ package de.janschuri.lunaticstorage.utils;
 
 
 import de.janschuri.lunaticlib.common.logger.AbstractLogger;
+import de.janschuri.lunaticstorage.LunaticStorage;
 
 public class Logger extends AbstractLogger {
 
     private static final org.slf4j.Logger logger = Logger.getLogger("LunaticStorage");
 
     public static boolean isDebug() {
-        return true;
+        return LunaticStorage.isDebug();
     }
 
     public static void debugLog(String msg) {

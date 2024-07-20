@@ -1,18 +1,13 @@
 package de.janschuri.lunaticstorage.storage;
 
-import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticlib.platform.bukkit.util.BlockUtils;
-import org.bukkit.Location;
+import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
+import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class StorageContainer {
 
@@ -45,7 +40,7 @@ public class StorageContainer {
     }
 
     public static StorageContainer getStorageContainer(UUID worldUUID, long coords) {
-        Block block = BlockUtils.deserializeCoords(coords, worldUUID).getBlock();
+        Block block = BukkitUtils.deserializeCoords(coords, worldUUID).getBlock();
         return getStorageContainer(block);
     }
 
@@ -133,5 +128,17 @@ public class StorageContainer {
         }
 
         return difference;
+    }
+
+    public boolean isValid() {
+        if (!(block.getState() instanceof Container)) {
+            return false;
+        }
+
+        if (!(Utils.isContainer(block))) {
+            return false;
+        }
+
+        return true;
     }
 }

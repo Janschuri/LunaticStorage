@@ -1,11 +1,10 @@
 package de.janschuri.lunaticstorage;
 
-import de.janschuri.lunaticstorage.commands.subcommands.storage.StorageSubcommand;
+import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.DatabaseConfig;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.config.PluginConfig;
 import de.janschuri.lunaticstorage.listener.*;
-import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import org.bukkit.*;
@@ -24,7 +23,7 @@ public final class LunaticStorage extends JavaPlugin {
     private static Map<String, JSONObject> languagesMap = new HashMap<>();
     public static boolean debug;
     private static Path dataDirectory;
-    private static Map<Integer, Storage> storages = new HashMap<>();
+    private static Map<Integer, de.janschuri.lunaticstorage.storage.Storage> storages = new HashMap<>();
     private static LunaticStorage instance;
     private static DatabaseConfig databaseConfig;
     private static LanguageConfig languageConfig;
@@ -38,7 +37,7 @@ public final class LunaticStorage extends JavaPlugin {
 
         loadConfig();
 
-        new PlatformImpl().registerCommand(this, new StorageSubcommand());
+        new PlatformImpl().registerCommand(this, new Storage());
 
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
@@ -107,7 +106,7 @@ public final class LunaticStorage extends JavaPlugin {
         return languagesMap;
     }
 
-    public static Storage getStorage(int id) {
+    public static de.janschuri.lunaticstorage.storage.Storage getStorage(int id) {
         return storages.get(id);
     }
 
@@ -115,7 +114,7 @@ public final class LunaticStorage extends JavaPlugin {
         return storages.containsKey(id);
     }
 
-    public static void addStorage(int id, Storage storage) {
+    public static void addStorage(int id, de.janschuri.lunaticstorage.storage.Storage storage) {
         storages.put(id, storage);
     }
     public static void removeStorage(int id) {
@@ -128,5 +127,9 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static LanguageConfig getLanguageConfig() {
         return languageConfig;
+    }
+
+    public static boolean isDebug() {
+        return debug;
     }
 }

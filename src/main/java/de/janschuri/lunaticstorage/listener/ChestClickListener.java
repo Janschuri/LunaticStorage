@@ -1,12 +1,12 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
-import de.janschuri.lunaticlib.platform.bukkit.util.BlockUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -47,7 +47,7 @@ public class ChestClickListener implements Listener {
 
             Block block = event.getClickedBlock();
             UUID worldUUID = block.getWorld().getUID();
-            long chestID = BlockUtils.serializeCoords(block.getLocation());
+            long chestID = BukkitUtils.serializeCoords(block.getLocation());
 
             ItemMeta storageMeta = itemInHand.getItemMeta();
 

@@ -31,10 +31,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class StorageGUI extends InventoryGUI {
 
-    private static final MessageKey STORAGE_FULL = new MessageKey("storage_full");
-    private static final MessageKey AMOUNT = new MessageKey("amount");
-    private static final MessageKey PAGE = new MessageKey("page");
-    private static final MessageKey GUI_TITLE = new MessageKey("gui_title");
+    private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full");
+    private static final MessageKey AMOUNT_MK = new MessageKey("amount");
+    private static final MessageKey PAGE_MK = new MessageKey("page");
+    private static final MessageKey TOTAL_ITEMS_MK = new MessageKey("total_items");
+    private static final MessageKey LOADED_CONTAINERS_MK = new MessageKey("loaded_containers");
+    private static final MessageKey TOTAL_CONTAINERS_MK = new MessageKey("total_containers");
+    private static final MessageKey RANGE_MK = new MessageKey("range");
+    private static final MessageKey GUI_TITLE_MK = new MessageKey("gui_title");
 
     private static final Map<Integer, StorageGUI> storageGUIs = new HashMap<>();
     private static final Map<UUID, Map<Integer, Integer>> playerStorageGUIs = new HashMap<>();
@@ -142,7 +146,7 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private static Inventory createInventory() {
-        String title = LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE);
+        String title = LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE_MK);
         Inventory inv = Bukkit.createInventory(null, 54, title);
 
         for (int i = 0; i < 9; i++) {
@@ -155,48 +159,57 @@ public class StorageGUI extends InventoryGUI {
 
     @Override
     public void decorate(Player player) {
-        setStorageItem();
+        createStorageButton();
+        createRangeButton();
         createStorageItemsButtons();
         addButton(createItemButton());
         addButton(createStoragePlayerInvButton());
         addButton(0, createSearchButton());
-        addButton(6, createSorterButton());
-        addButton(7, createDescendingButton());
+        addButton(4, createSorterButton());
+        addButton(5, createDescendingButton());
 
         if (page > 0) {
             addButton(48, createArrowLeft());
         } else {
-            addButton(48, emptyButton());
+            addButton(48, createEmptyButton());
         }
 
         addButton(49, createPageButton());
 
-        Logger.debugLog("page: " + page + " pages: " + pages);
-
         if (page < pages) {
             addButton(50, createArrowRight());
         } else {
-            addButton(50, emptyButton());
+            addButton(50, createEmptyButton());
         }
         super.decorate(player);
     }
 
-    private void setStorageItem() {
+    private void createStorageButton() {
         ItemStack storageItem = storage.getStorageItem();
 
         if (storageItem != null) {
-            this.addButton(8, createStorageButton());
+            this.addButton(8, createStorageItemButton());
         } else {
-            this.addButton(8, createStoragePane());
+            this.addButton(8, createStoragePaneButton());
         }
     }
 
-    private InventoryButton emptyButton() {
+    private void createRangeButton() {
+        ItemStack rangeItem = storage.getRangeItem();
+
+        if (rangeItem != null) {
+            this.addButton(7, createRangeItemButton());
+        } else {
+            this.addButton(7, createRangePaneButton());
+        }
+    }
+
+    private InventoryButton createEmptyButton() {
         return new InventoryButton()
                 .creator(player -> new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
     }
 
-    private InventoryButton createStoragePane() {
+    private InventoryButton createStoragePaneButton() {
         return new InventoryButton()
                 .creator(player -> new ItemStack(Material.CYAN_STAINED_GLASS_PANE))
                 .consumer(event -> {
@@ -214,7 +227,25 @@ public class StorageGUI extends InventoryGUI {
                 });
     }
 
-    private InventoryButton createStorageButton() {
+    private InventoryButton createRangePaneButton() {
+        return new InventoryButton()
+                .creator(player -> new ItemStack(Material.RED_STAINED_GLASS_PANE))
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    Player player = (Player) event.getWhoClicked();
+                    ItemStack cursor = event.getCursor();
+
+                    ItemStack newItem = insertRangeItem(cursor, false);
+                    player.setItemOnCursor(newItem);
+
+                    reloadGui();
+                });
+    }
+
+    private InventoryButton createStorageItemButton() {
         ItemStack item = storage.getStorageItem();
         return new InventoryButton()
                 .creator(player -> item)
@@ -226,7 +257,30 @@ public class StorageGUI extends InventoryGUI {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursor = event.getCursor().clone();
 
+                    Logger.debugLog("Cursor: " + cursor);
+
                     ItemStack newItem = insertStorageItem(cursor, true, event.isRightClick());
+
+                    Logger.debugLog("New Item: " + newItem);
+                    player.setItemOnCursor(newItem);
+
+                    reloadGui();
+                });
+    }
+
+    private InventoryButton createRangeItemButton() {
+        ItemStack item = storage.getRangeItem();
+        return new InventoryButton()
+                .creator(player -> item)
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    Player player = (Player) event.getWhoClicked();
+                    ItemStack cursor = event.getCursor().clone();
+
+                    ItemStack newItem = insertRangeItem(cursor, true, event.isRightClick());
                     player.setItemOnCursor(newItem);
 
                     reloadGui();
@@ -245,7 +299,7 @@ public class StorageGUI extends InventoryGUI {
             lore = new ArrayList<>();
         }
 
-        String amountText = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(AMOUNT).replace("%amount%", String.valueOf(amount));
+        String amountText = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
         lore.add(amountText);
 
         if (meta != null) {
@@ -283,9 +337,27 @@ public class StorageGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.PAPER);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE, false)
+                    meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
                             .replace("%page%", String.valueOf(page + 1))
                             .replace("%pages%", String.valueOf(pages + 1)));
+                    List<String> lore = new ArrayList<>();
+
+                    String totalItems = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_ITEMS_MK, false)
+                            .replace("%amount%", storage.getTotalAmount() + "");
+                    String range = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(RANGE_MK, false)
+                            .replace("%range%", storage.getRange() + "");
+                    String loadedContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(LOADED_CONTAINERS_MK, false)
+                            .replace("%amount%", storage.getLoadedContainersAmount() + "");
+                    String totalContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_CONTAINERS_MK, false)
+                            .replace("%amount%", storage.getContainerAmount() + "");
+
+                    lore.add(totalItems);
+                    lore.add(range);
+                    lore.add(loadedContainers);
+                    lore.add(totalContainers);
+
+                    meta.setLore(lore);
+
                     item.setItemMeta(meta);
                     return item;
                 });
@@ -450,7 +522,7 @@ public class StorageGUI extends InventoryGUI {
                         return false;
                     }
 
-                    return !isStorageItem(item);
+                    return !Utils.isStorageItem(item);
                 })
                 .consumer(event -> {
                     if (processingClickEvent()) {
@@ -484,7 +556,7 @@ public class StorageGUI extends InventoryGUI {
                         return false;
                     }
 
-                    return isStorageItem(item);
+                    return Utils.isStorageItem(item);
                 })
                 .consumer(event -> {
                     if (processingClickEvent()) {
@@ -549,7 +621,7 @@ public class StorageGUI extends InventoryGUI {
         ItemStack newItem = storage.insertItemsIntoStorage(item, player);
 
         if (newItem.getAmount() > 0) {
-            AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL));
+            AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL_MK));
             storageFullTimeout = true;
             Runnable runnable = () -> {
                 storageGUIs.get(id).storageFullTimeout = false;
@@ -561,22 +633,6 @@ public class StorageGUI extends InventoryGUI {
         reloadGui();
 
         return newItem;
-    }
-
-    private static boolean isStorageItem(ItemStack item) {
-        if (item == null) {
-            return false;
-        }
-
-        ItemMeta meta = item.getItemMeta();
-
-        if (meta == null) {
-            return false;
-        }
-
-        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-
-        return dataContainer.has(Key.STORAGE);
     }
 
     private boolean processingClickEvent() {
@@ -597,7 +653,7 @@ public class StorageGUI extends InventoryGUI {
 
     private ItemStack insertStorageItem(ItemStack item, boolean swapItems, boolean isRightClick) {
 
-        if (!isStorageItem(item) && !item.getType().equals(Material.AIR)) {
+        if (!Utils.isStorageItem(item) && !item.getType().equals(Material.AIR)) {
             Logger.debugLog("insertStorageItem: not storage item");
             return item;
         }
@@ -640,14 +696,74 @@ public class StorageGUI extends InventoryGUI {
 
         if (!storageItem.getType().isAir()) {
             storage.setStorageItem(storageItem);
-            this.addButton(8, createStorageButton());
+//            this.addButton(7, createStorageItemButton());
         } else {
             storage.setStorageItem(null);
-            this.addButton(8, createStoragePane());
+//            this.addButton(7, createStoragePaneButton());
         }
 
+        createStorageButton();
 
-        Logger.debugLog("insertStorageItem: " + storageItem);
+        Logger.debugLog("insertStorageItem: storageItem: " + storageItem);
+
+        return result;
+    }
+
+    private ItemStack insertRangeItem(ItemStack item, boolean swapItems) {
+        return insertRangeItem(item, swapItems, false);
+    }
+
+    private ItemStack insertRangeItem(ItemStack item, boolean swapItems, boolean isRightClick) {
+
+        if (!Utils.isRangeItem(item) && !item.getType().equals(Material.AIR)) {
+            Logger.debugLog("insertRangeItem: not range item");
+            return item;
+        }
+
+        ItemStack result;
+        ItemStack rangeItem;
+
+        if (storage.getRangeItem() == null) {
+            rangeItem = item.clone();
+            result = new ItemStack(Material.AIR);
+        } else {
+            rangeItem = storage.getRangeItem().clone();
+
+            if (rangeItem.isSimilar(item) && item.getType() != Material.AIR) {
+                if (rangeItem.getMaxStackSize() > rangeItem.getAmount()) {
+                    int itemAmount = item.getAmount();
+                    int rangeItemAmount = rangeItem.getAmount();
+                    int totalAmount = itemAmount + rangeItemAmount;
+                    if (totalAmount <= rangeItem.getMaxStackSize()) {
+                        rangeItem.setAmount(totalAmount);
+                        result = new ItemStack(Material.AIR);
+                    } else {
+                        rangeItem.setAmount(rangeItem.getMaxStackSize());
+                        int newItemAmount = totalAmount - rangeItem.getMaxStackSize();
+                        item.setAmount(newItemAmount);
+                        result = item.clone();
+                    }
+                } else {
+                    result = item;
+                }
+            } else {
+                if (swapItems) {
+                    result = rangeItem.clone();
+                    rangeItem = item.clone();
+                } else {
+                    result = item.clone();
+                }
+            }
+        }
+
+        if (!rangeItem.getType().isAir()) {
+            storage.setRangeItem(rangeItem);
+        } else {
+            storage.setRangeItem(null);
+        }
+
+        createRangeButton();
+
         return result;
     }
 

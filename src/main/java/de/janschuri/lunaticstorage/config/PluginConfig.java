@@ -10,8 +10,6 @@ public class PluginConfig extends LunaticConfigImpl {
 
     private static final String CONFIG_FILE = "config.yml";
     private String languageKey;
-    private String storageItem;
-    private String storagePanelBlock;
 
 
     public PluginConfig(Path dataDirectory) {
@@ -20,22 +18,33 @@ public class PluginConfig extends LunaticConfigImpl {
 
     public void load() {
         super.load();
-        languageKey = getString("language", "EN");
-        storageItem = getString("storage_item", "DIAMOND");
-        storagePanelBlock = getString("panel_block", "LODESTONE");
         LunaticStorage.debug = getBoolean("debug", false);
     }
 
     public String getLanguageKey() {
-        return languageKey;
+        return getString("language", "EN");
     }
 
     public Material getStorageItem() {
+        String storageItem = getString("storage_item", "DIAMOND");
         return Material.getMaterial(storageItem);
     }
 
     public Material getStoragePanelBlock() {
-        return Material.getMaterial(storagePanelBlock);
+        String panelBlock = getString("panel_block", "LODESTONE");
+        return Material.getMaterial(panelBlock);
     }
 
+    public Material getRangeItem() {
+        String rangeItem = getString("range_item", "MAGMA_CREAM");
+        return Material.getMaterial(rangeItem);
+    }
+
+    public int getDefaultRangeItem() {
+        return getInt("default_range_item", 5);
+    }
+
+    public int getDefaultRange() {
+        return getInt("default_range", 5);
+    }
 }

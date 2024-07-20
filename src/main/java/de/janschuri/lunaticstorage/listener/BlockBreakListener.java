@@ -32,7 +32,7 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if (Utils.isPanel(block)) {
+        if (Utils.isPanel(block) || LunaticStorage.isDebug()) {
             Logger.debugLog("Panel block broken");
             if (!player.isSneaking()) {
                 Logger.debugLog("Player is not sneaking");

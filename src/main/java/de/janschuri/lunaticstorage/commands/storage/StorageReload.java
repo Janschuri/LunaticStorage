@@ -1,18 +1,18 @@
-package de.janschuri.lunaticstorage.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
+import de.janschuri.lunaticstorage.commands.Subcommand;
 import de.janschuri.lunaticlib.CommandMessageKey;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.Sender;
 
-public class ReloadSubcommand extends Subcommand {
+public class StorageReload extends Subcommand {
 
     private final CommandMessageKey reloadedMK = new CommandMessageKey(this, "reloaded");
 
     @Override
     public LunaticCommand getParentCommand() {
-        return new StorageSubcommand();
+        return new Storage();
     }
 
     @Override
@@ -28,7 +28,7 @@ public class ReloadSubcommand extends Subcommand {
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!sender.hasPermission(getPermission())) {
-            sender.sendMessage(getMessage(NO_PERMISSION));
+            sender.sendMessage(getMessage(NO_PERMISSION_MK));
             return true;
         }
 

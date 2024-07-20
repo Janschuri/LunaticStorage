@@ -4,16 +4,17 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.storage.StorageContainer;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.json.JSONObject;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
@@ -67,6 +68,10 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
     }
 
     public static List<UUID> getUUIDListFromString(String uuids) {
+        if (uuids == null || uuids.isEmpty()) {
+            return null;
+        }
+
         String[] uuidStrings = uuids.split(",");
         return Arrays.stream(uuidStrings).map(UUID::fromString).collect(Collectors.toList());
     }
@@ -119,5 +124,87 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
     public static boolean isContainer(Block block) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN);
+    }
+
+    public static boolean isStorageItem(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+        return dataContainer.has(Key.STORAGE);
+    }
+
+    public static boolean isRangeItem(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+        return dataContainer.has(Key.RANGE);
+    }
+
+    public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
+        Collection<StorageContainer> storageContainers = new ArrayList<>();
+
+        if (storageItem != null) {
+            ItemMeta meta = storageItem.getItemMeta();
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+
+            String worldsString = container.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+            if (worldsString != null) {
+                List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+
+                if (worlds == null) {
+                    return storageContainers;
+                }
+
+                for (UUID worldUUID : worlds) {
+                    NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+                    long[] chests = container.get(worldKey, PersistentDataType.LONG_ARRAY);
+                    if (chests != null) {
+                        for (long chest : chests) {
+                            storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chest));
+                        }
+                    }
+                }
+            }
+        }
+
+        return storageContainers;
+    }
+
+    public static long getRangeFromItem(ItemStack item) {
+        if (item == null) {
+            return 0;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        return container.get(Key.RANGE, PersistentDataType.LONG);
+    }
+
+    public static long getRangeFromBlock(Block block) {
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+        if (!dataContainer.has(Key.PANEL_RANGE, PersistentDataType.LONG)) {
+            return 0;
+        }
+
+        return dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG);
     }
 }

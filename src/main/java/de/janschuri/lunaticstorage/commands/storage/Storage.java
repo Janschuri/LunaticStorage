@@ -1,21 +1,22 @@
-package de.janschuri.lunaticstorage.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
+import de.janschuri.lunaticstorage.commands.Subcommand;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.Sender;
 
 import java.util.List;
 
-public class StorageSubcommand extends Subcommand {
+public class Storage extends Subcommand {
 
     @Override
     public List<LunaticCommand> getSubcommands() {
         return List.of(
-            new ItemSubcommand(),
-            new PanelSubcommand(),
-            new RandomSubcommand(),
-            new ReloadSubcommand()
+            new StorageItem(),
+            new StoragePanel(),
+            new StorageRandom(),
+            new StorageReload(),
+            new StorageRangeItem()
         );
     }
 
@@ -32,7 +33,7 @@ public class StorageSubcommand extends Subcommand {
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!sender.hasPermission(getPermission())) {
-            sender.sendMessage(getMessage(NO_PERMISSION));
+            sender.sendMessage(getMessage(NO_PERMISSION_MK));
             return true;
         }
         if (args.length == 0) {

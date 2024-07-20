@@ -1,6 +1,6 @@
-package de.janschuri.lunaticstorage.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
+import de.janschuri.lunaticstorage.commands.Subcommand;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RandomSubcommand extends Subcommand {
+public class StorageRandom extends Subcommand {
 
     private static final String MAIN_COMMAND = "storage";
     private static final String NAME = "random";
@@ -21,7 +21,7 @@ public class RandomSubcommand extends Subcommand {
 
     @Override
     public LunaticCommand getParentCommand() {
-        return new StorageSubcommand();
+        return new Storage();
     }
 
     @Override
@@ -37,12 +37,12 @@ public class RandomSubcommand extends Subcommand {
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!(sender instanceof PlayerSender)) {
-            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND));
+            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND_MK));
             return true;
         }
 
         if (!sender.hasPermission(getPermission())) {
-            sender.sendMessage(getMessage(NO_PERMISSION));
+            sender.sendMessage(getMessage(NO_PERMISSION_MK));
             return true;
         }
 

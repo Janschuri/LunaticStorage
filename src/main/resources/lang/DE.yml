@@ -9,6 +9,10 @@ messages:
   page: "Seite: %page%/%pages%"
   gui_title: "Speicher"
   gui_title_full_storage: "&cSpeicher ist voll"
+  range: "Reichweite: %range%"
+  total_items: "Gesamtmenge: %amount%"
+  loaded_containers: "Geladene Container: %amount%"
+  total_containers: "Gesamte Container: %amount%"
 commands:
   storage:
     subcommands:

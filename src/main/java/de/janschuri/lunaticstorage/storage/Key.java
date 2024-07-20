@@ -10,6 +10,9 @@ public final class Key {
     public static final NamespacedKey STORAGE_ITEM = new NamespacedKey(PLUGIN_NAMESPACE, "storage_item");
     public static final NamespacedKey STORAGE_ITEM_WORLDS = new NamespacedKey(PLUGIN_NAMESPACE, "storage_item_worlds");
     public static final NamespacedKey STORAGE_CONTAINER = new NamespacedKey(PLUGIN_NAMESPACE, "storage_container");
+    public static final NamespacedKey PANEL_RANGE = new NamespacedKey(PLUGIN_NAMESPACE, "range_panel");
+    public static final NamespacedKey RANGE_ITEM = new NamespacedKey(PLUGIN_NAMESPACE, "range_item");
+    public static final NamespacedKey RANGE = new NamespacedKey(PLUGIN_NAMESPACE, "range");
 
     private Key() {
         // Prevent instantiation

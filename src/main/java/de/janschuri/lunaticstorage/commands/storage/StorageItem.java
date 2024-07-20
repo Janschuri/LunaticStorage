@@ -1,8 +1,8 @@
-package de.janschuri.lunaticstorage.commands.subcommands.storage;
+package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
-import de.janschuri.lunaticstorage.commands.subcommands.Subcommand;
+import de.janschuri.lunaticstorage.commands.Subcommand;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -12,42 +12,40 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-public class PanelSubcommand extends Subcommand {
+public class StorageItem extends Subcommand {
 
     @Override
     public LunaticCommand getParentCommand() {
-        return new StorageSubcommand();
+        return new Storage();
     }
 
     @Override
     public String getPermission() {
-        return "lunaticstorage.admin.panel";
+        return "lunaticstorage.admin.item";
     }
 
     @Override
     public String getName() {
-        return "panel";
+        return "item";
     }
 
     @Override
     public boolean execute(Sender sender, String[] args) {
         if (!(sender instanceof PlayerSender)) {
-            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND));
+            sender.sendMessage(getMessage(NO_CONSOLE_COMMAND_MK));
             return true;
         }
 
         if (!sender.hasPermission(getPermission())) {
-            sender.sendMessage(getMessage(NO_PERMISSION));
+            sender.sendMessage(getMessage(NO_PERMISSION_MK));
             return true;
         }
-
-
             PlayerSender player = (PlayerSender) sender;
 
-            ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStoragePanelBlock());
+            ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStorageItem());
 
             ItemMeta meta = item.getItemMeta();
-            meta.getPersistentDataContainer().set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
+            meta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.BOOLEAN, true);
             item.setItemMeta(meta);
 
             Player p = Bukkit.getPlayer(player.getUniqueId());
