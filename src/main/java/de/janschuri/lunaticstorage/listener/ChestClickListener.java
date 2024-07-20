@@ -77,6 +77,7 @@ public class ChestClickListener implements Listener {
                 worldChests[0] = chestID;
                 dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, worldChests);
                 itemInHand.setItemMeta(storageMeta);
+                AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
             } else {
                 List<Long> chests = Utils.getListFromArray(dataContainer.get(worldKey, PersistentDataType.LONG_ARRAY));
 
