@@ -34,6 +34,11 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
+            if (!player.isSneaking()) {
+                event.setCancelled(true);
+                return;
+            }
+
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
             ItemStack blockItem = items.get(0).getItemStack();
             ItemMeta blockItemMeta = blockItem.getItemMeta();
