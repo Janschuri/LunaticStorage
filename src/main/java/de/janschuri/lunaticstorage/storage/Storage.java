@@ -97,6 +97,16 @@ public class Storage {
             return storage;
     }
 
+    public static void removeStorage(Block block) {
+        storageMaps.remove(block);
+        itemsContainersMap.remove(block);
+        emptyContainersMap.remove(block);
+        storageItems.remove(block);
+        rangeItems.remove(block);
+        storageLoadedContainerAmounts.remove(block);
+        storageContainerAmounts.remove(block);
+    }
+
     public ItemStack getStorageItem() {
         return storageItems.get(block);
     }

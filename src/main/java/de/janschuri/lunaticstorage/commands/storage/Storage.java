@@ -12,11 +12,9 @@ public class Storage extends Subcommand {
     @Override
     public List<LunaticCommand> getSubcommands() {
         return List.of(
-            new StorageItem(),
-            new StoragePanel(),
             new StorageRandom(),
             new StorageReload(),
-            new StorageRangeItem()
+            new StorageGet()
         );
     }
 
@@ -50,7 +48,7 @@ public class Storage extends Subcommand {
                 return sc.execute(sender, newArgs);
             }
         }
-        sender.sendMessage(getMessage(WRONG_USAGE));
+        sender.sendMessage(getMessage(WRONG_USAGE_MK));
         Logger.debugLog("Family: Wrong usage");
 
 

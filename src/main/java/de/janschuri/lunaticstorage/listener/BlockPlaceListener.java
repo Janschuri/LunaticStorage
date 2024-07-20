@@ -26,6 +26,7 @@ public class BlockPlaceListener implements Listener {
                 Block block = event.getBlockPlaced();
                 PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
                 blockDataContainer.set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
+                blockDataContainer.set(Key.PANEL_RANGE, PersistentDataType.LONG, dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG));
             }
         }
     }

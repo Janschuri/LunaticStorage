@@ -51,7 +51,7 @@ public class StoragePanel extends Subcommand {
                 return true;
             }
         } else {
-            range = LunaticStorage.getPluginConfig().getDefaultRange();
+            range = LunaticStorage.getPluginConfig().getDefaultRangePanel();
         }
 
             PlayerSender player = (PlayerSender) sender;

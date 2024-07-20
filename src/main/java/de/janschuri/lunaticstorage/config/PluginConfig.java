@@ -44,7 +44,7 @@ public class PluginConfig extends LunaticConfigImpl {
         return getInt("default_range_item", 5);
     }
 
-    public int getDefaultRange() {
+    public int getDefaultRangePanel() {
         return getInt("default_range", 5);
     }
 }
