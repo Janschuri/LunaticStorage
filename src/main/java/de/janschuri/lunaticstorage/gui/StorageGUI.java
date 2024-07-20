@@ -50,9 +50,7 @@ public class StorageGUI extends InventoryGUI {
     private int panelId;
     private Storage storage;
 
-    byte[] serializedStorageItem;
     int sorter = 0;
-
     private int page = 0;
     private int pages = 0;
     private boolean descending = false;
@@ -68,8 +66,7 @@ public class StorageGUI extends InventoryGUI {
         this.block = block;
         this.panelId = block.hashCode();
         this.locale = locale;
-        this.serializedStorageItem = getPanelsStorageItem(block);
-        this.storage = Storage.getStorage(panelId,  serializedStorageItem);
+        this.storage = Storage.getStorage(block);
         storageGUIs.put(id, this);
         if (playerStorageGUIs.containsKey(player.getUniqueId())) {
             Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
@@ -95,8 +92,7 @@ public class StorageGUI extends InventoryGUI {
         this.processingClickEvent = storageGUI.processingClickEvent;
         this.storageFullTimeout = storageGUI.storageFullTimeout;
 
-        this.serializedStorageItem = storageGUI.serializedStorageItem;
-        this.storage = Storage.getStorage(panelId,  serializedStorageItem);
+        this.storage = Storage.getStorage(block);
         decorate(player);
         storageGUIs.put(id, this);
 
@@ -118,8 +114,7 @@ public class StorageGUI extends InventoryGUI {
         this.processingClickEvent = storageGUI.processingClickEvent;
         this.storageFullTimeout = storageGUI.storageFullTimeout;
 
-        this.serializedStorageItem = getPanelsStorageItem(block);
-        this.storage = Storage.getStorage(panelId,  serializedStorageItem);
+        this.storage = Storage.getStorage(block);
         decorate(player);
         storageGUIs.put(id, this);
 
@@ -161,7 +156,7 @@ public class StorageGUI extends InventoryGUI {
     @Override
     public void decorate(Player player) {
         setStorageItem();
-        loadStorage();
+        createStorageItemsButtons();
         addButton(createItemButton());
         addButton(createStoragePlayerInvButton());
         addButton(0, createSearchButton());
@@ -187,7 +182,9 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private void setStorageItem() {
-        if (serializedStorageItem != null) {
+        ItemStack storageItem = storage.getStorageItem();
+
+        if (storageItem != null) {
             this.addButton(8, createStorageButton());
         } else {
             this.addButton(8, createStoragePane());
@@ -218,9 +215,9 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private InventoryButton createStorageButton() {
-        ItemStack chest = ItemStackUtils.deserializeItemStack(serializedStorageItem);
+        ItemStack item = storage.getStorageItem();
         return new InventoryButton()
-                .creator(player -> chest)
+                .creator(player -> item)
                 .consumer(event -> {
                     if (processingClickEvent()) {
                         return;
@@ -449,7 +446,7 @@ public class StorageGUI extends InventoryGUI {
                         return false;
                     }
 
-                    if (serializedStorageItem == null) {
+                    if (storage.getStorageItem() == null) {
                         return false;
                     }
 
@@ -515,7 +512,7 @@ public class StorageGUI extends InventoryGUI {
         this.page = page;
     }
 
-    private void loadStorage() {
+    private void createStorageItemsButtons() {
         List<Map.Entry<ItemStack, Integer>> allStorageItems = storage.getStorageList(locale, sorter, descending, search);
         int pageSize = 36;
         pages = allStorageItems.size() / pageSize;
@@ -530,8 +527,6 @@ public class StorageGUI extends InventoryGUI {
 
         List<Map.Entry<ItemStack, Integer>> storageItems = allStorageItems.subList(startIndex, endIndex);
 
-
-        if (serializedStorageItem != null) {
             for (int i = 0; i < 36; i++) {
                 if (i < storageItems.size()) {
                     Map.Entry<ItemStack, Integer> entry = storageItems.get(i);
@@ -540,11 +535,6 @@ public class StorageGUI extends InventoryGUI {
                     this.addButton(9 + i, createStorageContentButton(new ItemStack(Material.AIR), 0));
                 }
             }
-        } else {
-            for (int i = 0; i < 36; i++) {
-                this.addButton(9 + i, createStorageContentButton(new ItemStack(Material.AIR), 0));
-            }
-        }
     }
 
     private void reloadGui() {
@@ -615,11 +605,11 @@ public class StorageGUI extends InventoryGUI {
         ItemStack result;
         ItemStack storageItem;
 
-        if (serializedStorageItem == null) {
+        if (storage.getStorageItem() == null) {
             storageItem = item.clone();
             result = new ItemStack(Material.AIR);
         } else {
-            storageItem = ItemStackUtils.deserializeItemStack(serializedStorageItem);
+            storageItem = storage.getStorageItem().clone();
 
             if (storageItem.isSimilar(item) && item.getType() != Material.AIR) {
                 if (storageItem.getMaxStackSize() > storageItem.getAmount()) {
@@ -649,19 +639,11 @@ public class StorageGUI extends InventoryGUI {
         }
 
         if (!storageItem.getType().isAir()) {
-            serializedStorageItem = ItemStackUtils.serializeItemStack(storageItem);
+            storage.setStorageItem(storageItem);
             this.addButton(8, createStorageButton());
         } else {
-            serializedStorageItem = null;
+            storage.setStorageItem(null);
             this.addButton(8, createStoragePane());
-        }
-
-        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-
-        if (serializedStorageItem != null) {
-            dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, serializedStorageItem);
-        } else {
-            dataContainer.remove(Key.STORAGE_ITEM);
         }
 
 

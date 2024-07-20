@@ -16,15 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class StorageContainer {
 
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
     private static final Map<Block, StorageContainer> loadedContainers = new HashMap<>();
 
-    private final Location location;
     private final Block block;
-    private List<Integer> storageIds;
+    private final List<Block> storageIds;
 
     private StorageContainer(Block block) {
-        this.location = block.getLocation();
         this.block = block;
 
         if (loadedContainers.containsKey(block)) {
@@ -64,21 +61,22 @@ public class StorageContainer {
         block.getState().update();
     }
 
-    public void addStorageId(int id) {
+    public void addStorageId(Block id) {
         if (!storageIds.contains(id)) {
             storageIds.add(id);
         }
         loadedContainers.put(block, this);
     }
 
-    public void removeStorageId(int id) {
+    public void removeStorageId(long id) {
         storageIds.remove(id);
         loadedContainers.put(block, this);
     }
 
     public void updateStorages(Map<ItemStack, Integer> difference) {
-        for (int id : storageIds) {
-            Storage.updateStorage(id, difference);
+        for (Block block : storageIds) {
+            Storage storage = Storage.getStorage(block);
+            storage.updateStorage(difference);
         }
     }
 
