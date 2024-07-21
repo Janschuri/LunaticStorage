@@ -329,42 +329,6 @@ public class Storage {
 
         return true;
     }
-//    public static Inventory addMaptoInventory(Inventory inventory, List<Map.Entry<ItemStack, Integer>> list, int id, int page) {
-//        int pageSize = 36;
-//        int startIndex = page * pageSize;
-//        int endIndex = Math.min((page + 1) * pageSize, list.size());
-//
-//        for (int i = startIndex; i < endIndex; i++) {
-//            Map.Entry<ItemStack, Integer> entry = list.get(i);
-//            ItemStack itemStack = entry.getKey();
-//            int amount = entry.getValue();
-//
-//            ItemStack singleStack = itemStack.clone();
-//            singleStack.setAmount(1);
-//
-//            byte[] itemSerialized = ItemStackUtils.serializeItemStack(itemStack);
-//            ItemMeta meta = singleStack.getItemMeta();
-//            if (meta == null) {
-//                Bukkit.getLogger().warning("ItemMeta is null" + itemStack.getType());
-//                continue;
-//            }
-//
-//            meta.getPersistentDataContainer().set(Key.STORAGE_CONTENT, PersistentDataType.BYTE_ARRAY, itemSerialized);
-//            meta.getPersistentDataContainer().set(Key.PANEL_BLOCK, PersistentDataType.INTEGER, id);
-//
-//            List<String> lore = meta.getLore();
-//            if (lore == null) {
-//                lore = new ArrayList<>();
-//            }
-//            lore.add("Amount: " + amount);
-//            meta.setLore(lore);
-//
-//            singleStack.setItemMeta(meta);
-//            inventory.addItem(singleStack);
-//        }
-//
-//        return inventory;
-//    }
     public void loadStorage () {
         Logger.debugLog("Loading storage for " + block);
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
