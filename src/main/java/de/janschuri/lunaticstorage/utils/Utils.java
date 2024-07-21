@@ -8,6 +8,8 @@ import de.janschuri.lunaticstorage.storage.StorageContainer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -254,5 +256,21 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         int end = Math.min(page * itemsPerPage, map.size());
         List<Map.Entry<ItemStack, Boolean>> list = new ArrayList<>(map.entrySet());
         return list.subList(start, end).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public static boolean isDoubleChest(Chest chest) {
+        return chest.getInventory().getHolder() instanceof org.bukkit.block.DoubleChest;
+    }
+
+    public static Chest getOtherChestHalf(Chest chest) {
+        if (isDoubleChest(chest)) {
+            DoubleChest doubleChest = (DoubleChest) chest.getInventory().getHolder();
+            if (doubleChest.getLeftSide().equals(chest)) {
+                return (Chest) doubleChest.getRightSide();
+            } else {
+                return (Chest) doubleChest.getLeftSide();
+            }
+        }
+        return null;
     }
 }

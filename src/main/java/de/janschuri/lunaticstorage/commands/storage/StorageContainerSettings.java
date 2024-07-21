@@ -66,8 +66,6 @@ public class StorageContainerSettings extends Subcommand {
 
         StorageContainer container = StorageContainer.getStorageContainer(block);
 
-        Map<ItemStack, Boolean> whitelist = container.getWhitelist();
-
         GUIManager.openGUI(new ContainerGUI(player, container), player);
         return true;
     }

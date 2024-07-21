@@ -5,6 +5,7 @@ import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -182,13 +183,29 @@ public class StorageContainer {
     }
 
     public void setWhitelistEnabled(boolean enabled) {
+        setWhitelistEnabled(enabled, true);
+    }
+
+    public void setWhitelistEnabled(boolean enabled, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         dataContainer.set(Key.WHITELIST_ENABLED, PersistentDataType.BOOLEAN, enabled);
+
+        if (isDoubleChest() && updateDoubleChest) {
+            getOtherHalf().setWhitelistEnabled(enabled, false);
+        }
     }
 
     public void setBlacklistEnabled(boolean enabled) {
+        setBlacklistEnabled(enabled, true);
+    }
+
+    public void setBlacklistEnabled(boolean enabled, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         dataContainer.set(Key.BLACKLIST_ENABLED, PersistentDataType.BOOLEAN, enabled);
+
+        if (isDoubleChest() && updateDoubleChest) {
+            getOtherHalf().setBlacklistEnabled(enabled, false);
+        }
     }
 
     public boolean isWhitelistEnabled() {
@@ -214,23 +231,49 @@ public class StorageContainer {
     }
 
     public void setWhitelist(Map<ItemStack, Boolean> whitelist) {
+        setWhitelist(whitelist, true);
+    }
+
+    public void setWhitelist(Map<ItemStack, Boolean> whitelist, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         dataContainer.set(Key.WHITELIST, PersistentDataType.BYTE_ARRAY, Utils.serializeItemStackMap(whitelist));
+
+        if (isDoubleChest() && updateDoubleChest) {
+            getOtherHalf().setWhitelist(whitelist, false);
+        }
     }
 
     public void setBlacklist(Map<ItemStack, Boolean> blacklist) {
+        setBlacklist(blacklist, true);
+    }
+
+    public void setBlacklist(Map<ItemStack, Boolean> blacklist, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         dataContainer.set(Key.BLACKLIST, PersistentDataType.BYTE_ARRAY, Utils.serializeItemStackMap(blacklist));
+
+        if (isDoubleChest() && updateDoubleChest) {
+            getOtherHalf().setBlacklist(blacklist, false);
+        }
     }
 
     public void addToWhitelist(ItemStack item, boolean matchNBT) {
         Map<ItemStack, Boolean> whitelist = getWhitelist();
+
+        if (whitelist.containsKey(item)) {
+            return;
+        }
+
         whitelist.put(item, matchNBT);
         setWhitelist(whitelist);
     }
 
     public void addToBlacklist(ItemStack item, boolean matchNBT) {
         Map<ItemStack, Boolean> blacklist = getBlacklist();
+
+        if (blacklist.containsKey(item)) {
+            return;
+        }
+
         blacklist.put(item, matchNBT);
         setBlacklist(blacklist);
     }
@@ -319,5 +362,20 @@ public class StorageContainer {
             }
         }
         return false;
+    }
+
+    public boolean isDoubleChest() {
+        if (block.getState() instanceof Chest) {
+            return Utils.isDoubleChest((Chest) block.getState());
+        }
+        return false;
+    }
+
+    public StorageContainer getOtherHalf() {
+        if (isDoubleChest()) {
+            Chest chest = (Chest) block.getState();
+            return getStorageContainer(Utils.getOtherChestHalf(chest).getBlock());
+        }
+        return null;
     }
 }

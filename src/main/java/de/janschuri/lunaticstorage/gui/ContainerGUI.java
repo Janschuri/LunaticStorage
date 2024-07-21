@@ -122,6 +122,16 @@ public class ContainerGUI extends InventoryGUI {
                             container.addToWhitelist(item, true);
                         }
                     }
+
+                    if (container.isDoubleChest()) {
+                        ItemStack[] doubleChestContents = container.getOtherHalf().getSnapshotInventory().getContents();
+                        for (ItemStack item : doubleChestContents) {
+                            if (item != null) {
+                                container.addToWhitelist(item, true);
+                            }
+                        }
+                    }
+
                     reloadGui();
                 });
     }

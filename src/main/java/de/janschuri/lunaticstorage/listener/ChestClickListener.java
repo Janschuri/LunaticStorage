@@ -4,12 +4,16 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Container;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,12 +46,11 @@ public class ChestClickListener implements Listener {
             return;
         }
 
-        if (Utils.isContainerBlock(clickedBlock.getType()) && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+        if (clickedBlock.getState() instanceof Container && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);
 
-            Block block = event.getClickedBlock();
-            UUID worldUUID = block.getWorld().getUID();
-            long chestID = BukkitUtils.serializeCoords(block.getLocation());
+            Container container = (Container) clickedBlock.getState();
+            UUID worldUUID = container.getWorld().getUID();
 
             ItemMeta storageMeta = itemInHand.getItemMeta();
 
@@ -72,28 +75,60 @@ public class ChestClickListener implements Listener {
 
             NamespacedKey worldKey = new NamespacedKey(LunaticStorage.getInstance(), worldUUID.toString());
 
-            if (!dataContainer.has(worldKey, PersistentDataType.LONG_ARRAY)) {
-                long[] worldChests = new long[1];
-                worldChests[0] = chestID;
-                dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, worldChests);
-                itemInHand.setItemMeta(storageMeta);
+            List<Long> chests = new ArrayList<>();
+
+            if (container instanceof Chest) {
+                Chest chest = (Chest) container;
+                if (Utils.isDoubleChest(chest)) {
+                    DoubleChest doubleChest = (DoubleChest) chest.getInventory().getHolder();
+                    Chest leftChest = (Chest) doubleChest.getLeftSide();
+                    Chest rightChest = (Chest) doubleChest.getRightSide();
+                    long leftChestID = BukkitUtils.serializeCoords(leftChest.getLocation());
+                    long rightChestID = BukkitUtils.serializeCoords(rightChest.getLocation());
+                    chests.add(leftChestID);
+                    chests.add(rightChestID);
+                } else {
+                    long chestID = BukkitUtils.serializeCoords(container.getLocation());
+                    chests.add(chestID);
+                }
+            } else {
+                long chestID = BukkitUtils.serializeCoords(container.getLocation());
+                chests.add(chestID);
+            }
+
+            if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
             } else {
-                List<Long> chests = Utils.getListFromArray(dataContainer.get(worldKey, PersistentDataType.LONG_ARRAY));
+                AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
+            }
+            itemInHand.setItemMeta(storageMeta);
 
-                if (chests.contains(chestID)) {
-                    AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
-                    return;
-                } else {
-                    chests.add(chestID);
-                    dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, Utils.getArrayFromList(chests));
-                    itemInHand.setItemMeta(storageMeta);
-                    AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
+            PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
+            blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN, true);
+        }
+    }
+
+    private boolean addChestsToPersistentDataContainer(PersistentDataContainer dataContainer, NamespacedKey worldKey, List<Long> chests) {
+        if (!dataContainer.has(worldKey, PersistentDataType.LONG_ARRAY)) {
+            long[] worldChests = new long[chests.size()];
+            worldChests = Utils.getArrayFromList(chests);
+            dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, worldChests);
+            return true;
+        } else {
+            List<Long> oldChests = Utils.getListFromArray(dataContainer.get(worldKey, PersistentDataType.LONG_ARRAY));
+
+            boolean allAlreadyMarked = true;
+
+            for (long chest : chests) {
+                if (!oldChests.contains(chest)) {
+                    oldChests.add(chest);
+                    allAlreadyMarked = false;
                 }
             }
 
-            PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-            blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN, true);
+            dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, Utils.getArrayFromList(oldChests));
+
+            return !allAlreadyMarked;
         }
     }
 }
