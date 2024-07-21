@@ -50,7 +50,7 @@ public class StorageContainer {
 
     public Inventory getSnapshotInventory() {
         if (block.getState() instanceof Container) {
-            return ((Container) block.getState()).getInventory();
+            return ((Container) block.getState()).getSnapshotInventory();
         } else {
             return null;
         }
