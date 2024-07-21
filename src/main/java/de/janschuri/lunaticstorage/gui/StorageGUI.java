@@ -124,15 +124,6 @@ public class StorageGUI extends InventoryGUI {
 
     }
 
-    private byte[] getPanelsStorageItem(Block block) {
-        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-            return dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY);
-        } else {
-            return null;
-        }
-    }
-
     public static StorageGUI getStorageGUI(Player player, Block block) {
         if (playerStorageGUIs.containsKey(player.getUniqueId())) {
             int panelId = block.hashCode();

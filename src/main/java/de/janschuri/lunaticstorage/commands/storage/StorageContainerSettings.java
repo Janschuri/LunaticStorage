@@ -66,7 +66,7 @@ public class StorageContainerSettings extends Subcommand {
 
         StorageContainer container = StorageContainer.getStorageContainer(block);
 
-        GUIManager.openGUI(new ContainerGUI(player, container), player);
+        GUIManager.openGUI(ContainerGUI.getContainerGUI(player, container), player);
         return true;
     }
 }

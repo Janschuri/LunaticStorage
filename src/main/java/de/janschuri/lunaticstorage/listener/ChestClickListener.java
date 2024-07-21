@@ -4,6 +4,7 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
+import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
@@ -97,6 +98,8 @@ public class ChestClickListener implements Listener {
             }
 
             if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
+                StorageContainer storageContainer = StorageContainer.getStorageContainer(clickedBlock);
+                storageContainer.addInvToWhitelist();
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
             } else {
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));

@@ -412,4 +412,19 @@ public class StorageContainer {
             }
         }
     }
+
+    public void clearWhitelist() {
+        setWhitelist(new HashMap<>());
+    }
+
+    public void clearBlacklist() {
+        setBlacklist(new HashMap<>());
+    }
+    public int getWhiteListPages() {
+        return (int) (getWhitelist().size() / 36.0);
+    }
+
+    public int getBlackListPages() {
+        return (int) (getBlacklist().size() / 36.0);
+    }
 }
