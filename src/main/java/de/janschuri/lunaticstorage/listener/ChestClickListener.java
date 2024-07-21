@@ -2,6 +2,7 @@ package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
+import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
@@ -35,6 +36,11 @@ public class ChestClickListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        if (EventUtils.isFakeEvent(event)) {
+            Logger.debugLog("Ignoring fake event");
+            return;
+        }
+
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
