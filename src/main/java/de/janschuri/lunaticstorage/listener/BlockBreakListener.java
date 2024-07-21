@@ -5,6 +5,7 @@ import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
+import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
@@ -97,6 +98,19 @@ public class BlockBreakListener implements Listener {
             dataContainer.remove(Key.PANEL_BLOCK);
             dataContainer.remove(Key.PANEL_RANGE);
             dataContainer.remove(Key.RANGE_ITEM);
+        }
+
+        if (Utils.isContainer(block)) {
+            PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+            dataContainer.remove(Key.STORAGE_CONTAINER);
+            dataContainer.remove(Key.WHITELIST);
+            dataContainer.remove(Key.BLACKLIST);
+            dataContainer.remove(Key.WHITELIST_ENABLED);
+            dataContainer.remove(Key.BLACKLIST_ENABLED);
+
+            StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+            storageContainer.unload();
         }
     }
 }

@@ -98,21 +98,25 @@ public class ChestClickListener implements Listener {
             }
 
             if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
-                StorageContainer storageContainer = StorageContainer.getStorageContainer(clickedBlock);
 
-                if (!storageContainer.getInventory().isEmpty()) {
-                    storageContainer.addInvToWhitelist();
-                    storageContainer.setWhitelistEnabled(true);
+                if (!Utils.isContainer(clickedBlock)) {
+
+                    StorageContainer storageContainer = StorageContainer.getStorageContainer(clickedBlock);
+
+                    if (!storageContainer.getInventory().isEmpty()) {
+                        storageContainer.addInvToWhitelist();
+                        storageContainer.setWhitelistEnabled(true);
+                    }
+
                 }
 
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
+                PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
+                blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN, true);
+                itemInHand.setItemMeta(storageMeta);
             } else {
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
             }
-            itemInHand.setItemMeta(storageMeta);
-
-            PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
-            blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN, true);
         }
     }
 

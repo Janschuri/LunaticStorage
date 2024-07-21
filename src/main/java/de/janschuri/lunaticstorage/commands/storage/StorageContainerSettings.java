@@ -61,6 +61,7 @@ public class StorageContainerSettings extends Subcommand {
 
         if (!Utils.isContainer(block)) {
             sender.sendMessage(getMessage(notContainerMK));
+            return true;
         }
 
 
