@@ -396,7 +396,7 @@ public class Storage {
                 loadedContainers++;
                 Logger.debugLog("Adding storage container " + container.getBlock() + " to storage " + block);
                 container.addStorageId(block);
-                Inventory chestInv = container.getSnapshotInventory();
+                Inventory chestInv = container.getInventory();
                 addInventoryToMap(chestInv, container);
             } else {
                 Logger.debugLog("Unload storage container"
@@ -487,7 +487,7 @@ public class Storage {
                 continue;
             }
 
-            Inventory chestInv = container.getSnapshotInventory();
+            Inventory chestInv = container.getInventory();
 
             if (chestInv == null) {
                 continue;
@@ -512,9 +512,9 @@ public class Storage {
                 int amountNeeded = stackSize - foundItems;
 
                 if (amountNeeded < amount) {
-                    container.getSnapshotInventory().removeItem(i);
+                    container.getInventory().removeItem(i);
                     i.setAmount(i.getAmount() - amountNeeded);
-                    container.getSnapshotInventory().addItem(i);
+                    container.getInventory().addItem(i);
                     container.update();
                     foundItems = foundItems + amountNeeded;
 
@@ -524,7 +524,7 @@ public class Storage {
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else if (amountNeeded == amount) {
-                    container.getSnapshotInventory().removeItem(i);
+                    container.getInventory().removeItem(i);
                     container.update();
                     foundItems = foundItems + amount;
 
@@ -534,7 +534,7 @@ public class Storage {
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else {
-                    container.getSnapshotInventory().removeItem(i);
+                    container.getInventory().removeItem(i);
                     container.update();
                     foundItems = foundItems + amount;
 
@@ -574,7 +574,7 @@ public class Storage {
                     continue;
                 }
 
-                Inventory chestInv = container.getSnapshotInventory();
+                Inventory chestInv = container.getInventory();
 
                 if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
                     continue;
@@ -596,9 +596,9 @@ public class Storage {
                     int amountNeeded = stackSize - foundItems;
 
                     if (amountNeeded < amount) {
-                        container.getSnapshotInventory().removeItem(i);
+                        container.getInventory().removeItem(i);
                         i.setAmount(i.getAmount() - amountNeeded);
-                        container.getSnapshotInventory().addItem(i);
+                        container.getInventory().addItem(i);
                         container.update();
                         foundItems = foundItems + amountNeeded;
 
@@ -608,7 +608,7 @@ public class Storage {
                         LogBlock.logChestRemove(player, block, itemStack);
 
                     } else if (amountNeeded == amount) {
-                        container.getSnapshotInventory().removeItem(i);
+                        container.getInventory().removeItem(i);
                         container.update();
                         foundItems = foundItems + amount;
 
@@ -618,7 +618,7 @@ public class Storage {
                         LogBlock.logChestRemove(player, block, itemStack);
 
                     } else {
-                        container.getSnapshotInventory().removeItem(i);
+                        container.getInventory().removeItem(i);
                         container.update();
                         foundItems = foundItems + amount;
 
@@ -670,7 +670,7 @@ public class Storage {
                 continue;
             }
 
-            Inventory chestInv = container.getSnapshotInventory();
+            Inventory chestInv = container.getInventory();
 
             if (!EventUtils.isAllowedPutItem(player, chestInv)) {
                 continue;
@@ -714,7 +714,7 @@ public class Storage {
                     continue;
                 }
 
-                Inventory chestInv = container.getSnapshotInventory();
+                Inventory chestInv = container.getInventory();
 
                 if (!EventUtils.isAllowedPutItem(player, chestInv)) {
                     continue;

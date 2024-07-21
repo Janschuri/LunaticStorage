@@ -48,9 +48,13 @@ public class StorageContainer {
     }
 
 
-    public Inventory getSnapshotInventory() {
+    public Inventory getInventory() {
+        if (block.getState() instanceof Chest) {
+            return ((Chest) block.getState()).getBlockInventory();
+        }
+
         if (block.getState() instanceof Container) {
-            return ((Container) block.getState()).getSnapshotInventory();
+            return ((Container) block.getState()).getInventory();
         } else {
             return null;
         }

@@ -4,7 +4,6 @@ import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -116,7 +115,7 @@ public class ContainerGUI extends InventoryGUI {
                     return item;
                 })
                 .consumer(event -> {
-                    ItemStack[] contents = container.getSnapshotInventory().getContents();
+                    ItemStack[] contents = container.getInventory().getContents();
                     for (ItemStack item : contents) {
                         if (item != null) {
                             container.addToWhitelist(item, true);
@@ -124,7 +123,7 @@ public class ContainerGUI extends InventoryGUI {
                     }
 
                     if (container.isDoubleChest()) {
-                        ItemStack[] doubleChestContents = container.getOtherHalf().getSnapshotInventory().getContents();
+                        ItemStack[] doubleChestContents = container.getOtherHalf().getInventory().getContents();
                         for (ItemStack item : doubleChestContents) {
                             if (item != null) {
                                 container.addToWhitelist(item, true);
