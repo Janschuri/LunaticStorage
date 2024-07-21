@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.*;
@@ -206,5 +207,45 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         }
 
         return dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG);
+    }
+
+    public static byte[] serializeItemStackMap(Map<ItemStack, Boolean> itemStackMap) {
+        JSONObject json = new JSONObject();
+        for (Map.Entry<ItemStack, Boolean> entry : itemStackMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            boolean matchNBT = entry.getValue();
+
+            JSONObject itemJson = new JSONObject();
+            itemJson.put("item", ItemStackUtils.serializeItemStack(itemStack));
+            itemJson.put("matchNBT", matchNBT);
+
+            json.put(itemStack.getType().name(), itemJson);
+        }
+        return json.toString().getBytes();
+    }
+
+    public static Map<ItemStack, Boolean> deserializeItemStackMap(byte[] bytes) {
+        Map<ItemStack, Boolean> itemStackMap = new HashMap<>();
+        JSONObject json = new JSONObject(new String(bytes));
+        for (String key : json.keySet()) {
+            JSONObject itemJson = json.getJSONObject(key);
+            String itemBytes = itemJson.get("item").toString();
+            byte[] itemBytesArray = toByteArray(itemBytes);
+            ItemStack itemStack = ItemStackUtils.deserializeItemStack(itemBytesArray);
+            boolean matchNBT = itemJson.getBoolean("matchNBT");
+
+            itemStackMap.put(itemStack, matchNBT);
+        }
+        return itemStackMap;
+    }
+
+    public static byte[] toByteArray(String strings) {
+        strings = strings.substring(1, strings.length() - 1);
+        String[] stringArray = strings.split(",");
+        byte[] byteArray = new byte[stringArray.length];
+        for (int i = 0; i < stringArray.length; i++) {
+            byteArray[i] = Byte.parseByte(stringArray[i]);
+        }
+        return byteArray;
     }
 }

@@ -404,7 +404,7 @@ public class Storage {
                         + " " + container.getBlock().getLocation().getBlockY()
                         + " " + container.getBlock().getLocation().getBlockZ()
                 );
-                container.removeStorageId(BukkitUtils.serializeCoords(container.getBlock().getLocation()));
+                container.removeStorageId(container.getBlock());
             }
         }
 

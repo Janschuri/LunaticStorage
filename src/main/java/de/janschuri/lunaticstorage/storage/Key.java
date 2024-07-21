@@ -14,6 +14,11 @@ public final class Key {
     public static final NamespacedKey RANGE_ITEM = new NamespacedKey(PLUGIN_NAMESPACE, "range_item");
     public static final NamespacedKey RANGE = new NamespacedKey(PLUGIN_NAMESPACE, "range");
 
+    public static final NamespacedKey WHITELIST = new NamespacedKey(PLUGIN_NAMESPACE, "whitelist");
+    public static final NamespacedKey WHITELIST_ENABLED = new NamespacedKey(PLUGIN_NAMESPACE, "whitelist_enabled");
+    public static final NamespacedKey BLACKLIST = new NamespacedKey(PLUGIN_NAMESPACE, "blacklist");
+    public static final NamespacedKey BLACKLIST_ENABLED = new NamespacedKey(PLUGIN_NAMESPACE, "blacklist_enabled");
+
     private Key() {
         // Prevent instantiation
     }

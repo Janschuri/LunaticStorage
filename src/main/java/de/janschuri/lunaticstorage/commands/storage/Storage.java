@@ -15,7 +15,8 @@ public class Storage extends Subcommand {
             new StorageRandom(),
             new StorageReload(),
             new StorageGet(),
-            new StorageCreate()
+            new StorageCreate(),
+            new StorageContainerSettings()
         );
     }
 
