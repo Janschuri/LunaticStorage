@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.storage;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -175,10 +176,13 @@ public class StorageContainer {
     }
 
     public boolean canPlaceItem(ItemStack item) {
+        Logger.debugLog("Checking if item can be placed in storage container");
+        Logger.debugLog("Whitelist enabled: " + isWhitelistEnabled());
         if (isWhitelistEnabled() && !isWhitelisted(item)) {
             return false;
         }
 
+        Logger.debugLog("Blacklist enabled: " + isBlacklistEnabled());
         if (isBlacklistEnabled() && isBlacklisted(item)) {
             return false;
         }
@@ -294,7 +298,15 @@ public class StorageContainer {
         setBlacklist(blacklist);
     }
 
-    public void toggleWhitelist(ItemStack item) {
+    public void toggleWhitelist() {
+        setWhitelistEnabled(!isWhitelistEnabled());
+    }
+
+    public void toggleBlacklist() {
+        setBlacklistEnabled(!isBlacklistEnabled());
+    }
+
+    public void toggleWhitelistNBT(ItemStack item) {
         Map<ItemStack, Boolean> whitelist = getWhitelist();
         if (whitelist.containsKey(item)) {
             whitelist.put(item, !whitelist.get(item));
@@ -304,7 +316,7 @@ public class StorageContainer {
         setWhitelist(whitelist);
     }
 
-    public void toggleBlacklist(ItemStack item) {
+    public void toggleblacklistNBT(ItemStack item) {
         Map<ItemStack, Boolean> blacklist = getBlacklist();
         if (blacklist.containsKey(item)) {
             blacklist.put(item, !blacklist.get(item));

@@ -50,6 +50,8 @@ public class ContainerGUI extends InventoryGUI {
         Map<ItemStack, Boolean> whitelistItems = container.getWhitelist();
         createListButtons(whitelistItems, true, 1);
 
+
+        addButton(0, createToggleWhitelistButton());
         addButton(8, createAddContainerInvToWhitelistButton());
 
         super.decorate(player);
@@ -96,9 +98,9 @@ public class ContainerGUI extends InventoryGUI {
                 .consumer(event -> {
 
                     if (whitelist) {
-                        container.toggleWhitelist(item);
+                        container.toggleWhitelistNBT(item);
                     } else {
-                        container.toggleBlacklist(item);
+                        container.toggleblacklistNBT(item);
                     }
 
                     reloadGui();
@@ -135,6 +137,24 @@ public class ContainerGUI extends InventoryGUI {
                 });
     }
 
+    private InventoryButton createToggleWhitelistButton() {
+        return new InventoryButton()
+                .creator(player -> {
+                    ItemStack item = new ItemStack(Material.WHITE_BANNER);
+                    ItemMeta meta = item.getItemMeta();
+                    meta.setDisplayName("§fToggle Whitelist");
+
+                    List<String> lore = (container.isWhitelistEnabled() ? List.of("§aWhitelist is enabled") : List.of("§cWhitelist is disabled"));
+                    meta.setLore(lore);
+
+                    item.setItemMeta(meta);
+                    return item;
+                })
+                .consumer(event -> {
+                    container.toggleWhitelist();
+                    reloadGui();
+                });
+    }
 
 
     private void reloadGui() {

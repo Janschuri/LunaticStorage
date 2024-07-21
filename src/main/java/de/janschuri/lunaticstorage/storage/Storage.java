@@ -664,6 +664,10 @@ public class Storage {
                 continue;
             }
 
+            if (!container.canPlaceItem(remainingItems)) {
+                continue;
+            }
+
             Block block = container.getBlock();
 
             if (!EventUtils.isAllowedViewChest(player, block)) {
@@ -705,6 +709,10 @@ public class Storage {
                 }
                 if (!container.isValid()) {
                     invalidContainers.add(container);
+                    continue;
+                }
+
+                if (!container.canPlaceItem(remainingItems)) {
                     continue;
                 }
 
