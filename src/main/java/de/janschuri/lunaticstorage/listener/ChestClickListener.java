@@ -41,6 +41,7 @@ public class ChestClickListener implements Listener {
             return;
         }
 
+
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
@@ -57,6 +58,11 @@ public class ChestClickListener implements Listener {
             event.setCancelled(true);
 
             Container container = (Container) clickedBlock.getState();
+
+            if (!EventUtils.isAllowedTakeItem(player, container.getInventory())) {
+                return;
+            }
+
             UUID worldUUID = container.getWorld().getUID();
 
             ItemMeta storageMeta = itemInHand.getItemMeta();
