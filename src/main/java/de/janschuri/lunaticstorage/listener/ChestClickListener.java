@@ -99,7 +99,12 @@ public class ChestClickListener implements Listener {
 
             if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
                 StorageContainer storageContainer = StorageContainer.getStorageContainer(clickedBlock);
-                storageContainer.addInvToWhitelist();
+
+                if (!storageContainer.getInventory().isEmpty()) {
+                    storageContainer.addInvToWhitelist();
+                    storageContainer.setWhitelistEnabled(true);
+                }
+
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
             } else {
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
