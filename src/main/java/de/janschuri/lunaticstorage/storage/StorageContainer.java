@@ -394,4 +394,22 @@ public class StorageContainer {
         }
         return null;
     }
+
+    public void addInvToWhitelist() {
+        ItemStack[] contents = getInventory().getContents();
+        for (ItemStack item : contents) {
+            if (item != null) {
+                addToWhitelist(item, true);
+            }
+        }
+
+        if (isDoubleChest()) {
+            ItemStack[] doubleChestContents = getOtherHalf().getInventory().getContents();
+            for (ItemStack item : doubleChestContents) {
+                if (item != null) {
+                    addToWhitelist(item, true);
+                }
+            }
+        }
+    }
 }

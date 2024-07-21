@@ -117,22 +117,7 @@ public class ContainerGUI extends InventoryGUI {
                     return item;
                 })
                 .consumer(event -> {
-                    ItemStack[] contents = container.getInventory().getContents();
-                    for (ItemStack item : contents) {
-                        if (item != null) {
-                            container.addToWhitelist(item, true);
-                        }
-                    }
-
-                    if (container.isDoubleChest()) {
-                        ItemStack[] doubleChestContents = container.getOtherHalf().getInventory().getContents();
-                        for (ItemStack item : doubleChestContents) {
-                            if (item != null) {
-                                container.addToWhitelist(item, true);
-                            }
-                        }
-                    }
-
+                    container.addInvToWhitelist();
                     reloadGui();
                 });
     }
