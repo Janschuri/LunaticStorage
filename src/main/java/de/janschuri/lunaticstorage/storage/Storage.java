@@ -447,10 +447,6 @@ public class Storage {
 
             Block block = container.getBlock();
 
-            if (!EventUtils.isAllowedViewChest(player, block)) {
-                continue;
-            }
-
             Inventory chestInv = container.getInventory();
 
             if (chestInv == null) {
@@ -533,10 +529,6 @@ public class Storage {
                 }
 
                 Block block = container.getBlock();
-
-                if (!EventUtils.isAllowedViewChest(player, block)) {
-                    continue;
-                }
 
                 Inventory chestInv = container.getInventory();
 
@@ -634,10 +626,6 @@ public class Storage {
 
             Block block = container.getBlock();
 
-            if (!EventUtils.isAllowedViewChest(player, block)) {
-                continue;
-            }
-
             Inventory chestInv = container.getInventory();
 
             if (!EventUtils.isAllowedPutItem(player, chestInv)) {
@@ -681,10 +669,6 @@ public class Storage {
                 }
 
                 Block block = container.getBlock();
-
-                if (!EventUtils.isAllowedViewChest(player, block)) {
-                    continue;
-                }
 
                 Inventory chestInv = container.getInventory();
 
