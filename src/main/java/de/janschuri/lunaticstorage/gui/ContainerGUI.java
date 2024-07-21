@@ -4,6 +4,7 @@ import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -12,10 +13,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class ContainerGUI extends InventoryGUI {
 
@@ -33,6 +32,7 @@ public class ContainerGUI extends InventoryGUI {
         super(containerGUI.getInventory());
         this.container = containerGUI.container;
         this.player = containerGUI.player;
+        decorate(player);
     }
 
     private static Inventory createInventory() {
@@ -57,23 +57,24 @@ public class ContainerGUI extends InventoryGUI {
     }
 
     private void createListButtons(Map<ItemStack, Boolean> items, boolean whitelist, int page) {
-        int i = 9;
-        int j = 0;
-        int max = 45;
-        int start = 45 * (page - 1);
-        int end = Math.min(items.size(), start + max);
+        Map<ItemStack, Boolean> subMap = Utils.getSubMap(items, page, 45);
 
-        for (Map.Entry<ItemStack, Boolean> entry : items.entrySet()) {
-            if (j >= start && j < end) {
-                ItemStack item = entry.getKey();
-                boolean matchNBT = entry.getValue();
+        for (int i = 0; i < 36; i++) {
+            if (i < subMap.size()) {
+                ItemStack item = (ItemStack) subMap.keySet().toArray()[i];
+                boolean matchNBT = subMap.get(item);
 
                 InventoryButton button = createListButton(whitelist, item, matchNBT);
-                addButton(i, button);
-                i++;
+                addButton(i+9, button);
+            } else {
+                addButton(i+9, createAirButton());
             }
-            j++;
         }
+    }
+
+    private InventoryButton createAirButton() {
+        return new InventoryButton()
+                .creator(player -> new ItemStack(Material.AIR));
     }
 
     private InventoryButton createListButton(boolean whitelist, ItemStack item, boolean matchNBT) {

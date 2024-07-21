@@ -248,4 +248,11 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         }
         return byteArray;
     }
+
+    public static Map<ItemStack, Boolean> getSubMap(Map<ItemStack, Boolean> map, int page, int itemsPerPage) {
+        int start = (page - 1) * itemsPerPage;
+        int end = Math.min(page * itemsPerPage, map.size());
+        List<Map.Entry<ItemStack, Boolean>> list = new ArrayList<>(map.entrySet());
+        return list.subList(start, end).stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 }
