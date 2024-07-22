@@ -129,9 +129,9 @@ public class StorageGet extends Subcommand {
     @Override
     public List<Map<String, String>> getParams() {
         Map<String, String> panelMap = Map.of(
-                "panel", getPermission()+".panel",
-                "rangeitem", getPermission()+".rangeitem",
-                "storageitem", getPermission()+".storageitem"
+                "panel", getPermission(),
+                "rangeitem", getPermission(),
+                "storageitem", getPermission()
         );
 
         return List.of(panelMap);
