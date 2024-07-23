@@ -31,8 +31,8 @@ public class StorageContainer {
         return new StorageContainer(block);
     }
 
-    public static StorageContainer getStorageContainer(UUID worldUUID, long coords) {
-        Block block = BukkitUtils.deserializeCoords(coords, worldUUID).getBlock();
+    public static StorageContainer getStorageContainer(UUID worldUUID, String coords) {
+        Block block = Utils.deserializeCoords(coords, worldUUID).getBlock();
         return getStorageContainer(block);
     }
 

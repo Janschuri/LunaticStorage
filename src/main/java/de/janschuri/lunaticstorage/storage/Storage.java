@@ -9,6 +9,7 @@ import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
+import jdk.jshell.execution.Util;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -402,15 +403,20 @@ public class Storage {
             }
             UUID worldUUID = container.getBlock().getWorld().getUID();
             NamespacedKey worldKey = Key.getKey(worldUUID.toString());
-            long[] chests = dataContainer.get(worldKey, PersistentDataType.LONG_ARRAY);
-            if (chests == null) {
+            byte[] chestsByte = dataContainer.get(worldKey, PersistentDataType.BYTE_ARRAY);
+            if (chestsByte == null) {
                 return;
             }
-            long[] newChests = Arrays.stream(chests)
-                    .filter(chest -> chest != BukkitUtils.serializeCoords(container.getBlock().getLocation()))
-                    .toArray();
-            dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, newChests);
-            if (newChests.length == 0) {
+            List<String> chests = Utils.getListFromArray(chestsByte);
+
+            List<String> newChests = chests.stream()
+                    .filter(chest -> !chest.equals(Utils.serializeCoords(container.getBlock().getLocation())))
+                    .collect(Collectors.toList());
+
+            byte[] newChestsByte = Utils.getArrayFromList(newChests);
+
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, newChestsByte);
+            if (newChests.isEmpty()) {
                 worlds.remove(worldUUID);
 //                dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, Utils.getUUIDListAsString(worlds));
             }

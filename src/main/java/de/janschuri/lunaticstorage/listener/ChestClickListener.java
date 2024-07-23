@@ -86,7 +86,7 @@ public class ChestClickListener implements Listener {
 
             NamespacedKey worldKey = new NamespacedKey(LunaticStorage.getInstance(), worldUUID.toString());
 
-            List<Long> chests = new ArrayList<>();
+            List<String> chests = new ArrayList<>();
 
             if (container instanceof Chest) {
                 Chest chest = (Chest) container;
@@ -94,16 +94,16 @@ public class ChestClickListener implements Listener {
                     DoubleChest doubleChest = (DoubleChest) chest.getInventory().getHolder();
                     Chest leftChest = (Chest) doubleChest.getLeftSide();
                     Chest rightChest = (Chest) doubleChest.getRightSide();
-                    long leftChestID = BukkitUtils.serializeCoords(leftChest.getLocation());
-                    long rightChestID = BukkitUtils.serializeCoords(rightChest.getLocation());
+                    String leftChestID = Utils.serializeCoords(leftChest.getLocation());
+                    String rightChestID = Utils.serializeCoords(rightChest.getLocation());
                     chests.add(leftChestID);
                     chests.add(rightChestID);
                 } else {
-                    long chestID = BukkitUtils.serializeCoords(container.getLocation());
+                    String chestID = Utils.serializeCoords(container.getLocation());
                     chests.add(chestID);
                 }
             } else {
-                long chestID = BukkitUtils.serializeCoords(container.getLocation());
+                String chestID = Utils.serializeCoords(container.getLocation());
                 chests.add(chestID);
             }
 
@@ -130,25 +130,24 @@ public class ChestClickListener implements Listener {
         }
     }
 
-    private boolean addChestsToPersistentDataContainer(PersistentDataContainer dataContainer, NamespacedKey worldKey, List<Long> chests) {
+    private boolean addChestsToPersistentDataContainer(PersistentDataContainer dataContainer, NamespacedKey worldKey, List<String> chests) {
         if (!dataContainer.has(worldKey, PersistentDataType.LONG_ARRAY)) {
-            long[] worldChests = new long[chests.size()];
-            worldChests = Utils.getArrayFromList(chests);
-            dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, worldChests);
+            byte[] worldChests = Utils.getArrayFromList(chests);
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, worldChests);
             return true;
         } else {
-            List<Long> oldChests = Utils.getListFromArray(dataContainer.get(worldKey, PersistentDataType.LONG_ARRAY));
+            List<String> oldChests = Utils.getListFromArray(dataContainer.get(worldKey, PersistentDataType.BYTE_ARRAY));
 
             boolean allAlreadyMarked = true;
 
-            for (long chest : chests) {
+            for (String chest : chests) {
                 if (!oldChests.contains(chest)) {
                     oldChests.add(chest);
                     allAlreadyMarked = false;
                 }
             }
 
-            dataContainer.set(worldKey, PersistentDataType.LONG_ARRAY, Utils.getArrayFromList(oldChests));
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, Utils.getArrayFromList(oldChests));
 
             return !allAlreadyMarked;
         }

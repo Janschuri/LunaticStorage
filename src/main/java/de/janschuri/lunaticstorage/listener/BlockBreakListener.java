@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Container;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if (Utils.isPanel(block) || LunaticStorage.isDebug()) {
+        if ((Utils.isPanel(block) || Utils.isContainer(block)) && LunaticStorage.isDebug()) {
             Logger.debugLog("Panel block broken");
             if (!player.isSneaking()) {
                 Logger.debugLog("Player is not sneaking");

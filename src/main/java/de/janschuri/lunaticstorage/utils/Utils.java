@@ -5,8 +5,7 @@ import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
@@ -23,26 +22,25 @@ import java.util.stream.Collectors;
 public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
 
-    public static String getCoordsAsString(Block block) {
+    public static String serializeCoords(Location block) {
 
-        String world = block.getWorld().getName();
-
-        int x = block.getX();
-        int y = block.getY();
-        int z = block.getZ();
+        double x = block.getX();
+        double y = block.getY();
+        double z = block.getZ();
 
         return x + "," + y + "," + z;
     }
 
-    public static int[] parseCoords(String coords) {
+    public static Location deserializeCoords(String coords, UUID uuid) {
         String[] coordStrings = coords.split(",");
 
-        int[] coordsInt = new int[coordStrings.length];
-        for (int i = 0; i < coordStrings.length; i++) {
-            coordsInt[i] = Integer.parseInt(coordStrings[i]);
-        }
+        double x = Double.parseDouble(coordStrings[0]);
+        double y = Double.parseDouble(coordStrings[1]);
+        double z = Double.parseDouble(coordStrings[2]);
 
-        return coordsInt;
+        World world = Bukkit.getWorld(uuid);
+
+        return new Location(world, x, y, z);
     }
 
     public static boolean containsChestsID(int[] array, int target) {
@@ -54,12 +52,18 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return false;
     }
 
-    public static List<Long> getListFromArray(long[] array) {
-        return Arrays.stream(array).boxed().collect(Collectors.toList());
+    public static byte[] getArrayFromList(List<String> list) {
+        JSONArray jsonArray = new JSONArray(list);
+        return jsonArray.toString().getBytes();
     }
 
-    public static long[] getArrayFromList(List<Long> list) {
-        return list.stream().mapToLong(i -> i).toArray();
+    public static List<String> getListFromArray(byte[] bytes) {
+        JSONArray jsonArray = new JSONArray(new String(bytes));
+        List<String> list = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            list.add(jsonArray.getString(i));
+        }
+        return list;
     }
 
     public static String getUUIDListAsString(List<UUID> uuids) {
@@ -178,11 +182,10 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
                 for (UUID worldUUID : worlds) {
                     NamespacedKey worldKey = Key.getKey(worldUUID.toString());
-                    long[] chests = container.get(worldKey, PersistentDataType.LONG_ARRAY);
-                    if (chests != null) {
-                        for (long chest : chests) {
-                            storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chest));
-                        }
+                    byte[] chestsByte = container.get(worldKey, PersistentDataType.BYTE_ARRAY);
+                    List<String> chestsList = Utils.getListFromArray(chestsByte);
+                    for (String chest : chestsList) {
+                        storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chest));
                     }
                 }
             }
