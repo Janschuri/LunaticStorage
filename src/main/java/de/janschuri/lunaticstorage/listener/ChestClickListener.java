@@ -36,6 +36,8 @@ public class ChestClickListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        Logger.debugLog("PlayerInteractEvent: " + event.isCancelled());
+
         if (EventUtils.isFakeEvent(event)) {
             Logger.debugLog("Ignoring fake event");
             return;
@@ -46,7 +48,7 @@ public class ChestClickListener implements Listener {
         Block clickedBlock = event.getClickedBlock();
 
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        if (itemInHand.getType() == Material.AIR || !itemInHand.getItemMeta().getPersistentDataContainer().has(Key.STORAGE, PersistentDataType.BOOLEAN)) {
+        if (itemInHand.getType() == Material.AIR || !itemInHand.getItemMeta().getPersistentDataContainer().has(Key.STORAGE, PersistentDataType.INTEGER)) {
             return;
         }
 
@@ -58,10 +60,6 @@ public class ChestClickListener implements Listener {
             event.setCancelled(true);
 
             Container container = (Container) clickedBlock.getState();
-
-            if (!EventUtils.isAllowedTakeItem(player, container.getInventory())) {
-                return;
-            }
 
             UUID worldUUID = container.getWorld().getUID();
 
@@ -124,7 +122,7 @@ public class ChestClickListener implements Listener {
 
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
                 PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
-                blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN, true);
+                blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
                 itemInHand.setItemMeta(storageMeta);
             } else {
                 AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));

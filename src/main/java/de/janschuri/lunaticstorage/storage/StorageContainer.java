@@ -196,7 +196,7 @@ public class StorageContainer {
 
     public void setWhitelistEnabled(boolean enabled, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        dataContainer.set(Key.WHITELIST_ENABLED, PersistentDataType.BOOLEAN, enabled);
+        dataContainer.set(Key.WHITELIST_ENABLED, PersistentDataType.INTEGER, (enabled ? 1 : 0));
 
         if (isDoubleChest() && updateDoubleChest) {
             getOtherHalf().setWhitelistEnabled(enabled, false);
@@ -209,7 +209,7 @@ public class StorageContainer {
 
     public void setBlacklistEnabled(boolean enabled, boolean updateDoubleChest) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        dataContainer.set(Key.BLACKLIST_ENABLED, PersistentDataType.BOOLEAN, enabled);
+        dataContainer.set(Key.BLACKLIST_ENABLED, PersistentDataType.INTEGER,  (enabled ? 1 : 0));
 
         if (isDoubleChest() && updateDoubleChest) {
             getOtherHalf().setBlacklistEnabled(enabled, false);
@@ -219,10 +219,10 @@ public class StorageContainer {
     public boolean isWhitelistEnabled() {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
 
-        if (dataContainer.has(Key.WHITELIST_ENABLED, PersistentDataType.BOOLEAN)) {
-            return dataContainer.get(Key.WHITELIST_ENABLED, PersistentDataType.BOOLEAN);
+        if (dataContainer.has(Key.WHITELIST_ENABLED, PersistentDataType.INTEGER)) {
+            return dataContainer.get(Key.WHITELIST_ENABLED, PersistentDataType.INTEGER) == 1;
         } else {
-            dataContainer.set(Key.WHITELIST_ENABLED, PersistentDataType.BOOLEAN, false);
+            dataContainer.set(Key.WHITELIST_ENABLED, PersistentDataType.INTEGER, 0);
             return false;
         }
     }
@@ -230,10 +230,10 @@ public class StorageContainer {
     public boolean isBlacklistEnabled() {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
 
-        if (dataContainer.has(Key.BLACKLIST_ENABLED, PersistentDataType.BOOLEAN)) {
-            return dataContainer.get(Key.BLACKLIST_ENABLED, PersistentDataType.BOOLEAN);
+        if (dataContainer.has(Key.BLACKLIST_ENABLED, PersistentDataType.INTEGER)) {
+            return dataContainer.get(Key.BLACKLIST_ENABLED, PersistentDataType.INTEGER) == 1;
         } else {
-            dataContainer.set(Key.BLACKLIST_ENABLED, PersistentDataType.BOOLEAN, false);
+            dataContainer.set(Key.BLACKLIST_ENABLED, PersistentDataType.INTEGER, 0);
             return false;
         }
     }

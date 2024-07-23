@@ -121,12 +121,12 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
     public static boolean isPanel(Block block) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN);
+        return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
     }
 
     public static boolean isContainer(Block block) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.BOOLEAN);
+        return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER);
     }
 
     public static boolean isStorageItem(ItemStack item) {
@@ -142,7 +142,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-        return dataContainer.has(Key.STORAGE);
+        return dataContainer.has(Key.STORAGE, PersistentDataType.INTEGER);
     }
 
     public static boolean isRangeItem(ItemStack item) {
@@ -158,7 +158,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-        return dataContainer.has(Key.RANGE);
+        return dataContainer.has(Key.RANGE, PersistentDataType.INTEGER);
     }
 
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {

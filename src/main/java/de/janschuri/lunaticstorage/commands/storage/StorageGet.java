@@ -98,7 +98,7 @@ public class StorageGet extends Subcommand {
         ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStorageItem());
 
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.STORAGE, PersistentDataType.INTEGER, 1);
         item.setItemMeta(meta);
 
         return item;
@@ -118,7 +118,7 @@ public class StorageGet extends Subcommand {
         ItemStack item = new ItemStack(LunaticStorage.getPluginConfig().getStoragePanelBlock());
 
         ItemMeta meta = item.getItemMeta();
-        meta.getPersistentDataContainer().set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
+        meta.getPersistentDataContainer().set(Key.PANEL_BLOCK, PersistentDataType.INTEGER, 1);
         meta.getPersistentDataContainer().set(Key.PANEL_RANGE, PersistentDataType.LONG, range);
         item.setItemMeta(meta);
 

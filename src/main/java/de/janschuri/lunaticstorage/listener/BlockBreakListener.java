@@ -68,7 +68,7 @@ public class BlockBreakListener implements Listener {
 
             ItemMeta blockItemMeta = blockItem.getItemMeta();
             PersistentDataContainer blockItemDataContainer = blockItemMeta.getPersistentDataContainer();
-            blockItemDataContainer.set(Key.PANEL_BLOCK, PersistentDataType.BOOLEAN, true);
+            blockItemDataContainer.set(Key.PANEL_BLOCK, PersistentDataType.INTEGER, 1);
             blockItemDataContainer.set(Key.PANEL_RANGE, PersistentDataType.LONG, dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG));
             blockItem.setItemMeta(blockItemMeta);
 
