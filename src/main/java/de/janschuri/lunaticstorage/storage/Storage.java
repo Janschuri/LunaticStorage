@@ -700,7 +700,13 @@ public class Storage {
             }
         }
 
-        int amount = item.getAmount() - remainingItems.getAmount();
+        int amount = 0;
+
+        if (remainingItems.getType() != Material.AIR) {
+            amount = item.getAmount() - remainingItems.getAmount();
+        } else {
+            amount = item.getAmount();
+        }
 
         removeContainerFromStorageItem(invalidContainers);
         updateStorageMap(item, amount);

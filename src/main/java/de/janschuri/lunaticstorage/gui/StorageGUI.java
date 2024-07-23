@@ -611,7 +611,8 @@ public class StorageGUI extends InventoryGUI {
 
         ItemStack newItem = storage.insertItemsIntoStorage(item, player);
 
-        if (newItem.getAmount() > 0) {
+        if (newItem.getAmount() > 0 && !newItem.getType().equals(Material.AIR)) {
+            Logger.debugLog("insertItem: " + newItem);
             AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL_MK));
             storageFullTimeout = true;
             Runnable runnable = () -> {

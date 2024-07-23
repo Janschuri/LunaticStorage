@@ -131,7 +131,7 @@ public class ChestClickListener implements Listener {
     }
 
     private boolean addChestsToPersistentDataContainer(PersistentDataContainer dataContainer, NamespacedKey worldKey, List<String> chests) {
-        if (!dataContainer.has(worldKey, PersistentDataType.LONG_ARRAY)) {
+        if (!dataContainer.has(worldKey, PersistentDataType.BYTE_ARRAY)) {
             byte[] worldChests = Utils.getArrayFromList(chests);
             dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, worldChests);
             return true;

@@ -162,7 +162,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
-        return dataContainer.has(Key.RANGE, PersistentDataType.INTEGER);
+        return dataContainer.has(Key.RANGE, PersistentDataType.LONG);
     }
 
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
