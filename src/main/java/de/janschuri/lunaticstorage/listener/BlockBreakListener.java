@@ -9,13 +9,11 @@ import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Container;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -26,9 +24,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BlockBreakListener implements Listener {
+
+    private static final Map<Event, List<Item>> dropEvents = new HashMap<>();
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -45,9 +48,33 @@ public class BlockBreakListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onBlockDropMonitor(BlockDropItemEvent event) {
+        if (dropEvents.containsKey(event)) {
+            Logger.debugLog("New Item List: " + event.getItems());
+            Logger.debugLog("Old Item List: " + dropEvents.get(event));
+
+            List<Item> oldItems = dropEvents.get(event);
+            List<Item> newItems = event.getItems();
+
+            for (Item item : oldItems) {
+                if (!newItems.contains(item)) {
+                    item.remove();
+                }
+            }
+
+            Logger.debugLog("New Item List: " + event.getItems());
+
+
+            dropEvents.remove(event);
+            Logger.debugLog("BlockDropItemEvent removed");
+            return;
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockDrop(BlockDropItemEvent event) {
-        List<Item> items = event.getItems();
+        Logger.debugLog("BlockDropItemEvent");
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -73,10 +100,13 @@ public class BlockBreakListener implements Listener {
             blockItemDataContainer.set(Key.PANEL_RANGE, PersistentDataType.LONG, dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG));
             blockItem.setItemMeta(blockItemMeta);
 
+
+            List<Item> newItems = new ArrayList<>();
+
             if (addBlockItem) {
                     Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
                     item.setItemStack(blockItem);
-                    items.add(item);
+                    newItems.add(item);
             }
 
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
@@ -84,7 +114,7 @@ public class BlockBreakListener implements Listener {
                 ItemStack itemStack = ItemStackUtils.deserializeItemStack(bytes);
                     Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
                     item.setItemStack(itemStack);
-                    items.add(item);
+                    newItems.add(item);
             }
 
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
@@ -92,13 +122,19 @@ public class BlockBreakListener implements Listener {
                 ItemStack itemStack = ItemStackUtils.deserializeItemStack(bytes);
                     Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
                     item.setItemStack(itemStack);
-                    items.add(item);
+                    newItems.add(item);
             }
 
             dataContainer.remove(Key.STORAGE_ITEM);
             dataContainer.remove(Key.PANEL_BLOCK);
             dataContainer.remove(Key.PANEL_RANGE);
             dataContainer.remove(Key.RANGE_ITEM);
+
+            Logger.debugLog("Items: " + newItems);
+
+            event.getItems().addAll(newItems);
+
+            dropEvents.put(event, newItems);
         }
 
         if (Utils.isContainer(block)) {
