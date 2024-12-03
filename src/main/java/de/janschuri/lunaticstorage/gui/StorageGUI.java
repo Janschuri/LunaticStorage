@@ -601,7 +601,7 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private void reloadGui() {
-        GUIManager.openGUI(new StorageGUI(this), player, false);
+        GUIManager.openGUI(new StorageGUI(this), player);
     }
 
     private ItemStack insertItem(Player player, ItemStack item) {

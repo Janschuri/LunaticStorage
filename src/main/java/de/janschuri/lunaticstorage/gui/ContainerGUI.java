@@ -440,6 +440,6 @@ public class ContainerGUI extends InventoryGUI {
 
 
     private void reloadGui() {
-        GUIManager.openGUI(new ContainerGUI(this), getPlayer(), false);
+        GUIManager.openGUI(new ContainerGUI(this), getPlayer());
     }
 }
