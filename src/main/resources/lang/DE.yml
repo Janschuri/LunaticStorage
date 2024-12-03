@@ -35,3 +35,6 @@ commands:
       random:
         aliases:
           - random
+      container:
+        aliases:
+          - container

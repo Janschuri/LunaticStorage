@@ -13,11 +13,11 @@ public class PluginConfig extends LunaticConfigImpl {
 
 
     public PluginConfig(Path dataDirectory) {
-        super(dataDirectory, CONFIG_FILE, "config.yml");
+        super(dataDirectory, CONFIG_FILE);
     }
 
     public void load() {
-        super.load();
+        super.load("config.yml");
         LunaticStorage.debug = getBoolean("debug", false);
     }
 
