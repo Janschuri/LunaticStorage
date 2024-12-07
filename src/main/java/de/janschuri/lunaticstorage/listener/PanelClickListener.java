@@ -32,7 +32,7 @@ public class PanelClickListener implements Listener {
 
         if (Utils.isPanel(block)) {
             event.setCancelled(true);
-            GUIManager.openGUI(StorageGUI.getStorageGUI(player, block), player);
+            GUIManager.openGUI(new StorageGUI(player, block), player);
         }
     }
 }

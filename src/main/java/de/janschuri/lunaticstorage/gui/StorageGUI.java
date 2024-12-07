@@ -1,35 +1,27 @@
 package de.janschuri.lunaticstorage.gui;
 
-import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.*;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.SignGUIAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class StorageGUI extends InventoryGUI {
+public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
     private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full");
     private static final MessageKey AMOUNT_MK = new MessageKey("amount");
@@ -40,164 +32,124 @@ public class StorageGUI extends InventoryGUI {
     private static final MessageKey RANGE_MK = new MessageKey("range");
     private static final MessageKey GUI_TITLE_MK = new MessageKey("gui_title");
 
-    private static final Map<Integer, StorageGUI> storageGUIs = new HashMap<>();
-    private static final Map<UUID, Map<Integer, Integer>> playerStorageGUIs = new HashMap<>();
+    private final static Map<Block, Map<Player, StorageGUI>> storageGUIs = new HashMap<>();
+    private final static Map<Integer, Block> blockMap = new HashMap<>();
+    private final static Map<Integer, Player> playerMap = new HashMap<>();
+    private final static Set<Integer> descendingMap = new HashSet<>();
+    private final static Map<Integer, Integer> sorterMap = new HashMap<>();
+    private final static Map<Integer, String> searchMap = new HashMap<>();
+    private final static Set<Integer> storageFullTimeoutMap = new HashSet<>();
 
-    private static final AtomicInteger atomicInteger = new AtomicInteger(0);
-    private final int id;
-    private String locale;
-
-    private boolean storageFullTimeout = false;
-    private boolean processingClickEvent = false;
-
-    private Block block;
-    private int panelId;
-    private Storage storage;
-
-    int sorter = 0;
-    private int page = 0;
-    private int pages = 0;
-    private boolean descending = false;
-    private String search = "";
-    private final Player player;
-
-
-
-    private StorageGUI(Player player, Block block, String locale) {
-        super(createInventory());
-        this.id = atomicInteger.getAndIncrement();
-        this.player = player;
-        this.block = block;
-        this.panelId = block.hashCode();
-        this.locale = locale;
-        this.storage = Storage.getStorage(block);
-        storageGUIs.put(id, this);
-        if (playerStorageGUIs.containsKey(player.getUniqueId())) {
-            Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
-            ids.put(panelId, id);
-            playerStorageGUIs.put(player.getUniqueId(), ids);
-        } else {
-            playerStorageGUIs.put(player.getUniqueId(), new HashMap<>(Map.of(panelId, id)));
-        }
+    public StorageGUI(Player player, Block block) {
+        super(getId(player, block));
+        blockMap.put(getId(), block);
+        playerMap.put(getId(), player);
+        storageGUIs.putIfAbsent(block, new HashMap<>());
+        storageGUIs.get(block).put(player, this);
     }
 
-    private StorageGUI(StorageGUI storageGUI) {
-        super(storageGUI.getInventory());
-        this.page = storageGUI.page;
-        this.id = storageGUI.id;
-        this.player = storageGUI.player;
-        this.block = storageGUI.block;
-        this.panelId = storageGUI.panelId;
-        this.locale = storageGUI.locale;
-
-        this.descending = storageGUI.descending;
-        this.search = storageGUI.search;
-        this.sorter = storageGUI.sorter;
-        this.processingClickEvent = storageGUI.processingClickEvent;
-        this.storageFullTimeout = storageGUI.storageFullTimeout;
-
-        this.storage = Storage.getStorage(block);
-        decorate(player);
-        storageGUIs.put(id, this);
-
+    private static int getId(Player player, Block block) {
+        return storageGUIs.get(block).get(player).getId();
     }
 
-    private StorageGUI(int id) {
-        super(createInventory());
-        StorageGUI storageGUI = storageGUIs.get(id);
-        this.page = storageGUI.page;
-        this.id = storageGUI.id;
-        this.player = storageGUI.player;
-        this.block = storageGUI.block;
-        this.panelId = storageGUI.panelId;
-        this.locale = storageGUI.locale;
-
-        this.descending = storageGUI.descending;
-        this.search = storageGUI.search;
-        this.sorter = storageGUI.sorter;
-        this.processingClickEvent = storageGUI.processingClickEvent;
-        this.storageFullTimeout = storageGUI.storageFullTimeout;
-
-        this.storage = Storage.getStorage(block);
-        decorate(player);
-        storageGUIs.put(id, this);
-
-    }
-
-    public static StorageGUI getStorageGUI(Player player, Block block) {
-        if (playerStorageGUIs.containsKey(player.getUniqueId())) {
-            int panelId = block.hashCode();
-            Map<Integer, Integer> ids = playerStorageGUIs.get(player.getUniqueId());
-            if (ids.containsKey(panelId)) {
-                int id = ids.get(panelId);
-                return new StorageGUI(id);
-            }
-        }
-        return new StorageGUI(player, block, player.getLocale());
-    }
-
-    private static Inventory createInventory() {
-        String title = LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE_MK);
-        Inventory inv = Bukkit.createInventory(null, 54, title);
-
-        for (int i = 0; i < 9; i++) {
-            inv.setItem(i, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-            inv.setItem(i + 45, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        }
-
-        return inv;
+    @Override
+    public String getTitle() {
+        return LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE_MK);
     }
 
     @Override
     public void decorate(Player player) {
-        createStorageButton();
-        createRangeButton();
-        createStorageItemsButtons();
-        addButton(createItemButton());
+        Storage storage = getStorage();
+
+        createStorageButton(storage.getStorageItem());
+        createRangeButton(storage.getRangeItem());
+        addButton(createItemButton(storage));
         addButton(createStoragePlayerInvButton());
         addButton(0, createSearchButton());
         addButton(4, createSorterButton());
         addButton(5, createDescendingButton());
 
-        if (page > 0) {
-            addButton(48, createArrowLeft());
-        } else {
-            addButton(48, createEmptyButton());
-        }
-
-        addButton(49, createPageButton());
-
-        if (page < pages) {
-            addButton(50, createArrowRight());
-        } else {
-            addButton(50, createEmptyButton());
-        }
         super.decorate(player);
     }
 
-    private void createStorageButton() {
-        ItemStack storageItem = storage.getStorageItem();
+    public Block getBlock() {
+        return blockMap.get(getId());
+    }
 
+    public Player getPlayer() {
+        return playerMap.get(getId());
+    }
+
+    public Storage getStorage() {
+        return Storage.getStorage(getBlock());
+    }
+
+    public boolean isDescending() {
+        return descendingMap.contains(getId());
+    }
+
+    public void setDescending(boolean descending) {
+        if (descending) {
+            descendingMap.add(getId());
+        } else {
+            descendingMap.remove(getId());
+        }
+    }
+
+    public void toggleDescending() {
+        if (isDescending()) {
+            descendingMap.remove(getId());
+        } else {
+            descendingMap.add(getId());
+        }
+    }
+
+    public int getSorter() {
+        sorterMap.putIfAbsent(getId(), 0);
+
+        return sorterMap.get(getId());
+    }
+
+    public void setSorter(int sorter) {
+        sorterMap.put(getId(), sorter);
+    }
+
+    public String getSearch() {
+        searchMap.putIfAbsent(getId(), "");
+
+        return searchMap.get(getId());
+    }
+
+    public void setSearch(String search) {
+        searchMap.put(getId(), search);
+    }
+
+    public boolean isStorageFullTimeout() {
+        return storageFullTimeoutMap.contains(getId());
+    }
+
+    public void setStorageFullTimeout() {
+        storageFullTimeoutMap.add(getId());
+
+        Utils.scheduleTask(() -> {
+            storageFullTimeoutMap.remove(getId());
+        }, 3000, TimeUnit.MILLISECONDS);
+    }
+
+    private void createStorageButton(ItemStack storageItem) {
         if (storageItem != null) {
-            this.addButton(8, createStorageItemButton());
+            this.addButton(8, createStorageItemButton(storageItem));
         } else {
             this.addButton(8, createStoragePaneButton());
         }
     }
 
-    private void createRangeButton() {
-        ItemStack rangeItem = storage.getRangeItem();
-
+    private void createRangeButton(ItemStack rangeItem) {
         if (rangeItem != null) {
-            this.addButton(7, createRangeItemButton());
+            this.addButton(7, createRangeItemButton(rangeItem));
         } else {
             this.addButton(7, createRangePaneButton());
         }
-    }
-
-    private InventoryButton createEmptyButton() {
-        return new InventoryButton()
-                .creator(player -> new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
     }
 
     private InventoryButton createStoragePaneButton() {
@@ -214,7 +166,7 @@ public class StorageGUI extends InventoryGUI {
                     ItemStack newItem = insertStorageItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
@@ -232,12 +184,11 @@ public class StorageGUI extends InventoryGUI {
                     ItemStack newItem = insertRangeItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
-    private InventoryButton createStorageItemButton() {
-        ItemStack item = storage.getStorageItem();
+    private InventoryButton createStorageItemButton(ItemStack item) {
         return new InventoryButton()
                 .creator(player -> item)
                 .consumer(event -> {
@@ -246,7 +197,7 @@ public class StorageGUI extends InventoryGUI {
                     }
 
                     Player player = (Player) event.getWhoClicked();
-                    ItemStack cursor = event.getCursor().clone();
+                    ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     Logger.debugLog("Cursor: " + cursor);
 
@@ -255,12 +206,11 @@ public class StorageGUI extends InventoryGUI {
                     Logger.debugLog("New Item: " + newItem);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
-    private InventoryButton createRangeItemButton() {
-        ItemStack item = storage.getRangeItem();
+    private InventoryButton createRangeItemButton(ItemStack item) {
         return new InventoryButton()
                 .creator(player -> item)
                 .consumer(event -> {
@@ -269,103 +219,61 @@ public class StorageGUI extends InventoryGUI {
                     }
 
                     Player player = (Player) event.getWhoClicked();
-                    ItemStack cursor = event.getCursor().clone();
+                    ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     ItemStack newItem = insertRangeItem(cursor, true, event.isRightClick());
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
-    private InventoryButton createStorageContentButton(ItemStack item, int amount) {
-        ItemStack displayItem = item.clone();
-        ItemMeta meta = displayItem.getItemMeta();
+    @Override
+    protected ItemStack currentPageItem(Player player) {
+        Storage storage = getStorage();
+
+        ItemStack item = new ItemStack(Material.PAPER);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
+                .replace("%page%", String.valueOf(getPage() + 1))
+                .replace("%pages%", String.valueOf(getPageCount() + 1)));
         List<String> lore = new ArrayList<>();
-        if (meta != null) {
-            lore = meta.getLore();
-        }
 
-        if (lore == null) {
-            lore = new ArrayList<>();
-        }
+        String totalItems = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_ITEMS_MK, false)
+                .replace("%amount%", storage.getTotalAmount() + "");
+        String range = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(RANGE_MK, false)
+                .replace("%range%", storage.getRange() + "");
+        String loadedContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(LOADED_CONTAINERS_MK, false)
+                .replace("%amount%", storage.getLoadedContainersAmount() + "");
+        String totalContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_CONTAINERS_MK, false)
+                .replace("%amount%", storage.getContainerAmount() + "");
 
-        String amountText = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
-        lore.add(amountText);
+        lore.add(totalItems);
+        lore.add(range);
+        lore.add(loadedContainers);
+        lore.add(totalContainers);
 
-        if (meta != null) {
-            meta.setLore(lore);
-        }
-        displayItem.setItemMeta(meta);
+        meta.setLore(lore);
 
-        return new InventoryButton()
-                .creator(player -> displayItem)
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    Player player = (Player) event.getWhoClicked();
-                    ItemStack cursorItem = event.getCursor();
-
-                    if (cursorItem.getType().equals(Material.AIR)) {
-                        ItemStack newItem = storage.getItemsFromStorage(item, player);
-
-                        if (!newItem.getType().equals(Material.AIR)) {
-                            player.setItemOnCursor(newItem);
-                        }
-
-                        reloadGui();
-                    } else {
-                        ItemStack newItem = insertItem(player, cursorItem);
-                        player.setItemOnCursor(newItem);
-                    }
-                });
-    }
-
-    private InventoryButton createPageButton() {
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack item = new ItemStack(Material.PAPER);
-                    ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
-                            .replace("%page%", String.valueOf(page + 1))
-                            .replace("%pages%", String.valueOf(pages + 1)));
-                    List<String> lore = new ArrayList<>();
-
-                    String totalItems = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_ITEMS_MK, false)
-                            .replace("%amount%", storage.getTotalAmount() + "");
-                    String range = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(RANGE_MK, false)
-                            .replace("%range%", storage.getRange() + "");
-                    String loadedContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(LOADED_CONTAINERS_MK, false)
-                            .replace("%amount%", storage.getLoadedContainersAmount() + "");
-                    String totalContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_CONTAINERS_MK, false)
-                            .replace("%amount%", storage.getContainerAmount() + "");
-
-                    lore.add(totalItems);
-                    lore.add(range);
-                    lore.add(loadedContainers);
-                    lore.add(totalContainers);
-
-                    meta.setLore(lore);
-
-                    item.setItemMeta(meta);
-                    return item;
-                });
+        item.setItemMeta(meta);
+        return item;
     }
 
     private InventoryButton createDescendingButton() {
         return new InventoryButton()
                 .creator(player -> {
-                    if (descending) {
+                    if (isDescending()) {
                         ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
                         ItemMeta meta = arrow.getItemMeta();
+                        assert meta != null;
                         meta.setDisplayName("Descended");
                         arrow.setItemMeta(meta);
                         return arrow;
                     } else {
                         ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
                         ItemMeta meta = arrow.getItemMeta();
+                        assert meta != null;
                         meta.setDisplayName("Ascended");
                         arrow.setItemMeta(meta);
                         return arrow;
@@ -376,23 +284,30 @@ public class StorageGUI extends InventoryGUI {
                         return;
                     }
 
-                    descending = !descending;
-                    reloadGui();
+                    Player player = (Player) event.getWhoClicked();
+
+                    toggleDescending();
+
+                    reloadGui(player);
                 });
     }
 
     private InventoryButton createSorterButton() {
         return new InventoryButton()
                 .creator(player -> {
+                    int sorter = getSorter();
+
                     if (sorter == 0) {
                         ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
                         ItemMeta meta = sorterItem.getItemMeta();
+                        assert meta != null;
                         meta.setDisplayName("by name");
                         sorterItem.setItemMeta(meta);
                         return sorterItem;
                     } else {
                         ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
                         ItemMeta meta = sorterItem.getItemMeta();
+                        assert meta != null;
                         meta.setDisplayName("by amount");
                         sorterItem.setItemMeta(meta);
                         return sorterItem;
@@ -403,8 +318,10 @@ public class StorageGUI extends InventoryGUI {
                         return;
                     }
 
-                    sorter = (sorter + 1) % 2;
-                    reloadGui();
+                    Player player = (Player) event.getWhoClicked();
+
+                    setSorter((getSorter() + 1) % 2);
+                    reloadGui(player);
                 });
     }
 
@@ -413,6 +330,7 @@ public class StorageGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.COMPASS);
                     ItemMeta meta = item.getItemMeta();
+                    assert meta != null;
                     meta.setDisplayName("Search");
                     item.setItemMeta(meta);
                     return item;
@@ -436,8 +354,8 @@ public class StorageGUI extends InventoryGUI {
                                 return List.of(
                                         SignGUIAction.run(() ->{
                                                     Bukkit.getScheduler().runTask(LunaticStorage.getInstance(), () -> {
-                                                        this.search = search.toString();
-                                                        GUIManager.openGUI(new StorageGUI(this), player);
+                                                        setSearch(search.toString());
+                                                        reloadGui(player);
                                                     });
                                                 })
                                 );
@@ -450,49 +368,7 @@ public class StorageGUI extends InventoryGUI {
 
     }
 
-    private InventoryButton createArrowLeft() {
-
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
-                    ItemMeta meta = arrow.getItemMeta();
-                    meta.setDisplayName("<<<");
-
-                    arrow.setItemMeta(meta);
-                    return arrow;
-                })
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    setPage(page - 1);
-                    reloadGui();
-                });
-    }
-
-    private InventoryButton createArrowRight() {
-
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
-                    ItemMeta meta = arrow.getItemMeta();
-                    meta.setDisplayName(">>>");
-
-                    arrow.setItemMeta(meta);
-                    return arrow;
-                })
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    setPage(page + 1);
-                    reloadGui();
-                });
-    }
-
-    private PlayerInvButton createItemButton() {
+    private PlayerInvButton createItemButton(Storage storage) {
         return new PlayerInvButton()
                 .condition(event -> {
                     ItemStack item = event.getCurrentItem();
@@ -523,10 +399,10 @@ public class StorageGUI extends InventoryGUI {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursorItem = event.getCurrentItem();
 
-                    ItemStack newItem = insertItem(player, cursorItem);
+                    ItemStack newItem = insertItem(storage, player, cursorItem);
                     event.setCurrentItem(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
@@ -554,58 +430,77 @@ public class StorageGUI extends InventoryGUI {
                         return;
                     }
 
+                    Player player = (Player) event.getWhoClicked();
 
                     ItemStack item = event.getCurrentItem();
 
                     ItemStack newItem = insertStorageItem(item, false);
                     event.setCurrentItem(newItem);
 
-                    reloadGui();
+                    reloadGui(player);
                 });
     }
 
-    private void setPage(int page) {
-        if (page > pages) {
-            page = pages;
-        }
-        if (page < 0) {
-            page = 0;
-        }
-
-        this.page = page;
+    @Override
+    protected List<Map.Entry<ItemStack, Integer>> getItems() {
+        Storage storage = getStorage();
+        String locale = getPlayer().getLocale();
+        return storage.getStorageList(locale, getSorter(), isDescending(), getSearch());
     }
 
-    private void createStorageItemsButtons() {
-        List<Map.Entry<ItemStack, Integer>> allStorageItems = storage.getStorageList(locale, sorter, descending, search);
-        int pageSize = 36;
-        pages = allStorageItems.size() / pageSize;
-        setPage(page);
+    @Override
+    protected InventoryButton listItemButton(Map.Entry<ItemStack, Integer> entry) {
+        ItemStack item = entry.getKey();
+        int amount = entry.getValue();
 
-        int startIndex = page * pageSize;
-        int endIndex = startIndex + pageSize;
-
-        if (endIndex > allStorageItems.size()) {
-            endIndex = allStorageItems.size();
+        ItemStack displayItem = item.clone();
+        ItemMeta meta = displayItem.getItemMeta();
+        List<String> lore = new ArrayList<>();
+        if (meta != null) {
+            lore = meta.getLore();
         }
 
-        List<Map.Entry<ItemStack, Integer>> storageItems = allStorageItems.subList(startIndex, endIndex);
+        if (lore == null) {
+            lore = new ArrayList<>();
+        }
 
-            for (int i = 0; i < 36; i++) {
-                if (i < storageItems.size()) {
-                    Map.Entry<ItemStack, Integer> entry = storageItems.get(i);
-                    this.addButton(9 + i, createStorageContentButton(entry.getKey(), entry.getValue()));
-                } else {
-                    this.addButton(9 + i, createStorageContentButton(new ItemStack(Material.AIR), 0));
-                }
-            }
+        String amountText = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
+        lore.add(amountText);
+
+        if (meta != null) {
+            meta.setLore(lore);
+        }
+        displayItem.setItemMeta(meta);
+
+        return new InventoryButton()
+                .creator(player -> displayItem)
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    Player player = (Player) event.getWhoClicked();
+                    ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
+
+                    if (cursorItem.getType().equals(Material.AIR)) {
+                        ItemStack newItem = getStorage().getItemsFromStorage(item, player);
+
+                        if (!newItem.getType().equals(Material.AIR)) {
+                            player.setItemOnCursor(newItem);
+                        }
+
+                        reloadGui(player);
+                    } else {
+                        Storage storage = getStorage();
+
+                        ItemStack newItem = insertItem(storage, player, cursorItem);
+                        player.setItemOnCursor(newItem);
+                    }
+                });
     }
 
-    private void reloadGui() {
-        GUIManager.openGUI(new StorageGUI(this), player);
-    }
-
-    private ItemStack insertItem(Player player, ItemStack item) {
-        if (storageFullTimeout) {
+    private ItemStack insertItem(Storage storage, Player player, ItemStack item) {
+        if (isStorageFullTimeout()) {
             return item;
         }
 
@@ -614,12 +509,7 @@ public class StorageGUI extends InventoryGUI {
         if (newItem.getAmount() > 0 && !newItem.getType().equals(Material.AIR)) {
             Logger.debugLog("insertItem: " + newItem);
             AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL_MK));
-            storageFullTimeout = true;
-            Runnable runnable = () -> {
-                storageGUIs.get(id).storageFullTimeout = false;
-            };
-
-            Utils.scheduleTask(runnable, 1000, TimeUnit.MILLISECONDS);
+            setStorageFullTimeout();
         }
 
         reloadGui();
@@ -627,23 +517,13 @@ public class StorageGUI extends InventoryGUI {
         return newItem;
     }
 
-    private boolean processingClickEvent() {
-        boolean result = processingClickEvent;
-
-        processingClickEvent = true;
-        Runnable runnable = () -> {
-            storageGUIs.get(id).processingClickEvent = false;
-        };
-
-        Utils.scheduleTask(runnable, 100, TimeUnit.MILLISECONDS);
-        return result;
-    }
-
     private ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
         return insertStorageItem(item, swapItems, false);
     }
 
     private ItemStack insertStorageItem(ItemStack item, boolean swapItems, boolean isRightClick) {
+
+        Storage storage = getStorage();
 
         if (!Utils.isStorageItem(item) && !item.getType().equals(Material.AIR)) {
             Logger.debugLog("insertStorageItem: not storage item");
@@ -688,13 +568,11 @@ public class StorageGUI extends InventoryGUI {
 
         if (!storageItem.getType().isAir()) {
             storage.setStorageItem(storageItem);
-//            this.addButton(7, createStorageItemButton());
         } else {
             storage.setStorageItem(null);
-//            this.addButton(7, createStoragePaneButton());
         }
 
-        createStorageButton();
+        createStorageButton(storageItem);
 
         Logger.debugLog("insertStorageItem: storageItem: " + storageItem);
 
@@ -706,6 +584,8 @@ public class StorageGUI extends InventoryGUI {
     }
 
     private ItemStack insertRangeItem(ItemStack item, boolean swapItems, boolean isRightClick) {
+
+        Storage storage = getStorage();
 
         if (!Utils.isRangeItem(item) && !item.getType().equals(Material.AIR)) {
             Logger.debugLog("insertRangeItem: not range item");
@@ -754,14 +634,18 @@ public class StorageGUI extends InventoryGUI {
             storage.setRangeItem(null);
         }
 
-        createRangeButton();
+        createRangeButton(rangeItem);
 
         return result;
     }
 
+    public void reloadGui() {
+        reloadGui(getPlayer());
+    }
+
     public static void updateStorageGUIs(Block block) {
-        for (StorageGUI storageGUI : storageGUIs.values()) {
-            if (storageGUI.block.equals(block)) {
+        if (storageGUIs.containsKey(block)) {
+            for (StorageGUI storageGUI : storageGUIs.get(block).values()) {
                 storageGUI.reloadGui();
             }
         }
