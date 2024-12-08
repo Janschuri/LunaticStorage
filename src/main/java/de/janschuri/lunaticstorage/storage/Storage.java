@@ -198,7 +198,7 @@ public class Storage {
         StorageGUI.updateStorageGUIs(block);
     }
 
-    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc, String search) {
+    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc) {
         List<Map.Entry<ItemStack, Integer>> storageList;
 
         Comparator<Map.Entry<ItemStack, Integer>> comparator;
@@ -213,24 +213,24 @@ public class Storage {
             comparator = comparator.reversed();
         }
 
-        if (search == null) {
-            search = "";
-        }
-
-        String finalSearch = search;
-        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
-            if (finalSearch.isEmpty()) {
-                return true;
-            }
-            String language = Utils.getMCLanguage(entry.getKey(), locale);
-            return language.toLowerCase().contains(finalSearch.toLowerCase());
-        };
+//        if (search == null) {
+//            search = "";
+//        }
+//
+//        String finalSearch = search;
+//        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
+//            if (finalSearch.isEmpty()) {
+//                return true;
+//            }
+//            String language = Utils.getMCLanguage(entry.getKey(), locale);
+//            return language.toLowerCase().contains(finalSearch.toLowerCase());
+//        };
 
 
 
 
         storageList = getStorageMap().entrySet().stream()
-                .filter(filter)
+//                .filter(filter)
                 .sorted(comparator)
                 .collect(Collectors.toList());
 

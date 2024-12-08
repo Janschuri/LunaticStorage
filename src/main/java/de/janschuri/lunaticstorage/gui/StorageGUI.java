@@ -8,18 +8,15 @@ import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
-import de.rapha149.signgui.SignGUI;
-import de.rapha149.signgui.SignGUIAction;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.command.PluginCommandYamlParser;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
@@ -37,7 +34,6 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     private final static Map<Integer, Player> playerMap = new HashMap<>();
     private final static Set<Integer> descendingMap = new HashSet<>();
     private final static Map<Integer, Integer> sorterMap = new HashMap<>();
-    private final static Map<Integer, String> searchMap = new HashMap<>();
     private final static Set<Integer> storageFullTimeoutMap = new HashSet<>();
 
     public StorageGUI(Player player, Block block) {
@@ -68,7 +64,6 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
         createRangeButton(storage.getRangeItem());
         addButton(createItemButton(storage));
         addButton(createStoragePlayerInvButton());
-        addButton(0, createSearchButton());
         addButton(4, createSorterButton());
         addButton(5, createDescendingButton());
 
@@ -115,16 +110,6 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
     public void setSorter(int sorter) {
         sorterMap.put(getId(), sorter);
-    }
-
-    public String getSearch() {
-        searchMap.putIfAbsent(getId(), "");
-
-        return searchMap.get(getId());
-    }
-
-    public void setSearch(String search) {
-        searchMap.put(getId(), search);
     }
 
     public boolean isStorageFullTimeout() {
@@ -232,7 +217,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     @Override
-    protected ItemStack currentPageItem(Player player) {
+    public ItemStack currentPageItem(Player player) {
         Storage storage = getStorage();
 
         ItemStack item = new ItemStack(Material.PAPER);
@@ -328,49 +313,6 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
                 });
     }
 
-    private InventoryButton createSearchButton() {
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack item = new ItemStack(Material.COMPASS);
-                    ItemMeta meta = item.getItemMeta();
-                    assert meta != null;
-                    meta.setDisplayName("Search");
-                    item.setItemMeta(meta);
-                    return item;
-                })
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    Player player = (Player) event.getWhoClicked();
-                    player.closeInventory();
-
-                    SignGUI gui = SignGUI.builder()
-                            .setType(Material.DARK_OAK_SIGN)
-                            .setHandler((p, result) -> {
-                                StringBuilder search = new StringBuilder();
-                                for (int i = 0; i < 4; i++) {
-                                    search.append(result.getLine(i));
-                                }
-
-                                return List.of(
-                                        SignGUIAction.run(() ->{
-                                                    Bukkit.getScheduler().runTask(LunaticStorage.getInstance(), () -> {
-                                                        setSearch(search.toString());
-                                                        reloadGui(player);
-                                                    });
-                                                })
-                                );
-                            })
-                            .build();
-
-                    gui.open(player);
-                });
-
-
-    }
-
     private PlayerInvButton createItemButton(Storage storage) {
         return new PlayerInvButton()
                 .condition(event -> {
@@ -448,7 +390,20 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     protected List<Map.Entry<ItemStack, Integer>> getItems() {
         Storage storage = getStorage();
         String locale = getPlayer().getLocale();
-        return storage.getStorageList(locale, getSorter(), isDescending(), getSearch());
+        return storage.getStorageList(locale, getSorter(), isDescending());
+    }
+
+    @Override
+    public Predicate<Map.Entry<ItemStack, Integer>> getSearchFilter(Player player) {
+        final String locale = player.getLocale();
+        final String search = getSearch();
+        return entry -> {
+            if (search.isEmpty()) {
+                return true;
+            }
+            String language = Utils.getMCLanguage(entry.getKey(), locale);
+            return language.toLowerCase().contains(search.toLowerCase());
+        };
     }
 
     @Override
