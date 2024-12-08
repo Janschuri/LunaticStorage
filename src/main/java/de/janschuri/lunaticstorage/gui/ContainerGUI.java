@@ -66,7 +66,7 @@ public class ContainerGUI extends InventoryGUI {
     private ContainerGUI(ContainerGUI containerGUI) {
         super();
         this.id = containerGUI.id;
-        decorate(getPlayer());
+        init(getPlayer());
     }
 
     public StorageContainer getStorageContainer() {
@@ -109,19 +109,8 @@ public class ContainerGUI extends InventoryGUI {
         return blacklistPages.get(id);
     }
 
-    private static Inventory createInventory() {
-        Inventory inv = Bukkit.createInventory(null, 54, "Storage Container GUI");
-
-        for (int i = 0; i < 9; i++) {
-            inv.setItem(i, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-            inv.setItem(i + 45, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
-        }
-
-        return inv;
-    }
-
     @Override
-    public void decorate(Player player) {
+    public void init(Player player) {
         addButton(0, toggleModeButton());
         addButton(2, createAddItemToListButton());
 
@@ -169,7 +158,7 @@ public class ContainerGUI extends InventoryGUI {
 
 
 
-        super.decorate(player);
+        super.init(player);
     }
 
     private InventoryButton toggleModeButton() {

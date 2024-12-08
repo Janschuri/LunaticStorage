@@ -198,43 +198,8 @@ public class Storage {
         StorageGUI.updateStorageGUIs(block);
     }
 
-    public List<Map.Entry<ItemStack, Integer>> getStorageList(String locale, int sorter, Boolean desc) {
-        List<Map.Entry<ItemStack, Integer>> storageList;
-
-        Comparator<Map.Entry<ItemStack, Integer>> comparator;
-
-        if (sorter == 0) {
-            comparator = Comparator.comparing(entry -> Utils.getMCLanguage(entry.getKey(), locale));
-        } else {
-            comparator = Map.Entry.comparingByValue();
-        }
-
-        if (desc) {
-            comparator = comparator.reversed();
-        }
-
-//        if (search == null) {
-//            search = "";
-//        }
-//
-//        String finalSearch = search;
-//        Predicate<Map.Entry<ItemStack, Integer>> filter = entry -> {
-//            if (finalSearch.isEmpty()) {
-//                return true;
-//            }
-//            String language = Utils.getMCLanguage(entry.getKey(), locale);
-//            return language.toLowerCase().contains(finalSearch.toLowerCase());
-//        };
-
-
-
-
-        storageList = getStorageMap().entrySet().stream()
-//                .filter(filter)
-                .sorted(comparator)
-                .collect(Collectors.toList());
-
-        return storageList;
+    public List<Map.Entry<ItemStack, Integer>> getStorageList() {
+        return new ArrayList<>(getStorageMap().entrySet());
     }
 
     public int getTotalAmount() {
@@ -358,7 +323,6 @@ public class Storage {
 
             if (BukkitUtils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
                 loadedContainers++;
-                Logger.debugLog("Adding storage container " + container.getBlock() + " to storage " + block);
                 container.addStorageId(block);
                 Inventory chestInv = container.getInventory();
                 addInventoryToMap(chestInv, container);

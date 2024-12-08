@@ -1,6 +1,11 @@
 package de.janschuri.lunaticstorage.gui;
 
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.*;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SearchableList;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SortedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Logger;
@@ -18,7 +23,14 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
+public class StorageGUI
+        extends
+        ListGUI<Map.Entry<ItemStack, Integer>>
+        implements
+        PaginatedList<Map.Entry<ItemStack, Integer>>,
+        SearchableList<Map.Entry<ItemStack, Integer>>,
+        SortedList<Map.Entry<ItemStack, Integer>>
+{
 
     private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full");
     private static final MessageKey AMOUNT_MK = new MessageKey("amount");
@@ -28,6 +40,9 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     private static final MessageKey TOTAL_CONTAINERS_MK = new MessageKey("total_containers");
     private static final MessageKey RANGE_MK = new MessageKey("range");
     private static final MessageKey GUI_TITLE_MK = new MessageKey("gui_title");
+
+    private final static Map<Integer, Integer> pageMap = new HashMap<>();
+    private final static Map<Integer, String> searchMap = new HashMap<>();
 
     private final static Map<Block, Map<Player, StorageGUI>> storageGUIs = new HashMap<>();
     private final static Map<Integer, Block> blockMap = new HashMap<>();
@@ -57,17 +72,15 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     @Override
-    public void decorate(Player player) {
+    public void init(Player player) {
         Storage storage = getStorage();
 
         createStorageButton(storage.getStorageItem());
         createRangeButton(storage.getRangeItem());
         addButton(createItemButton(storage));
         addButton(createStoragePlayerInvButton());
-        addButton(4, createSorterButton());
-        addButton(5, createDescendingButton());
 
-        super.decorate(player);
+        super.init(player);
     }
 
     public Block getBlock() {
@@ -82,34 +95,64 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
         return Storage.getStorage(getBlock());
     }
 
+    @Override
+    public void setSorterIndex(int i) {
+        sorterMap.put(getId(), i);
+    }
+
+    @Override
+    public int getSorterIndex() {
+        sorterMap.putIfAbsent(getId(), 0);
+        return sorterMap.get(getId());
+    }
+
+    @Override
+    public List<Sorter<Map.Entry<ItemStack, Integer>>> getSorters() {
+        return List.of(
+            new Sorter<Map.Entry<ItemStack, Integer>>("by_name")
+                    .creator(player -> {
+                        ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
+                        ItemMeta meta = sorterItem.getItemMeta();
+                        assert meta != null;
+                        meta.setDisplayName("by name");
+                        sorterItem.setItemMeta(meta);
+                        return sorterItem;
+                    })
+                    .comparator(player -> {
+                        String locale = player.getLocale();
+                        Comparator<Map.Entry<ItemStack, Integer>> comparator;
+                        comparator = Comparator.comparing(entry -> Utils.getMCLanguage(entry.getKey(), locale));
+                        return comparator;
+                    }),
+                new Sorter<Map.Entry<ItemStack, Integer>>("by_amount")
+                        .creator(player -> {
+                            ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
+                            ItemMeta meta = sorterItem.getItemMeta();
+                            assert meta != null;
+                            meta.setDisplayName("by amount");
+                            sorterItem.setItemMeta(meta);
+                            return sorterItem;
+                        })
+                        .comparator(player -> {
+                            Comparator<Map.Entry<ItemStack, Integer>> comparator;
+                            comparator = Map.Entry.comparingByValue();
+                            return comparator;
+                        })
+        );
+    }
+
+    @Override
     public boolean isDescending() {
         return descendingMap.contains(getId());
     }
 
+    @Override
     public void setDescending(boolean descending) {
         if (descending) {
             descendingMap.add(getId());
         } else {
             descendingMap.remove(getId());
         }
-    }
-
-    public void toggleDescending() {
-        if (isDescending()) {
-            descendingMap.remove(getId());
-        } else {
-            descendingMap.add(getId());
-        }
-    }
-
-    public int getSorter() {
-        sorterMap.putIfAbsent(getId(), 0);
-
-        return sorterMap.get(getId());
-    }
-
-    public void setSorter(int sorter) {
-        sorterMap.put(getId(), sorter);
     }
 
     public boolean isStorageFullTimeout() {
@@ -217,6 +260,18 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     @Override
+    public int getPage() {
+        pageMap.putIfAbsent(getId(), 0);
+
+        return pageMap.get(getId());
+    }
+
+    @Override
+    public void setPage(int page) {
+        pageMap.put(getId(), page);
+    }
+
+    @Override
     public ItemStack currentPageItem(Player player) {
         Storage storage = getStorage();
 
@@ -246,71 +301,6 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
         item.setItemMeta(meta);
         return item;
-    }
-
-    private InventoryButton createDescendingButton() {
-        return new InventoryButton()
-                .creator(player -> {
-                    if (isDescending()) {
-                        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
-                        ItemMeta meta = arrow.getItemMeta();
-                        assert meta != null;
-                        meta.setDisplayName("Descended");
-                        arrow.setItemMeta(meta);
-                        return arrow;
-                    } else {
-                        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
-                        ItemMeta meta = arrow.getItemMeta();
-                        assert meta != null;
-                        meta.setDisplayName("Ascended");
-                        arrow.setItemMeta(meta);
-                        return arrow;
-                    }
-                })
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    Player player = (Player) event.getWhoClicked();
-
-                    toggleDescending();
-
-                    reloadGui(player);
-                });
-    }
-
-    private InventoryButton createSorterButton() {
-        return new InventoryButton()
-                .creator(player -> {
-                    int sorter = getSorter();
-
-                    if (sorter == 0) {
-                        ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
-                        ItemMeta meta = sorterItem.getItemMeta();
-                        assert meta != null;
-                        meta.setDisplayName("by name");
-                        sorterItem.setItemMeta(meta);
-                        return sorterItem;
-                    } else {
-                        ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
-                        ItemMeta meta = sorterItem.getItemMeta();
-                        assert meta != null;
-                        meta.setDisplayName("by amount");
-                        sorterItem.setItemMeta(meta);
-                        return sorterItem;
-                    }
-                })
-                .consumer(event -> {
-                    if (processingClickEvent()) {
-                        return;
-                    }
-
-                    Player player = (Player) event.getWhoClicked();
-
-                    setSorter((getSorter() + 1) % 2);
-                    reloadGui(player);
-                });
     }
 
     private PlayerInvButton createItemButton(Storage storage) {
@@ -387,10 +377,9 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     @Override
-    protected List<Map.Entry<ItemStack, Integer>> getItems() {
+    public List<Map.Entry<ItemStack, Integer>> getItems() {
         Storage storage = getStorage();
-        String locale = getPlayer().getLocale();
-        return storage.getStorageList(locale, getSorter(), isDescending());
+        return storage.getStorageList();
     }
 
     @Override
@@ -407,7 +396,18 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     @Override
-    protected InventoryButton listItemButton(Map.Entry<ItemStack, Integer> entry) {
+    public String getSearch() {
+        searchMap.putIfAbsent(getId(), "");
+        return searchMap.get(getId());
+    }
+
+    @Override
+    public void setSearch(String s) {
+        searchMap.put(getId(), s);
+    }
+
+    @Override
+    public InventoryButton listItemButton(Map.Entry<ItemStack, Integer> entry) {
         ItemStack item = entry.getKey();
         int amount = entry.getValue();
 
