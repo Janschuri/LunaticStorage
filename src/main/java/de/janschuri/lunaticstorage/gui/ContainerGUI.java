@@ -39,7 +39,7 @@ public class ContainerGUI extends InventoryGUI {
     private final int id;
 
     private ContainerGUI(Player player, StorageContainer storageContainer) {
-        super(createInventory());
+        super();
         playerContainerGUIs.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>());
         Map<Block, Integer> containerGUIs = playerContainerGUIs.get(player.getUniqueId());
 
@@ -64,7 +64,7 @@ public class ContainerGUI extends InventoryGUI {
     }
 
     private ContainerGUI(ContainerGUI containerGUI) {
-        super(containerGUI.getInventory());
+        super();
         this.id = containerGUI.id;
         decorate(getPlayer());
     }

@@ -9,7 +9,6 @@ import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
-import jdk.jshell.execution.Util;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -459,7 +458,7 @@ public class Storage {
                 continue;
             }
 
-            if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
+            if (!container.isAllowedTakeItem(player)) {
                 continue;
             }
 
@@ -538,7 +537,7 @@ public class Storage {
 
                 Inventory chestInv = container.getInventory();
 
-                if (!EventUtils.isAllowedTakeItem(player, chestInv)) {
+                if (!container.isAllowedTakeItem(player)) {
                     continue;
                 }
 
@@ -626,7 +625,7 @@ public class Storage {
                 continue;
             }
 
-            if (!container.canPlaceItem(remainingItems)) {
+            if (!container.isAllowedPutItem(player, remainingItems)) {
                 continue;
             }
 
@@ -670,7 +669,7 @@ public class Storage {
                     continue;
                 }
 
-                if (!container.canPlaceItem(remainingItems)) {
+                if (!container.isAllowedPutItem(player, remainingItems)) {
                     continue;
                 }
 
@@ -745,5 +744,108 @@ public class Storage {
                 getEmptyContainers().add(block);
             }
         }
+    }
+
+    public ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
+
+        if (!Utils.isStorageItem(item) && !item.getType().equals(Material.AIR)) {
+            Logger.debugLog("insertStorageItem: not storage item");
+            return item;
+        }
+
+        ItemStack result;
+        ItemStack storageItem;
+
+        if (getStorageItem() == null) {
+            storageItem = item.clone();
+            result = new ItemStack(Material.AIR);
+        } else {
+            storageItem = getStorageItem().clone();
+
+            if (storageItem.isSimilar(item) && item.getType() != Material.AIR) {
+                if (storageItem.getMaxStackSize() > storageItem.getAmount()) {
+                    int itemAmount = item.getAmount();
+                    int storageItemAmount = storageItem.getAmount();
+                    int totalAmount = itemAmount + storageItemAmount;
+                    if (totalAmount <= storageItem.getMaxStackSize()) {
+                        storageItem.setAmount(totalAmount);
+                        result = new ItemStack(Material.AIR);
+                    } else {
+                        storageItem.setAmount(storageItem.getMaxStackSize());
+                        int newItemAmount = totalAmount - storageItem.getMaxStackSize();
+                        item.setAmount(newItemAmount);
+                        result = item.clone();
+                    }
+                } else {
+                    result = item;
+                }
+            } else {
+                if (swapItems) {
+                    result = storageItem.clone();
+                    storageItem = item.clone();
+                } else {
+                    result = item.clone();
+                }
+            }
+        }
+
+        if (!storageItem.getType().isAir()) {
+            setStorageItem(storageItem);
+        } else {
+            setStorageItem(null);
+        }
+
+        return result;
+    }
+
+    public ItemStack insertRangeItem(ItemStack item, boolean swapItems) {
+        if (!Utils.isRangeItem(item) && !item.getType().equals(Material.AIR)) {
+            Logger.debugLog("insertRangeItem: not range item");
+            return item;
+        }
+
+        ItemStack result;
+        ItemStack rangeItem;
+
+        if (getRangeItem() == null) {
+            rangeItem = item.clone();
+            result = new ItemStack(Material.AIR);
+        } else {
+            rangeItem = getRangeItem().clone();
+
+            if (rangeItem.isSimilar(item) && item.getType() != Material.AIR) {
+                if (rangeItem.getMaxStackSize() > rangeItem.getAmount()) {
+                    int itemAmount = item.getAmount();
+                    int rangeItemAmount = rangeItem.getAmount();
+                    int totalAmount = itemAmount + rangeItemAmount;
+                    if (totalAmount <= rangeItem.getMaxStackSize()) {
+                        rangeItem.setAmount(totalAmount);
+                        result = new ItemStack(Material.AIR);
+                    } else {
+                        rangeItem.setAmount(rangeItem.getMaxStackSize());
+                        int newItemAmount = totalAmount - rangeItem.getMaxStackSize();
+                        item.setAmount(newItemAmount);
+                        result = item.clone();
+                    }
+                } else {
+                    result = item;
+                }
+            } else {
+                if (swapItems) {
+                    result = rangeItem.clone();
+                    rangeItem = item.clone();
+                } else {
+                    result = item.clone();
+                }
+            }
+        }
+
+        if (rangeItem.getType() != Material.AIR) {
+            setRangeItem(rangeItem);
+        } else {
+            setRangeItem(null);
+        }
+
+        return result;
     }
 }

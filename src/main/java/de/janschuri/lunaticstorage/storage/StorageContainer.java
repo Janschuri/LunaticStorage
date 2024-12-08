@@ -1,13 +1,13 @@
 package de.janschuri.lunaticstorage.storage;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
+import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -175,15 +175,32 @@ public class StorageContainer {
         return isValid;
     }
 
-    public boolean canPlaceItem(ItemStack item) {
-        Logger.debugLog("Checking if item can be placed in storage container");
-        Logger.debugLog("Whitelist enabled: " + isWhitelistEnabled());
+    public boolean isAllowedPutItem(Player player, ItemStack item) {
+        if (!EventUtils.isAllowedInteract(player, block)) {
+            return false;
+        }
+
+        if (!EventUtils.isAllowedPutItem(player, getInventory())) {
+            return false;
+        }
+
         if (isWhitelistEnabled() && !isWhitelisted(item)) {
             return false;
         }
 
-        Logger.debugLog("Blacklist enabled: " + isBlacklistEnabled());
         if (isBlacklistEnabled() && isBlacklisted(item)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isAllowedTakeItem(Player player) {
+        if (!EventUtils.isAllowedInteract(player, block)) {
+            return false;
+        }
+
+        if (!EventUtils.isAllowedTakeItem(player, getInventory())) {
             return false;
         }
 

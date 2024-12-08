@@ -49,7 +49,10 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
     }
 
     private static int getId(Player player, Block block) {
-        return storageGUIs.get(block).get(player).getId();
+        if (storageGUIs.containsKey(block) && storageGUIs.get(block).containsKey(player)) {
+            return storageGUIs.get(block).get(player).getId();
+        }
+        return -1;
     }
 
     @Override
@@ -163,7 +166,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursor = event.getCursor();
 
-                    ItemStack newItem = insertStorageItem(cursor, false);
+                    ItemStack newItem = getStorage().insertStorageItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
                     reloadGui(player);
@@ -181,7 +184,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursor = event.getCursor();
 
-                    ItemStack newItem = insertRangeItem(cursor, false);
+                    ItemStack newItem = getStorage().insertRangeItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
                     reloadGui(player);
@@ -201,7 +204,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
                     Logger.debugLog("Cursor: " + cursor);
 
-                    ItemStack newItem = insertStorageItem(cursor, true, event.isRightClick());
+                    ItemStack newItem = getStorage().insertStorageItem(cursor, true);
 
                     Logger.debugLog("New Item: " + newItem);
                     player.setItemOnCursor(newItem);
@@ -221,7 +224,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
-                    ItemStack newItem = insertRangeItem(cursor, true, event.isRightClick());
+                    ItemStack newItem = getStorage().insertRangeItem(cursor, true);
                     player.setItemOnCursor(newItem);
 
                     reloadGui(player);
@@ -434,7 +437,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
 
                     ItemStack item = event.getCurrentItem();
 
-                    ItemStack newItem = insertStorageItem(item, false);
+                    ItemStack newItem = getStorage().insertStorageItem(item, false);
                     event.setCurrentItem(newItem);
 
                     reloadGui(player);
@@ -488,14 +491,14 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
                         if (!newItem.getType().equals(Material.AIR)) {
                             player.setItemOnCursor(newItem);
                         }
-
-                        reloadGui(player);
                     } else {
                         Storage storage = getStorage();
 
                         ItemStack newItem = insertItem(storage, player, cursorItem);
                         player.setItemOnCursor(newItem);
                     }
+
+                    reloadGui();
                 });
     }
 
@@ -512,131 +515,7 @@ public class StorageGUI extends ListGUI<Map.Entry<ItemStack, Integer>> {
             setStorageFullTimeout();
         }
 
-        reloadGui();
-
         return newItem;
-    }
-
-    private ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
-        return insertStorageItem(item, swapItems, false);
-    }
-
-    private ItemStack insertStorageItem(ItemStack item, boolean swapItems, boolean isRightClick) {
-
-        Storage storage = getStorage();
-
-        if (!Utils.isStorageItem(item) && !item.getType().equals(Material.AIR)) {
-            Logger.debugLog("insertStorageItem: not storage item");
-            return item;
-        }
-
-        ItemStack result;
-        ItemStack storageItem;
-
-        if (storage.getStorageItem() == null) {
-            storageItem = item.clone();
-            result = new ItemStack(Material.AIR);
-        } else {
-            storageItem = storage.getStorageItem().clone();
-
-            if (storageItem.isSimilar(item) && item.getType() != Material.AIR) {
-                if (storageItem.getMaxStackSize() > storageItem.getAmount()) {
-                    int itemAmount = item.getAmount();
-                    int storageItemAmount = storageItem.getAmount();
-                    int totalAmount = itemAmount + storageItemAmount;
-                    if (totalAmount <= storageItem.getMaxStackSize()) {
-                        storageItem.setAmount(totalAmount);
-                        result = new ItemStack(Material.AIR);
-                    } else {
-                        storageItem.setAmount(storageItem.getMaxStackSize());
-                        int newItemAmount = totalAmount - storageItem.getMaxStackSize();
-                        item.setAmount(newItemAmount);
-                        result = item.clone();
-                    }
-                } else {
-                    result = item;
-                }
-            } else {
-                if (swapItems) {
-                    result = storageItem.clone();
-                    storageItem = item.clone();
-                } else {
-                    result = item.clone();
-                }
-            }
-        }
-
-        if (!storageItem.getType().isAir()) {
-            storage.setStorageItem(storageItem);
-        } else {
-            storage.setStorageItem(null);
-        }
-
-        createStorageButton(storageItem);
-
-        Logger.debugLog("insertStorageItem: storageItem: " + storageItem);
-
-        return result;
-    }
-
-    private ItemStack insertRangeItem(ItemStack item, boolean swapItems) {
-        return insertRangeItem(item, swapItems, false);
-    }
-
-    private ItemStack insertRangeItem(ItemStack item, boolean swapItems, boolean isRightClick) {
-
-        Storage storage = getStorage();
-
-        if (!Utils.isRangeItem(item) && !item.getType().equals(Material.AIR)) {
-            Logger.debugLog("insertRangeItem: not range item");
-            return item;
-        }
-
-        ItemStack result;
-        ItemStack rangeItem;
-
-        if (storage.getRangeItem() == null) {
-            rangeItem = item.clone();
-            result = new ItemStack(Material.AIR);
-        } else {
-            rangeItem = storage.getRangeItem().clone();
-
-            if (rangeItem.isSimilar(item) && item.getType() != Material.AIR) {
-                if (rangeItem.getMaxStackSize() > rangeItem.getAmount()) {
-                    int itemAmount = item.getAmount();
-                    int rangeItemAmount = rangeItem.getAmount();
-                    int totalAmount = itemAmount + rangeItemAmount;
-                    if (totalAmount <= rangeItem.getMaxStackSize()) {
-                        rangeItem.setAmount(totalAmount);
-                        result = new ItemStack(Material.AIR);
-                    } else {
-                        rangeItem.setAmount(rangeItem.getMaxStackSize());
-                        int newItemAmount = totalAmount - rangeItem.getMaxStackSize();
-                        item.setAmount(newItemAmount);
-                        result = item.clone();
-                    }
-                } else {
-                    result = item;
-                }
-            } else {
-                if (swapItems) {
-                    result = rangeItem.clone();
-                    rangeItem = item.clone();
-                } else {
-                    result = item.clone();
-                }
-            }
-        }
-
-        if (!rangeItem.getType().isAir()) {
-            storage.setRangeItem(rangeItem);
-        } else {
-            storage.setRangeItem(null);
-        }
-
-        createRangeButton(rangeItem);
-
-        return result;
     }
 
     public void reloadGui() {
