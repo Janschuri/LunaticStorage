@@ -52,22 +52,15 @@ public class StorageGUI
     private final static Set<Integer> storageFullTimeoutMap = new HashSet<>();
 
     public StorageGUI(Player player, Block block) {
-        super(getId(player, block));
+        super();
         blockMap.put(getId(), block);
         playerMap.put(getId(), player);
         storageGUIs.putIfAbsent(block, new HashMap<>());
         storageGUIs.get(block).put(player, this);
     }
 
-    private static int getId(Player player, Block block) {
-        if (storageGUIs.containsKey(block) && storageGUIs.get(block).containsKey(player)) {
-            return storageGUIs.get(block).get(player).getId();
-        }
-        return -1;
-    }
-
     @Override
-    public String getTitle() {
+    public String getDefaultTitle() {
         return LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE_MK);
     }
 
@@ -161,9 +154,13 @@ public class StorageGUI
 
     public void setStorageFullTimeout() {
         storageFullTimeoutMap.add(getId());
+        setTitle("Storage full");
+        reloadGui(true);
 
         Utils.scheduleTask(() -> {
             storageFullTimeoutMap.remove(getId());
+            setTitle(getDefaultTitle());
+            reloadGui(true);
         }, 3000, TimeUnit.MILLISECONDS);
     }
 
@@ -197,7 +194,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertStorageItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -215,7 +212,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertRangeItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -237,7 +234,7 @@ public class StorageGUI
                     Logger.debugLog("New Item: " + newItem);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -255,7 +252,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertRangeItem(cursor, true);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -337,7 +334,7 @@ public class StorageGUI
                     ItemStack newItem = insertItem(storage, player, cursorItem);
                     event.setCurrentItem(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -372,7 +369,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertStorageItem(item, false);
                     event.setCurrentItem(newItem);
 
-                    reloadGui(player);
+                    reloadGui();
                 });
     }
 
@@ -471,10 +468,6 @@ public class StorageGUI
         }
 
         return newItem;
-    }
-
-    public void reloadGui() {
-        reloadGui(getPlayer());
     }
 
     public static void updateStorageGUIs(Block block) {

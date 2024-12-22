@@ -426,9 +426,4 @@ public class ContainerGUI extends InventoryGUI {
                     reloadGui();
                 });
     }
-
-
-    private void reloadGui() {
-        GUIManager.openGUI(new ContainerGUI(this), getPlayer());
-    }
 }
