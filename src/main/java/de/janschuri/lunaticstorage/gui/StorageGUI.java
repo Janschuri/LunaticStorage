@@ -154,13 +154,9 @@ public class StorageGUI
 
     public void setStorageFullTimeout() {
         storageFullTimeoutMap.add(getId());
-        setTitle("Storage full");
-        reloadGui(true);
 
         Utils.scheduleTask(() -> {
             storageFullTimeoutMap.remove(getId());
-            setTitle(getDefaultTitle());
-            reloadGui(true);
         }, 3000, TimeUnit.MILLISECONDS);
     }
 
