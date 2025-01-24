@@ -13,6 +13,22 @@ messages:
   total_items: "Gesamtmenge: %amount%"
   loaded_containers: "Geladene Container: %amount%"
   total_containers: "Gesamte Container: %amount%"
+  yes: "&aJa"
+  no: "&cNein"
+  match_nbt: "Übereinstimmend mit NBT"
+  whitelist_mode: "Whitelist-Modus"
+  blacklist_mode: "Blacklist-Modus"
+  add_containers_inv_to_whitelist: "Füge daas Inventars des Containers zur Whitelist hinzu."
+  clear_whitelist: "Whitelist löschen"
+  clear_blacklist: "Blacklist löschen"
+  toggle_whitelist: "Whitelist umschalten"
+  toggle_blacklist: "Blacklist umschalten"
+  add_item_to_whitelist: "Füge Item zur Whitelist hinzu."
+  add_item_to_blacklist: "Füge Item zur Blacklist hinzu."
+  whitelist_enabled: "Whitelist aktiviert."
+  blacklist_enabled: "Blacklist aktiviert."
+  whitelist_disabled: "Whitelist deaktiviert."
+  blacklist_disabled: "Blacklist deaktiviert."
 commands:
   storage:
     aliases:

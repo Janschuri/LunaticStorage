@@ -42,20 +42,34 @@ public class StorageGUI
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
-
-    private final static Map<Block, Map<Player, StorageGUI>> storageGUIs = new HashMap<>();
     private final static Map<Integer, Block> blockMap = new HashMap<>();
     private final static Map<Integer, Player> playerMap = new HashMap<>();
     private final static Set<Integer> descendingMap = new HashSet<>();
     private final static Map<Integer, Integer> sorterMap = new HashMap<>();
     private final static Set<Integer> storageFullTimeoutMap = new HashSet<>();
 
-    public StorageGUI(Player player, Block block) {
+    private static final Map<Block, Map<UUID, Integer>> playerStorageGUI = new HashMap<>();
+
+    private StorageGUI(Player player, Block block) {
         super();
         blockMap.put(getId(), block);
         playerMap.put(getId(), player);
-        storageGUIs.putIfAbsent(block, new HashMap<>());
-        storageGUIs.get(block).put(player, this);
+
+        playerStorageGUI.putIfAbsent(block, new HashMap<>());
+        playerStorageGUI.get(block).put(player.getUniqueId(), getId());
+    }
+
+    public static StorageGUI getStorageGUI(Player player, Block block) {
+        if (playerStorageGUI.containsKey(block)) {
+            Map<UUID, Integer> storageGUIs = playerStorageGUI.get(block);
+            if (storageGUIs.containsKey(player.getUniqueId())) {
+                int id = storageGUIs.get(player.getUniqueId());
+                return (StorageGUI) getGUI(id);
+            }
+        }
+
+        StorageGUI gui = new StorageGUI(player, block);
+        return gui;
     }
 
     @Override
@@ -466,9 +480,9 @@ public class StorageGUI
     }
 
     public static void updateStorageGUIs(Block block) {
-        if (storageGUIs.containsKey(block)) {
-            for (StorageGUI storageGUI : storageGUIs.get(block).values()) {
-                storageGUI.reloadGui();
+        if (playerStorageGUI.containsKey(block)) {
+            for (int id : playerStorageGUI.get(block).values()) {
+                getGUI(id).reloadGui();
             }
         }
     }

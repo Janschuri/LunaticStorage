@@ -13,6 +13,22 @@ messages:
   total_items: "Total amount: %amount%"
   loaded_containers: "Loaded containers: %amount%"
   total_containers: "Total containers: %amount%"
+  yes: "&aYes"
+  no: "&cNo"
+  match_nbt: "Match NBT"
+  whitelist_mode: "Whitelist-Mode"
+  blacklist_mode: "Blacklist-Mode"
+  add_containers_inv_to_whitelist: "Add the container's inventory to the whitelist."
+  clear_whitelist: "Clear whitelist"
+  clear_blacklist: "Clear blacklist"
+  toggle_whitelist: "Toggle whitelist"
+  toggle_blacklist: "Toggle blacklist"
+  add_item_to_whitelist: "Add item to whitelist."
+  add_item_to_blacklist: "Add item to blacklist."
+  whitelist_enabled: "Whitelist enabled."
+  blacklist_enabled: "Blacklist enabled."
+  whitelist_disabled: "Whitelist disabled."
+  blacklist_disabled: "Blacklist disabled."
 commands:
   storage:
     aliases:

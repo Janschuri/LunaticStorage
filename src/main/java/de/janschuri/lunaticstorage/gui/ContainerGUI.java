@@ -4,109 +4,122 @@ import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryHandler;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ContainerGUI extends InventoryGUI {
+public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> implements PaginatedList<Map.Entry<ItemStack, Boolean>> {
 
-    private static final MessageKey PAGE_MK = new MessageKey("page");
+    private final StorageContainer container;
+    private final static Map<Integer, Boolean> isWhitelist = new HashMap<>();
+    private final static Map<Integer, Integer> whitelistPages = new HashMap<>();
+    private final static Map<Integer, Integer> blacklistPages = new HashMap<>();
 
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
-    private static final Map<Integer, StorageContainer> containers = new HashMap<>();
-    private static final Map<Integer, Player> players = new HashMap<>();
-    private static final Map<Integer, Boolean> isWhitelist = new HashMap<>();
-    private static final Map<Integer, Integer> whitelistPages = new HashMap<>();
-    private static final Map<Integer, Integer> blacklistPages = new HashMap<>();
+    public static final MessageKey PAGE_MK = new MessageKey("page")
+            .defaultMessage("Page: %page%/%pages%");
+    public static final MessageKey WHITELIST_MODE_MK = new MessageKey("whitelist_mode")
+            .defaultMessage("§aWhitelist Mode");
+    public static final MessageKey BLACKLIST_MODE_MK = new MessageKey("blacklist_mode")
+            .defaultMessage("§cBlacklist Mode");
+    public static final MessageKey MATCH_NBT_MK = new MessageKey("match_nbt")
+            .defaultMessage("§eMatch NBT");
+    public static final MessageKey YES_MK = new MessageKey("yes")
+            .defaultMessage("§aYes");
+    public static final MessageKey NO_MK = new MessageKey("no")
+            .defaultMessage("§cNo");
+    public static final MessageKey ADD_CONTAINERS_INV_TO_WHITELIST_MK = new MessageKey("add_containers_inv_to_whitelist")
+            .defaultMessage("§aAdd containers inventory to whitelist");
+    public static final MessageKey CLEAR_WHITELIST_MK = new MessageKey("clear_whitelist")
+            .defaultMessage("§aClear whitelist");
+    public static final MessageKey CLEAR_BLACKLIST_MK = new MessageKey("clear_blacklist")
+            .defaultMessage("§cClear blacklist");
+    public static final MessageKey TOGGLE_WHITELIST_MK = new MessageKey("toggle_whitelist")
+            .defaultMessage("§aToggle whitelist");
+    public static final MessageKey TOGGLE_BLACKLIST_MK = new MessageKey("toggle_blacklist")
+            .defaultMessage("§cToggle blacklist");
+    public static final MessageKey ADD_ITEM_TO_WHITELIST_MK = new MessageKey("add_item_to_whitelist")
+            .defaultMessage("§aAdd item to whitelist");
+    public static final MessageKey ADD_ITEM_TO_BLACKLIST_MK = new MessageKey("add_item_to_blacklist")
+            .defaultMessage("§cAdd item to blacklist");
+    public static final MessageKey WHITELIST_ENABLED_MK = new MessageKey("whitelist_enabled")
+            .defaultMessage("§aWhitelist is enabled");
+    public static final MessageKey WHITELIST_DISABLED_MK = new MessageKey("whitelist_disabled")
+            .defaultMessage("§cWhitelist is disabled");
+    public static final MessageKey BLACKLIST_ENABLED_MK = new MessageKey("blacklist_enabled")
+            .defaultMessage("§aBlacklist is enabled");
+    public static final MessageKey BLACKLIST_DISABLED_MK = new MessageKey("blacklist_disabled")
+            .defaultMessage("§cBlacklist is disabled");
 
-    private static final Map<UUID, Map<Block, Integer>> playerContainerGUIs = new HashMap<>();
-
-    private final int id;
+    private static final Map<Block, Map<UUID, Integer>> playerContainerGUIs = new HashMap<>();
 
     private ContainerGUI(Player player, StorageContainer storageContainer) {
         super();
-        playerContainerGUIs.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>());
-        Map<Block, Integer> containerGUIs = playerContainerGUIs.get(player.getUniqueId());
+        container = storageContainer;
 
-        if (containerGUIs.containsKey(storageContainer.getBlock())) {
-            id = containerGUIs.get(storageContainer.getBlock());
-            return;
+        isWhitelist.putIfAbsent(getId(), true);
+        whitelistPages.putIfAbsent(getId(), 0);
+        blacklistPages.putIfAbsent(getId(), 0);
+        playerContainerGUIs.putIfAbsent(storageContainer.getBlock(), new HashMap<>());
+
+        playerContainerGUIs.get(storageContainer.getBlock()).put(player.getUniqueId(), getId());
+    }
+
+    public static ContainerGUI getContainerGUI(Player player, StorageContainer container) {
+        if (playerContainerGUIs.containsKey(container.getBlock())) {
+            Map<UUID, Integer> containerGUIs = playerContainerGUIs.get(container.getBlock());
+            if (containerGUIs.containsKey(player.getUniqueId())) {
+                int id = containerGUIs.get(player.getUniqueId());
+                return (ContainerGUI) getGUI(id);
+            }
         }
 
-        id = idCounter.getAndIncrement();
-        containerGUIs.put(storageContainer.getBlock(), id);
-        playerContainerGUIs.put(player.getUniqueId(), containerGUIs);
-
-        setWhitelistPage(0);
-        setBlacklistPage(0);
-        setWhitelist(true);
-        setStorageContainer(storageContainer);
-        setPlayer(player);
-    }
-
-    public static ContainerGUI getContainerGUI(Player player, StorageContainer storageContainer) {
-        return new ContainerGUI(player, storageContainer);
-    }
-
-    private ContainerGUI(ContainerGUI containerGUI) {
-        super();
-        this.id = containerGUI.id;
-        init(getPlayer());
+        ContainerGUI gui = new ContainerGUI(player, container);
+        return gui;
     }
 
     public StorageContainer getStorageContainer() {
-        return containers.get(id);
-    }
-
-    public void setStorageContainer(StorageContainer storageContainer) {
-        containers.put(id, storageContainer);
-    }
-
-    public void setPlayer(Player player) {
-        players.put(id, player);
-    }
-
-    public Player getPlayer() {
-        return players.get(id);
+        return container;
     }
 
     public void setWhitelist(boolean whitelist) {
-        isWhitelist.put(id, whitelist);
+        isWhitelist.put(getId(), whitelist);
     }
 
     public boolean isWhitelist() {
-        return isWhitelist.get(id);
+        return isWhitelist.get(getId());
     }
 
     public void setWhitelistPage(int page) {
-        whitelistPages.put(id, page);
+        whitelistPages.put(getId(), page);
     }
 
     public int getWhitelistPage() {
-        return whitelistPages.get(id);
+        return whitelistPages.get(getId());
     }
 
     private void setBlacklistPage(int page) {
-        blacklistPages.put(id, page);
+        blacklistPages.put(getId(), page);
     }
 
     private int getBlacklistPage() {
-        return blacklistPages.get(id);
+        return blacklistPages.get(getId());
     }
 
     @Override
@@ -117,48 +130,25 @@ public class ContainerGUI extends InventoryGUI {
         if (isWhitelist()) {
             addButton(1, createToggleWhitelistButton());
             addButton(7, createClearWhitelistButton());
-            createListButtons(getStorageContainer().getWhitelist());
 
             addButton(49, createWhitelistPageButton());
 
             addButton(8, createAddContainerInvToWhitelistButton());
-
-            if (getWhitelistPage() == getStorageContainer().getWhiteListPages()) {
-                addButton(50, createGrayPaneButton());
-            } else {
-                addButton(50, createArrowRight());
-            }
-
-            if (getWhitelistPage() == 0) {
-                addButton(48, createGrayPaneButton());
-            } else {
-                addButton(48, createArrowLeft());
-            }
         } else {
             addButton(1, createToggleBlacklistButton());
             addButton(7, createClearBlacklistButton());
-            createListButtons(getStorageContainer().getBlacklist());
 
             addButton(49, createBlacklistPageButton());
 
             addButton(8, createGrayPaneButton());
-
-            if (getBlacklistPage() == getStorageContainer().getBlackListPages()) {
-                addButton(50, createGrayPaneButton());
-            } else {
-                addButton(50, createArrowRight());
-            }
-
-            if (getBlacklistPage() == 0) {
-                addButton(48, createGrayPaneButton());
-            } else {
-                addButton(48, createArrowLeft());
-            }
         }
 
-
-
         super.init(player);
+    }
+
+    @Override
+    public List getItems() {
+        return Arrays.asList((isWhitelist() ? getStorageContainer().getWhitelist() : getStorageContainer().getBlacklist()).entrySet().toArray());
     }
 
     private InventoryButton toggleModeButton() {
@@ -166,7 +156,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack((isWhitelist() ? Material.WHITE_WOOL : Material.BLACK_WOOL));
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName((isWhitelist() ? "§aWhitelist Mode" : "§cBlacklist Mode"));
+                    meta.setDisplayName((isWhitelist() ? getString(WHITELIST_MODE_MK) : getString(BLACKLIST_MODE_MK)));
 
                     item.setItemMeta(meta);
                     return item;
@@ -175,33 +165,6 @@ public class ContainerGUI extends InventoryGUI {
                     setWhitelist(!isWhitelist());
                     reloadGui();
                 });
-    }
-
-    private void createListButtons(Map<ItemStack, Boolean> items) {
-        int page = isWhitelist() ? getWhitelistPage() : getBlacklistPage();
-
-        int pageSize = 36;
-
-        int startIndex = page * pageSize;
-        int endIndex = startIndex + pageSize;
-
-        if (endIndex > items.size()) {
-            endIndex = items.size();
-        }
-
-        Map<ItemStack, Boolean> subMap = Utils.getSubMap(items, startIndex, endIndex);
-
-        for (int i = 0; i < 36; i++) {
-            if (i < subMap.size()) {
-                ItemStack item = (ItemStack) subMap.keySet().toArray()[i];
-                boolean matchNBT = subMap.get(item);
-
-                InventoryButton button = createListButton(isWhitelist(), item, matchNBT);
-                addButton(i+9, button);
-            } else {
-                addButton(i+9, createAirButton());
-            }
-        }
     }
 
     private InventoryButton createAirButton() {
@@ -214,11 +177,17 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
     }
 
-    private InventoryButton createListButton(boolean whitelist, ItemStack item, boolean matchNBT) {
+    @Override
+    public InventoryButton listItemButton(Map.Entry<ItemStack, Boolean> itemStackBooleanEntry) {
+        ItemStack item = itemStackBooleanEntry.getKey();
+        boolean matchNBT = itemStackBooleanEntry.getValue();
+        boolean whitelist = isWhitelist();
+
+
         ItemStack itemClone = item.clone();
         ItemMeta meta = itemClone.getItemMeta();
         List<String> lore = meta.getLore();
-        String matchNBTString = "§7Match NBT: " + (matchNBT ? "§aYes" : "§cNo");
+        String matchNBTString = getString(MATCH_NBT_MK) + ": " + (matchNBT ? getString(YES_MK) : getString(NO_MK));
 
         if (lore != null) {
             lore.add(matchNBTString);
@@ -249,7 +218,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§aAdd Containers Inventory to Whitelist");
+                    meta.setDisplayName(getString(ADD_CONTAINERS_INV_TO_WHITELIST_MK));
                     item.setItemMeta(meta);
                     return item;
                 })
@@ -264,7 +233,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.BARRIER);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§cClear Whitelist");
+                    meta.setDisplayName(getString(CLEAR_WHITELIST_MK));
                     item.setItemMeta(meta);
                     return item;
                 })
@@ -279,7 +248,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.BARRIER);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§cClear Blacklist");
+                    meta.setDisplayName(getString(CLEAR_BLACKLIST_MK));
                     item.setItemMeta(meta);
                     return item;
                 })
@@ -294,9 +263,9 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack((getStorageContainer().isWhitelistEnabled() ? Material.LIME_WOOL : Material.RED_WOOL));
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§fToggle Whitelist");
+                    meta.setDisplayName(getString(TOGGLE_WHITELIST_MK));
 
-                    List<String> lore = (getStorageContainer().isWhitelistEnabled() ? List.of("§aWhitelist is enabled") : List.of("§cWhitelist is disabled"));
+                    List<String> lore = (getStorageContainer().isWhitelistEnabled() ? List.of(getString(WHITELIST_ENABLED_MK)) : List.of(getString(WHITELIST_DISABLED_MK)));
                     meta.setLore(lore);
 
                     item.setItemMeta(meta);
@@ -313,9 +282,9 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack((getStorageContainer().isBlacklistEnabled() ? Material.LIME_WOOL : Material.RED_WOOL));
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§fToggle Blacklist");
+                    meta.setDisplayName(getString(TOGGLE_BLACKLIST_MK));
 
-                    List<String> lore = (getStorageContainer().isBlacklistEnabled() ? List.of("§aBlacklist is enabled") : List.of("§cBlacklist is disabled"));
+                    List<String> lore = (getStorageContainer().isBlacklistEnabled() ? List.of(getString(BLACKLIST_ENABLED_MK)) : List.of(getString(BLACKLIST_DISABLED_MK)));
                     meta.setLore(lore);
 
                     item.setItemMeta(meta);
@@ -332,7 +301,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.PAPER);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
+                    meta.setDisplayName(getString(PAGE_MK)
                             .replace("%page%", String.valueOf(getWhitelistPage() + 1))
                             .replace("%pages%", String.valueOf(getStorageContainer().getWhiteListPages() + 1))
                     );
@@ -346,7 +315,7 @@ public class ContainerGUI extends InventoryGUI {
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.PAPER);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
+                    meta.setDisplayName(getString(PAGE_MK)
                             .replace("%page%", String.valueOf(getBlacklistPage() + 1))
                             .replace("%pages%", String.valueOf(getStorageContainer().getBlackListPages() + 1))
                     );
@@ -355,58 +324,17 @@ public class ContainerGUI extends InventoryGUI {
                 });
     }
 
-    private InventoryButton createArrowLeft() {
-
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/f6dab7271f4ff04d5440219067a109b5c0c1d1e01ec602c0020476f7eb612180");
-                    ItemMeta meta = arrow.getItemMeta();
-                    meta.setDisplayName("<<<");
-
-                    arrow.setItemMeta(meta);
-                    return arrow;
-                })
-                .consumer(event -> {
-
-                    if (isWhitelist()) {
-                        setWhitelistPage(getWhitelistPage() - 1);
-                    } else {
-                        setBlacklistPage(getBlacklistPage() - 1);
-                    }
-
-                    reloadGui();
-                });
-    }
-
-    private InventoryButton createArrowRight() {
-
-        return new InventoryButton()
-                .creator(player -> {
-                    ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/8aa187fede88de002cbd930575eb7ba48d3b1a06d961bdc535800750af764926");
-                    ItemMeta meta = arrow.getItemMeta();
-                    meta.setDisplayName(">>>");
-
-                    arrow.setItemMeta(meta);
-                    return arrow;
-                })
-                .consumer(event -> {
-
-                    if (isWhitelist()) {
-                        setWhitelistPage(getWhitelistPage() + 1);
-                    } else {
-                        setBlacklistPage(getBlacklistPage() + 1);
-                    }
-
-                    reloadGui();
-                });
-    }
-
     private InventoryButton createAddItemToListButton() {
         return new InventoryButton()
                 .creator(player -> {
                     ItemStack item = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName("§aAdd Item to " + (isWhitelist() ? "Whitelist" : "Blacklist"));
+                    meta.setDisplayName((
+                            isWhitelist() ?
+                                    getString(ADD_ITEM_TO_WHITELIST_MK)
+                                    :
+                                    getString(ADD_ITEM_TO_BLACKLIST_MK)
+                    ));
                     item.setItemMeta(meta);
                     return item;
                 })
@@ -425,5 +353,23 @@ public class ContainerGUI extends InventoryGUI {
 
                     reloadGui();
                 });
+    }
+
+    private String getString(MessageKey messageKey) {
+        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey, false);
+    }
+
+    @Override
+    public int getPage() {
+        return isWhitelist() ? getWhitelistPage() : getBlacklistPage();
+    }
+
+    @Override
+    public void setPage(int i) {
+        if (isWhitelist()) {
+            setWhitelistPage(i);
+        } else {
+            setBlacklistPage(i);
+        }
     }
 }
