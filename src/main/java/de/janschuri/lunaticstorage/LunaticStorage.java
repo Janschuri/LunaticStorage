@@ -1,5 +1,6 @@
 package de.janschuri.lunaticstorage;
 
+import de.janschuri.lunaticlib.platform.bukkit.external.Metrics;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.DatabaseConfig;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
@@ -37,6 +38,9 @@ public final class LunaticStorage extends JavaPlugin {
 
         loadConfig();
 
+        int pluginId = 21912;
+        Metrics metrics = new Metrics(this, pluginId);
+
         new PlatformImpl().registerCommand(this, new Storage());
 
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
@@ -52,7 +56,7 @@ public final class LunaticStorage extends JavaPlugin {
     }
 
     private static void disable() {
-        Logger.errorLog("Disabling LunaticFamily...");
+        Logger.errorLog("Disabling LunaticStorage...");
         Bukkit.getServer().getPluginManager().disablePlugin(getInstance());
     }
 
@@ -78,8 +82,6 @@ public final class LunaticStorage extends JavaPlugin {
             mclangDE.getParentFile().mkdirs();
             getInstance().saveResource("mclang/de_de.json", false);
         }
-
-
 
         try {
             File directory = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang");
