@@ -66,6 +66,8 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
             .defaultMessage("§aBlacklist is enabled");
     public static final MessageKey BLACKLIST_DISABLED_MK = new MessageKey("blacklist_disabled")
             .defaultMessage("§cBlacklist is disabled");
+    public static final MessageKey CONTAINER_GUI_TITLE_MK = new MessageKey("container_gui_title")
+            .defaultMessage("§6Container GUI");
 
     private static final Map<Block, Map<UUID, Integer>> playerContainerGUIs = new HashMap<>();
 

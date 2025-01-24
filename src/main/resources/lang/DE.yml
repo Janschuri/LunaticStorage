@@ -7,7 +7,8 @@ messages:
   storage_full: "Der Speicher ist voll."
   amount: "Menge: %amount%"
   page: "Seite: %page%/%pages%"
-  gui_title: "Speicher"
+  storage_gui_title: "Speicher"
+  container_gui_title: "Container"
   gui_title_full_storage: "&cSpeicher ist voll"
   range: "Reichweite: %range%"
   total_items: "Gesamtmenge: %amount%"
@@ -29,6 +30,8 @@ messages:
   blacklist_enabled: "Blacklist aktiviert."
   whitelist_disabled: "Whitelist deaktiviert."
   blacklist_disabled: "Blacklist deaktiviert."
+  sort_after_name: "Sortiere nach Name"
+  sort_after_amount: "Sortiere nach Menge"
 commands:
   storage:
     aliases:

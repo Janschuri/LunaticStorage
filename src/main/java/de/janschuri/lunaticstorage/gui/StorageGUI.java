@@ -31,14 +31,26 @@ public class StorageGUI
         SortedList<Map.Entry<ItemStack, Integer>>
 {
 
-    private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full");
-    private static final MessageKey AMOUNT_MK = new MessageKey("amount");
-    private static final MessageKey PAGE_MK = new MessageKey("page");
-    private static final MessageKey TOTAL_ITEMS_MK = new MessageKey("total_items");
-    private static final MessageKey LOADED_CONTAINERS_MK = new MessageKey("loaded_containers");
-    private static final MessageKey TOTAL_CONTAINERS_MK = new MessageKey("total_containers");
-    private static final MessageKey RANGE_MK = new MessageKey("range");
-    private static final MessageKey GUI_TITLE_MK = new MessageKey("gui_title");
+    private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full")
+            .defaultMessage("The storage is full.");
+    private static final MessageKey AMOUNT_MK = new MessageKey("amount")
+            .defaultMessage("Amount: %amount%");
+    private static final MessageKey PAGE_MK = new MessageKey("page")
+            .defaultMessage("Page %page%/%pages%");
+    private static final MessageKey TOTAL_ITEMS_MK = new MessageKey("total_items")
+            .defaultMessage("Total Items: %amount%");
+    private static final MessageKey LOADED_CONTAINERS_MK = new MessageKey("loaded_containers")
+            .defaultMessage("Loaded Containers: %amount%");
+    private static final MessageKey TOTAL_CONTAINERS_MK = new MessageKey("total_containers")
+            .defaultMessage("Total Containers: %amount%");
+    private static final MessageKey RANGE_MK = new MessageKey("range")
+            .defaultMessage("Range: %range%");
+    private static final MessageKey STORAGE_GUI_TITLE_MK = new MessageKey("storage_gui_title")
+            .defaultMessage("Storage GUI");
+    private static final MessageKey SORT_AFTER_NAME_MK = new MessageKey("sort_after_name")
+            .defaultMessage("Sort after Name");
+    private static final MessageKey SORT_AFTER_AMOUNT_MK = new MessageKey("sort_after_amount")
+            .defaultMessage("Sort after Amount");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -74,7 +86,7 @@ public class StorageGUI
 
     @Override
     public String getDefaultTitle() {
-        return LunaticStorage.getLanguageConfig().getMessageAsString(GUI_TITLE_MK);
+        return getString(STORAGE_GUI_TITLE_MK);
     }
 
     @Override
@@ -120,7 +132,7 @@ public class StorageGUI
                         ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/bc35e72022e2249c9a13e5ed8a4583717a626026773f5416440d573a938c93");
                         ItemMeta meta = sorterItem.getItemMeta();
                         assert meta != null;
-                        meta.setDisplayName("by name");
+                        meta.setDisplayName(getString(SORT_AFTER_NAME_MK));
                         sorterItem.setItemMeta(meta);
                         return sorterItem;
                     })
@@ -135,7 +147,7 @@ public class StorageGUI
                             ItemStack sorterItem = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/5a990d613ba553ddc5501e0436baabc17ce22eb4dc656d01e777519f8c9af23a");
                             ItemMeta meta = sorterItem.getItemMeta();
                             assert meta != null;
-                            meta.setDisplayName("by amount");
+                            meta.setDisplayName(getString(SORT_AFTER_AMOUNT_MK));
                             sorterItem.setItemMeta(meta);
                             return sorterItem;
                         })
@@ -284,18 +296,18 @@ public class StorageGUI
         ItemStack item = new ItemStack(Material.PAPER);
         ItemMeta meta = item.getItemMeta();
         assert meta != null;
-        meta.setDisplayName(LunaticStorage.getLanguageConfig().getMessageAsLegacyString(PAGE_MK, false)
+        meta.setDisplayName(getString(PAGE_MK)
                 .replace("%page%", String.valueOf(getPage() + 1))
                 .replace("%pages%", String.valueOf(getPageCount() + 1)));
         List<String> lore = new ArrayList<>();
 
-        String totalItems = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_ITEMS_MK, false)
+        String totalItems = getString(TOTAL_ITEMS_MK)
                 .replace("%amount%", storage.getTotalAmount() + "");
-        String range = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(RANGE_MK, false)
+        String range = getString(RANGE_MK)
                 .replace("%range%", storage.getRange() + "");
-        String loadedContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(LOADED_CONTAINERS_MK, false)
+        String loadedContainers = getString(LOADED_CONTAINERS_MK)
                 .replace("%amount%", storage.getLoadedContainersAmount() + "");
-        String totalContainers = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(TOTAL_CONTAINERS_MK, false)
+        String totalContainers = getString(TOTAL_CONTAINERS_MK)
                 .replace("%amount%", storage.getContainerAmount() + "");
 
         lore.add(totalItems);
@@ -428,7 +440,7 @@ public class StorageGUI
             lore = new ArrayList<>();
         }
 
-        String amountText = LunaticStorage.getLanguageConfig().getMessageAsLegacyString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
+        String amountText = getString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
         lore.add(amountText);
 
         if (meta != null) {
@@ -485,5 +497,9 @@ public class StorageGUI
                 getGUI(id).reloadGui();
             }
         }
+    }
+
+    private String getString(MessageKey messageKey) {
+        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey, false);
     }
 }
