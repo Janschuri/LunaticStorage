@@ -11,7 +11,6 @@ import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -459,7 +458,7 @@ public class StorageGUI
 
         if (newItem.getAmount() > 0 && !newItem.getType().equals(Material.AIR)) {
             Logger.debugLog("insertItem: " + newItem);
-            AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL_MK));
+            player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(STORAGE_FULL_MK));
             setStorageFullTimeout();
         }
 

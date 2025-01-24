@@ -1,7 +1,6 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
@@ -9,7 +8,6 @@ import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.external.AdventureAPI;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -119,12 +117,12 @@ public class ChestClickListener implements Listener {
 
                 }
 
-                AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerMarked));
+                player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerMarked));
                 PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
                 blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
                 itemInHand.setItemMeta(storageMeta);
             } else {
-                AdventureAPI.sendMessage(player, LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
+                player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
             }
         }
     }
