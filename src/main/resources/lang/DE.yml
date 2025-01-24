@@ -32,6 +32,7 @@ messages:
   blacklist_disabled: "Blacklist deaktiviert."
   sort_after_name: "Sortiere nach Name"
   sort_after_amount: "Sortiere nach Menge"
+  wrong_usage: "Falsche Benutzung."
 commands:
   storage:
     aliases:
@@ -40,20 +41,33 @@ commands:
       get:
         aliases:
           - get
+        messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range) - erhalte das angegebene Item und gib die Reichweite an (nur für rangeitem und panel)"
       create:
         aliases:
           - create
         messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range) - erstelle das angegebene Item und gib die Reichweite an (nur für rangeitem und panel)"
           no_item_in_hand: "Du musst ein Item in der Hand halten."
           no_block_in_hand: "Du musst einen Block in der Hand halten."
       reload:
         aliases:
           - reload
         messages:
-          reloaded: "Die Konfiguration wurde neu geladen."
+          help: "&6/%command% %subcommand% - lade die Konfiguration neu"
+          reloaded: "Konfiguration wurde neu geladen."
       random:
         aliases:
           - random
+        messages:
+          help: "&6/%command% %subcommand% - erhalte zufällige Items zum Testen"
       container:
         aliases:
           - container
+        messages:
+          help: "&6/%command% %subcommand% - öffne die Container-GUI"
+      help:
+        aliases:
+          - help
+        messages:
+          help: "&6/%command% %subcommand% - zeige die Hilfe an"

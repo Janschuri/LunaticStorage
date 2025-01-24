@@ -1,5 +1,6 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
+import de.janschuri.lunaticlib.common.command.LunaticHelpCommand;
 import de.janschuri.lunaticstorage.commands.Subcommand;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.LunaticCommand;
@@ -16,8 +17,14 @@ public class Storage extends Subcommand {
             new StorageReload(),
             new StorageGet(),
             new StorageCreate(),
-            new StorageContainerSettings()
+            new StorageContainerSettings(),
+            getHelpCommand()
         );
+    }
+
+    @Override
+    public LunaticHelpCommand getHelpCommand() {
+        return new LunaticHelpCommand(getLanguageConfig(), this);
     }
 
     @Override
@@ -50,7 +57,7 @@ public class Storage extends Subcommand {
                 return sc.execute(sender, newArgs);
             }
         }
-        sender.sendMessage(getMessage(WRONG_USAGE_MK));
+        getHelpCommand().execute(sender, args);
 
 
         return true;
