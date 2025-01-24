@@ -36,7 +36,7 @@ public class StorageContainerSettings extends Subcommand {
 
     @Override
     public String getPermission() {
-        return "lunaticstorage.container";
+        return "lunaticstorage.storage.container";
     }
 
     @Override

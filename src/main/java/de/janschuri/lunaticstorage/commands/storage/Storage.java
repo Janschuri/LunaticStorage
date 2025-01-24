@@ -22,7 +22,7 @@ public class Storage extends Subcommand {
 
     @Override
     public String getPermission() {
-        return "lunaticstorage.admin";
+        return "lunaticstorage.storage";
     }
 
     @Override
@@ -51,7 +51,6 @@ public class Storage extends Subcommand {
             }
         }
         sender.sendMessage(getMessage(WRONG_USAGE_MK));
-        Logger.debugLog("Family: Wrong usage");
 
 
         return true;
