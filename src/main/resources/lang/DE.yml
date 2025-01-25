@@ -66,6 +66,14 @@ commands:
           - container
         messages:
           help: "&6/%command% %subcommand% - öffne die Container-GUI"
+      check:
+        aliases:
+          - check
+        messages:
+          help: "&6/%command% %subcommand% - erhalte Informationen über das Item in der Hand"
+          range_item: "Die Reichweite des Items beträgt %range% Blöcke."
+          panel_item: "Das Panel hat eine Reichweite von %range% Blöcken."
+          wrong_item: "Das Item in deiner Hand ist kein RangeItem, StorageItem oder PanelItem."
       help:
         aliases:
           - help

@@ -165,6 +165,22 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return dataContainer.has(Key.RANGE, PersistentDataType.LONG);
     }
 
+    public static boolean isPanelBlockItem(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+        return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
+    }
+
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
         Collection<StorageContainer> storageContainers = new ArrayList<>();
 
@@ -212,6 +228,16 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         }
 
         return dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG);
+    }
+
+    public static long getRangeFromPanelBlockItem(ItemStack item) {
+        if (item == null) {
+            return 0;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        return container.get(Key.PANEL_RANGE, PersistentDataType.LONG);
     }
 
     public static byte[] serializeItemStackMap(Map<ItemStack, Boolean> itemStackMap) {
