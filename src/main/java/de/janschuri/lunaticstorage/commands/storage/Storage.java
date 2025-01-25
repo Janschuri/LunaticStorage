@@ -58,7 +58,7 @@ public class Storage extends Subcommand {
                 return sc.execute(sender, newArgs);
             }
         }
-        getHelpCommand().execute(sender, args);
+        getHelpCommand().execute(sender, new String[0]);
 
 
         return true;

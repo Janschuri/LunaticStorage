@@ -64,6 +64,8 @@ public class ChestClickListener implements Listener {
 
             PersistentDataContainer dataContainer = storageMeta.getPersistentDataContainer();
 
+
+            // Check if the storage item already has the world in its list and add it if not
             if (!dataContainer.has(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING)) {
                 dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, worldUUID.toString());
                 itemInHand.setItemMeta(storageMeta);
@@ -84,6 +86,7 @@ public class ChestClickListener implements Listener {
             NamespacedKey worldKey = new NamespacedKey(LunaticStorage.getInstance(), worldUUID.toString());
 
             List<String> chests = new ArrayList<>();
+            List<Block> containerBlocks = new ArrayList<>();
 
             if (container instanceof Chest) {
                 Chest chest = (Chest) container;
@@ -95,6 +98,9 @@ public class ChestClickListener implements Listener {
                     String rightChestID = Utils.serializeCoords(rightChest.getLocation());
                     chests.add(leftChestID);
                     chests.add(rightChestID);
+
+                    containerBlocks.add(leftChest.getBlock());
+                    containerBlocks.add(rightChest.getBlock());
                 } else {
                     String chestID = Utils.serializeCoords(container.getLocation());
                     chests.add(chestID);
@@ -102,25 +108,30 @@ public class ChestClickListener implements Listener {
             } else {
                 String chestID = Utils.serializeCoords(container.getLocation());
                 chests.add(chestID);
+                containerBlocks.add(container.getBlock());
             }
 
             if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
 
-                if (!Utils.isContainer(clickedBlock)) {
+                for (Block block : containerBlocks) {
+                    if (!Utils.isContainer(block)) {
 
-                    StorageContainer storageContainer = StorageContainer.getStorageContainer(clickedBlock);
+                        StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
 
-                    if (!storageContainer.getInventory().isEmpty()) {
-                        storageContainer.addInvToWhitelist();
-                        storageContainer.setWhitelistEnabled(true);
+                        if (!storageContainer.getInventory().isEmpty()) {
+                            storageContainer.addInvToWhitelist();
+                            storageContainer.setWhitelistEnabled(true);
+                        }
+
                     }
 
+                    PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+                    blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
                 }
 
-                player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerMarked));
-                PersistentDataContainer blockDataContainer = new CustomBlockData(clickedBlock, LunaticStorage.getInstance());
-                blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
+
                 itemInHand.setItemMeta(storageMeta);
+                player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerMarked));
             } else {
                 player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
             }

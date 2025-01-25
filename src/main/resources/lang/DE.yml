@@ -33,6 +33,7 @@ messages:
   sort_after_name: "Sortiere nach Name"
   sort_after_amount: "Sortiere nach Menge"
   wrong_usage: "Falsche Benutzung."
+  no_number: "Du musst eine Zahl angeben."
 commands:
   storage:
     aliases:

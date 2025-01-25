@@ -1,8 +1,10 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.*;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
@@ -57,6 +59,8 @@ public class StorageCheck extends Subcommand {
         ItemStack item = player.getInventory().getItemInMainHand();
 
         if (Utils.isStorageItem(item)) {
+            GUIManager.openGUI(new ContainerListGUI(item), player);
+
             return true;
         }
 

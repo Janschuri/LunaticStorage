@@ -33,6 +33,7 @@ messages:
   sort_after_name: "Sort after name"
   sort_after_amount: "Sort after amount"
   wrong_usage: "Wrong usage."
+  no_number: "You must specify a number."
 help_header: "--- --- --- ---[%header%]--- --- --- ---"
 help_footer: "--- --- -[Seite %page%/%pages%]- --- ---"
 commands:
