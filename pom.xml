@@ -104,5 +104,11 @@
             <version>2.2.2</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.skytasul</groupId>
+            <artifactId>glowingentities</artifactId>
+            <version>1.4.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

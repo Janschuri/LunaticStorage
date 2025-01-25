@@ -11,6 +11,8 @@ public abstract class Subcommand extends AbstractLunaticCommand {
     protected static final MessageKey NO_PERMISSION_MK = new MessageKey("no_permission");
     protected static final MessageKey NO_CONSOLE_COMMAND_MK = new MessageKey("no_console_command");
     protected static final MessageKey NO_NUMBER_MK = new MessageKey("no_number");
+    protected static final MessageKey YES_MK = new MessageKey("yes");
+    protected static final MessageKey NO_MK = new MessageKey("no");
 
     @Override
     public LanguageConfig getLanguageConfig() {

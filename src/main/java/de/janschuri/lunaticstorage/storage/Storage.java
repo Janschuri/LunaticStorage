@@ -352,40 +352,7 @@ public class Storage {
     }
 
     private void removeContainerFromStorageItem(StorageContainer container) {
-        ItemMeta meta = getStorageItem().getItemMeta();
-        if (meta == null) {
-            return;
-        }
-        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-        String worldsString = dataContainer.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
-
-        if (worldsString != null) {
-            List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
-            if (worlds == null) {
-                return;
-            }
-            UUID worldUUID = container.getBlock().getWorld().getUID();
-            NamespacedKey worldKey = Key.getKey(worldUUID.toString());
-            byte[] chestsByte = dataContainer.get(worldKey, PersistentDataType.BYTE_ARRAY);
-            if (chestsByte == null) {
-                return;
-            }
-            List<String> chests = Utils.getListFromArray(chestsByte);
-
-            List<String> newChests = chests.stream()
-                    .filter(chest -> !chest.equals(Utils.serializeCoords(container.getBlock().getLocation())))
-                    .collect(Collectors.toList());
-
-            byte[] newChestsByte = Utils.getArrayFromList(newChests);
-
-            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, newChestsByte);
-            if (newChests.isEmpty()) {
-                worlds.remove(worldUUID);
-//                dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, Utils.getUUIDListAsString(worlds));
-            }
-            getStorageItem().setItemMeta(meta);
-        }
-        getStorageItem().setItemMeta(meta);
+        Utils.removeContainerFromStorageItem(container, getStorageItem());
     }
 
     public ItemStack getItemsFromStorage(ItemStack item, Player player) {

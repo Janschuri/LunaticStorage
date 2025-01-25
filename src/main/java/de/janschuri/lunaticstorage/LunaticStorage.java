@@ -8,6 +8,8 @@ import de.janschuri.lunaticstorage.config.PluginConfig;
 import de.janschuri.lunaticstorage.listener.*;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
+import fr.skytasul.glowingentities.GlowingBlocks;
+import fr.skytasul.glowingentities.GlowingEntities;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
@@ -29,12 +31,14 @@ public final class LunaticStorage extends JavaPlugin {
     private static DatabaseConfig databaseConfig;
     private static LanguageConfig languageConfig;
     private static PluginConfig pluginConfig;
+    private GlowingBlocks glowingBlocks;
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
         dataDirectory = getDataFolder().toPath();
+        glowingBlocks = new GlowingBlocks(this);
 
         loadConfig();
 
@@ -133,5 +137,9 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static boolean isDebug() {
         return debug;
+    }
+
+    public static GlowingBlocks getGlowingBlocks() {
+        return getInstance().glowingBlocks;
     }
 }

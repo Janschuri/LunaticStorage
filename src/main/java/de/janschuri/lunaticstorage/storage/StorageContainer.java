@@ -34,6 +34,11 @@ public class StorageContainer {
 
     public static StorageContainer getStorageContainer(UUID worldUUID, String coords) {
         Block block = Utils.deserializeCoords(coords, worldUUID).getBlock();
+
+        if (block == null) {
+            return null;
+        }
+
         return getStorageContainer(block);
     }
 
@@ -444,5 +449,9 @@ public class StorageContainer {
 
     public int getBlackListPages() {
         return (int) (getBlacklist().size() / 36.0);
+    }
+
+    public String getBlockCoords() {
+        return Utils.serializeCoords(block.getLocation());
     }
 }

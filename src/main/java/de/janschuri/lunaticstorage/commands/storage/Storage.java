@@ -19,6 +19,7 @@ public class Storage extends Subcommand {
             new StorageCreate(),
             new StorageContainerSettings(),
             new StorageCheck(),
+            new StorageRemove(),
             getHelpCommand()
         );
     }
