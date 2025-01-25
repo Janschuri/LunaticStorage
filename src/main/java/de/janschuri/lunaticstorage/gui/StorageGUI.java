@@ -502,4 +502,28 @@ public class StorageGUI
     private String getString(MessageKey messageKey) {
         return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey, false);
     }
+
+    @Override
+    public InventoryButton emptyListItemButton(int slot) {
+        return new InventoryButton()
+                .creator(player -> new ItemStack(Material.AIR))
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    Player player = (Player) event.getWhoClicked();
+                    ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
+
+                    if (!cursorItem.getType().equals(Material.AIR)) {
+                        Storage storage = getStorage();
+
+                        ItemStack newItem = insertItem(storage, player, cursorItem);
+                        player.setItemOnCursor(newItem);
+                    }
+
+                    reloadGui();
+                });
+    }
+
 }
