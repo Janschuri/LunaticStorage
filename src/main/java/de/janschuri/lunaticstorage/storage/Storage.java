@@ -321,7 +321,7 @@ public class Storage {
             }
             totalContainers++;
 
-            if (BukkitUtils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
+            if (Utils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
                 loadedContainers++;
                 container.addStorageId(block);
                 Inventory chestInv = container.getInventory();

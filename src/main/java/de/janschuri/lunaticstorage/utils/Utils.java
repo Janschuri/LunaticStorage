@@ -270,15 +270,11 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return null;
     }
 
-    public static Map<ItemStack, Boolean> getSubMap(Map<ItemStack, Boolean> items, int startIndex, int endIndex) {
-        Map<ItemStack, Boolean> subMap = new HashMap<>();
-        int i = 0;
-        for (Map.Entry<ItemStack, Boolean> entry : items.entrySet()) {
-            if (i >= startIndex && i < endIndex) {
-                subMap.put(entry.getKey(), entry.getValue());
-            }
-            i++;
-        }
-        return subMap;
+    public static boolean isInRange(Location location, Location center, long range) {
+        int diffX = Math.abs(location.getBlockX() - center.getBlockX());
+        int diffY = Math.abs(location.getBlockY() - center.getBlockY());
+        int diffZ = Math.abs(location.getBlockZ() - center.getBlockZ());
+
+        return diffX <= range && diffY <= range && diffZ <= range;
     }
 }

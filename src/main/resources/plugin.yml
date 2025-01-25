@@ -4,8 +4,10 @@ main: de.janschuri.lunaticstorage.LunaticStorage
 api-version: '1.19'
 
 commands:
-  storage:
+  lunaticstorage:
     description: Open storage command
     usage: /storage
+    aliases:
+      - storage
 depend:
   - LunaticLib
