@@ -2,8 +2,18 @@ prefix: "&9[LunaticStorage]&r "
 messages:
   reload: "Konfiguration wurde neu geladen."
   no_permission: "Du keine Rechte dies zu tun!"
+  left_click: "Linksklick"
+  right_click: "Rechtsklick"
+  shift_left_click: "Shift + Linksklick"
+  shift_right_click: "Shift + Rechtsklick"
   container_marked: "Container wurde markiert."
   container_already_marked: "Container ist bereits markiert."
+  delete_container: "Container löschen"
+  show_container: "Container durch Leuchten anzeigen"
+  remove_container_gui_title: "Container löschen"
+  remove_container_confirm: "&cBist du sicher, dass du den Container aus dem StorageItem entfernen möchtest?"
+  remove_container_cancel: "&cEntfernen des Containers aus dem StorageItem abgebrochen."
+  container_removed: "&aDer Container wurde erfolgreich aus dem StorageItem in %world% an %x% %y% %z% entfernt."
   storage_full: "Der Speicher ist voll."
   amount: "Menge: %amount%"
   page: "Seite: %page%/%pages%"
@@ -67,6 +77,7 @@ commands:
           - container
         messages:
           help: "&6/%command% %subcommand% - öffne die Container-GUI"
+          not_container: "Der Block den du anschaust ist kein Container."
       check:
         aliases:
           - check

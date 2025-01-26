@@ -2,7 +2,6 @@ package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.common.command.LunaticHelpCommand;
 import de.janschuri.lunaticstorage.commands.Subcommand;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.Sender;
 
@@ -17,9 +16,8 @@ public class Storage extends Subcommand {
             new StorageReload(),
             new StorageGet(),
             new StorageCreate(),
-            new StorageContainerSettings(),
+            new StorageContainer(),
             new StorageCheck(),
-            new StorageRemove(),
             getHelpCommand()
         );
     }

@@ -1,10 +1,15 @@
 package de.janschuri.lunaticstorage.gui;
 
+import de.janschuri.lunaticlib.CommandMessageKey;
+import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.PlayerSender;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.DecisionGUI;
+import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
@@ -16,8 +21,45 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+import java.util.Map;
+
+import static de.janschuri.lunaticstorage.LunaticStorage.getMessage;
+import static de.janschuri.lunaticstorage.LunaticStorage.getMessageAsLegacyString;
 
 public class ContainerListGUI extends ListGUI<StorageContainer> implements PaginatedList<StorageContainer> {
+
+
+    private final MessageKey confirmMK = new MessageKey("remove_container_confirm")
+            .defaultMessage("§cAre you sure you want to remove the container from the storageitem?");
+
+    private final MessageKey cancelMK = new MessageKey("remove_container_cancel")
+            .defaultMessage("§cCancelled removing the container from the storageitem.");
+
+    private final MessageKey removedMK = new MessageKey("container_removed")
+            .defaultMessage("§aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%");
+
+    private final MessageKey guiTitleMK = new MessageKey("remove_container_gui_title")
+            .defaultMessage("§eRemove Container");
+
+    private final MessageKey rightClickMK = new MessageKey("right_click")
+            .defaultMessage("Right click");
+
+    private final MessageKey shiftRightClickMK = new MessageKey("shift_right_click")
+            .defaultMessage("Shift right click");
+
+    private final MessageKey leftClickMK = new MessageKey("left_click")
+            .defaultMessage("Left click");
+
+    private final MessageKey shiftLeftClickMK = new MessageKey("shift_left_click")
+            .defaultMessage("Shift left click");
+
+    private final MessageKey showContainerMK = new MessageKey("show_container")
+            .defaultMessage("Show container");
+
+    private final MessageKey removeContainerMK = new MessageKey("remove_container")
+            .defaultMessage("Remove container");
+
+
 
     private int page = 0;
     private ItemStack storageItem;
@@ -39,7 +81,11 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
         itemMeta.setDisplayName("§eContainer");
 
         List<String> lore = List.of(
-                "§7Coordinates: " + coordinates
+                "§7Coordinates: " + coordinates,
+                "§7World: " + block.getWorld().getName(),
+                "",
+                "§e§l" + getMessageAsLegacyString(rightClickMK) + " §r§8- " + getMessageAsLegacyString(showContainerMK),
+                "§4§l" + getMessageAsLegacyString(shiftRightClickMK) + " §r§8- " + getMessageAsLegacyString(removeContainerMK)
         );
 
         itemMeta.setLore(lore);
@@ -68,7 +114,31 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
                             }
                         } else {
                             player.closeInventory();
-                            player.performCommand("lunaticstorage remove " + storageContainer.getBlock().getWorld().getUID() + " " + storageContainer.getBlockCoords());
+
+                            DecisionGUI decisionGUI = new DecisionGUI(getMessage(guiTitleMK))
+                                    .accept(event2 -> {
+                                        Utils.removeContainerFromStorageItem(storageContainer, storageItem);
+                                        player.sendMessage(
+                                                getMessage(
+                                                        removedMK
+                                                                .placeholder("world", block.getWorld().getName())
+                                                                .placeholder("x", String.valueOf(block.getX()))
+                                                                .placeholder("y", String.valueOf(block.getY()))
+                                                                .placeholder("z", String.valueOf(block.getZ()))
+                                                )
+                                        );
+
+                                        GUIManager.openGUI(this, player);
+                                        this.reloadGui();
+                                    })
+                                    .deny(event2 -> {
+                                        player.sendMessage(getMessage(cancelMK));
+
+                                        GUIManager.openGUI(this, player);
+                                        this.reloadGui();
+                                    });
+
+                            GUIManager.openGUI(decisionGUI, player);
                         }
                     }
                 });
