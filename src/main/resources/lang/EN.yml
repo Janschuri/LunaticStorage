@@ -2,8 +2,18 @@ prefix: "&9[LunaticStorage]&r "
 messages:
   reload: "The configuration has been reloaded."
   no_permission: "You don't have permission to do that!"
+  left_click: "Left click"
+  right_click: "Right click"
+  shift_left_click: "Shift + Left click"
+  shift_right_click: "Shift + Right click"
   container_marked: "Container has been marked."
   container_already_marked: "Container is already marked."
+  delete_container: "Delete container"
+  show_container: "Show container by glow"
+  remove_container_gui_title: "Delete container"
+  remove_container_confirm: "&cAre you sure you want to remove the container from the storageitem?"
+  remove_container_cancel: "&cCancelled removing the container from the storageitem."
+  container_removed: "&aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%"
   storage_full: "The storage is full."
   amount: "Amount: %amount%"
   page: "Page: %page%/%pages%"
@@ -70,6 +80,7 @@ commands:
           - container
         messages:
           help: "&6/%command% %subcommand%&7 - open a containers gui"
+          not_container: "The block you are looking at is not a container."
       check:
         aliases:
           - check
@@ -77,7 +88,6 @@ commands:
           help: "&6/%command% %subcommand% - get information about the item in your hand"
           range_item: "The range of the rangeitem in your hand is %range% blocks."
           panel_item: "The range of the panel in your hand is %range% blocks."
-          wrong_item: "The item in your hand is not a rangeitem, storageitem or panel."
       help:
         aliases:
           - help
