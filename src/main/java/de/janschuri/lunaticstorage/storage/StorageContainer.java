@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.storage;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -33,6 +34,11 @@ public class StorageContainer {
 
     public static StorageContainer getStorageContainer(UUID worldUUID, String coords) {
         Block block = Utils.deserializeCoords(coords, worldUUID).getBlock();
+
+        if (block == null) {
+            return null;
+        }
+
         return getStorageContainer(block);
     }
 
@@ -443,5 +449,9 @@ public class StorageContainer {
 
     public int getBlackListPages() {
         return (int) (getBlacklist().size() / 36.0);
+    }
+
+    public String getBlockCoords() {
+        return Utils.serializeCoords(block.getLocation());
     }
 }

@@ -32,15 +32,19 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
     }
 
     public static Location deserializeCoords(String coords, UUID uuid) {
-        String[] coordStrings = coords.split(",");
+        try {
+            String[] coordStrings = coords.split(",");
 
-        double x = Double.parseDouble(coordStrings[0]);
-        double y = Double.parseDouble(coordStrings[1]);
-        double z = Double.parseDouble(coordStrings[2]);
+            double x = Double.parseDouble(coordStrings[0]);
+            double y = Double.parseDouble(coordStrings[1]);
+            double z = Double.parseDouble(coordStrings[2]);
 
-        World world = Bukkit.getWorld(uuid);
+            World world = Bukkit.getWorld(uuid);
 
-        return new Location(world, x, y, z);
+            return new Location(world, x, y, z);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static boolean containsChestsID(int[] array, int target) {
@@ -165,6 +169,22 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return dataContainer.has(Key.RANGE, PersistentDataType.LONG);
     }
 
+    public static boolean isPanelBlockItem(ItemStack item) {
+        if (item == null) {
+            return false;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null) {
+            return false;
+        }
+
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+
+        return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
+    }
+
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
         Collection<StorageContainer> storageContainers = new ArrayList<>();
 
@@ -212,6 +232,16 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         }
 
         return dataContainer.get(Key.PANEL_RANGE, PersistentDataType.LONG);
+    }
+
+    public static long getRangeFromPanelBlockItem(ItemStack item) {
+        if (item == null) {
+            return 0;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        return container.get(Key.PANEL_RANGE, PersistentDataType.LONG);
     }
 
     public static byte[] serializeItemStackMap(Map<ItemStack, Boolean> itemStackMap) {
@@ -270,15 +300,47 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return null;
     }
 
-    public static Map<ItemStack, Boolean> getSubMap(Map<ItemStack, Boolean> items, int startIndex, int endIndex) {
-        Map<ItemStack, Boolean> subMap = new HashMap<>();
-        int i = 0;
-        for (Map.Entry<ItemStack, Boolean> entry : items.entrySet()) {
-            if (i >= startIndex && i < endIndex) {
-                subMap.put(entry.getKey(), entry.getValue());
-            }
-            i++;
+    public static boolean isInRange(Location location, Location center, long range) {
+        int diffX = Math.abs(location.getBlockX() - center.getBlockX());
+        int diffY = Math.abs(location.getBlockY() - center.getBlockY());
+        int diffZ = Math.abs(location.getBlockZ() - center.getBlockZ());
+
+        return diffX <= range && diffY <= range && diffZ <= range;
+    }
+
+    public static void removeContainerFromStorageItem(StorageContainer container, ItemStack storageItem) {
+        ItemMeta meta = storageItem.getItemMeta();
+        if (meta == null) {
+            return;
         }
-        return subMap;
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        String worldsString = dataContainer.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+
+        if (worldsString != null) {
+            List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+            if (worlds == null) {
+                return;
+            }
+            UUID worldUUID = container.getBlock().getWorld().getUID();
+            NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+            byte[] chestsByte = dataContainer.get(worldKey, PersistentDataType.BYTE_ARRAY);
+            if (chestsByte == null) {
+                return;
+            }
+            List<String> chests = Utils.getListFromArray(chestsByte);
+
+            List<String> newChests = chests.stream()
+                    .filter(chest -> !chest.equals(Utils.serializeCoords(container.getBlock().getLocation())))
+                    .collect(Collectors.toList());
+
+            byte[] newChestsByte = Utils.getArrayFromList(newChests);
+
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, newChestsByte);
+            if (newChests.isEmpty()) {
+                worlds.remove(worldUUID);
+            }
+            storageItem.setItemMeta(meta);
+        }
+        storageItem.setItemMeta(meta);
     }
 }

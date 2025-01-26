@@ -33,6 +33,7 @@ messages:
   sort_after_name: "Sort after name"
   sort_after_amount: "Sort after amount"
   wrong_usage: "Wrong usage."
+  no_number: "You must specify a number."
 help_header: "--- --- --- ---[%header%]--- --- --- ---"
 help_footer: "--- --- -[Seite %page%/%pages%]- --- ---"
 commands:
@@ -69,6 +70,14 @@ commands:
           - container
         messages:
           help: "&6/%command% %subcommand%&7 - open a containers gui"
+      check:
+        aliases:
+          - check
+        messages:
+          help: "&6/%command% %subcommand% - get information about the item in your hand"
+          range_item: "The range of the rangeitem in your hand is %range% blocks."
+          panel_item: "The range of the panel in your hand is %range% blocks."
+          wrong_item: "The item in your hand is not a rangeitem, storageitem or panel."
       help:
         aliases:
           - help

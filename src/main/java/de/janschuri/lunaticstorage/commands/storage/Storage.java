@@ -18,6 +18,8 @@ public class Storage extends Subcommand {
             new StorageGet(),
             new StorageCreate(),
             new StorageContainerSettings(),
+            new StorageCheck(),
+            new StorageRemove(),
             getHelpCommand()
         );
     }
@@ -57,7 +59,7 @@ public class Storage extends Subcommand {
                 return sc.execute(sender, newArgs);
             }
         }
-        getHelpCommand().execute(sender, args);
+        getHelpCommand().execute(sender, new String[0]);
 
 
         return true;
