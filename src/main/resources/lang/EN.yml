@@ -8,7 +8,7 @@ messages:
   shift_right_click: "Shift + Right click"
   container_marked: "Container has been marked."
   container_already_marked: "Container is already marked."
-  delete_container: "Delete container"
+  remove_container: "Delete container"
   show_container: "Show container by glow"
   remove_container_gui_title: "Delete container"
   remove_container_confirm: "&cAre you sure you want to remove the container from the storageitem?"
