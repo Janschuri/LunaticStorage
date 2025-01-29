@@ -8,6 +8,7 @@ import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -43,6 +44,14 @@ public class BlockBreakListener implements Listener {
             if (!player.isSneaking()) {
                 Logger.debugLog("Player is not sneaking");
                 event.setCancelled(true);
+            }
+
+            if (Utils.isStorageContainer(block)) {
+                StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+
+                Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+                    storageContainer.updateContents();
+                }, 20);
             }
         }
     }
@@ -144,9 +153,6 @@ public class BlockBreakListener implements Listener {
             dataContainer.remove(Key.BLACKLIST);
             dataContainer.remove(Key.WHITELIST_ENABLED);
             dataContainer.remove(Key.BLACKLIST_ENABLED);
-
-            StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-            storageContainer.unload();
         }
     }
 }

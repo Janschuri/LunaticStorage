@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.storage;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
@@ -17,14 +18,14 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 
 public class StorageContainer {
-    private static final Map<Block, ItemStack[]> containerContents = new HashMap<>();
+    private static final Map<Block, Map<ItemStack, Integer>> containerContents = new HashMap<>();
     private static final Map<Block, List<Block>> containerStorageIds = new HashMap<>();
 
     private final Block block;
 
     private StorageContainer(Block block) {
         this.block = block;
-        containerContents.computeIfAbsent(block, k -> null);
+        containerContents.computeIfAbsent(block, k -> new HashMap<>());
         containerStorageIds.computeIfAbsent(block, k -> new ArrayList<>());
     }
 
@@ -42,11 +43,12 @@ public class StorageContainer {
         return getStorageContainer(block);
     }
 
-    public void setContainerContent(ItemStack[] contents) {
+    public void setContainerContent(Map<ItemStack, Integer> contents) {
+
         containerContents.put(block, contents);
     }
 
-    public ItemStack[] getContainerContents() {
+    public Map<ItemStack, Integer> getContainerContents() {
         return containerContents.get(block);
     }
 
@@ -94,20 +96,26 @@ public class StorageContainer {
     }
 
     public void updateStorages(Map<ItemStack, Integer> difference) {
-        Logger.debugLog("Updating storages: " + difference);
 
         for (Block block : getStorageIds()) {
-            Logger.debugLog("Updating storage: " + block);
             Storage storage = Storage.getStorage(block);
             storage.updateStorage(difference);
+            storage.updateContainer(this, difference.keySet().toArray(new ItemStack[0]));
+            StorageGUI.updateStorageGUIs(block);
         }
     }
 
     public void updateContents() {
         if (block.getState() instanceof Container) {
-            ItemStack[] newContents = ((Container) block.getState()).getInventory().getContents();
+            ItemStack[] contents = ((Container) block.getState()).getInventory().getContents();
+            Logger.debugLog("contents: " + Arrays.toString(contents));
+            Map<ItemStack, Integer> newContents = Utils.itemStackArrayToMap((contents));
+
+            Logger.debugLog("New contents: " + newContents);
 
             Map<ItemStack, Integer> difference = getDifference(getContainerContents(), newContents);
+
+            Logger.debugLog("Difference: " + difference);
 
             if (difference.isEmpty()) {
                 return;
@@ -117,9 +125,11 @@ public class StorageContainer {
             updateStorages(difference);
         } else {
             if (getContainerContents() != null) {
-                updateStorages(getDifference(getContainerContents(), new ItemStack[0]));
+                updateStorages(getDifference(getContainerContents(), new HashMap<>()));
             }
-            setContainerContent(null);
+            setContainerContent(new HashMap<>());
+
+            unload();
         }
     }
 
@@ -127,41 +137,38 @@ public class StorageContainer {
         return containerStorageIds.containsKey(block);
     }
 
-    public Map<ItemStack, Integer> getDifference(ItemStack[] oldItems, ItemStack[] newItems) {
+    public Map<ItemStack, Integer> getDifference(Map<ItemStack, Integer> oldItems, Map<ItemStack, Integer>  newItems) {
         Map<ItemStack, Integer> difference = new HashMap<>();
 
         if (oldItems == null) {
-            oldItems = new ItemStack[0];
+            oldItems = new HashMap<>();
         }
 
-        List<ItemStack> oldItemList = new ArrayList<>();
-        for (ItemStack oldItem : oldItems) {
-            if (oldItem != null) {
-                oldItemList.add(oldItem);
-            }
-        }
-        List<ItemStack> newItemList = new ArrayList<>();
-        for (ItemStack newItem : newItems) {
-            if (newItem != null) {
-                newItemList.add(newItem);
-            }
-        }
+        Map<ItemStack, Integer> oldItemsCopy = new HashMap<>(oldItems);
+        Map<ItemStack, Integer> newItemsCopy = new HashMap<>(newItems);
 
-        for (ItemStack oldItem : oldItemList) {
-            if (newItemList.contains(oldItem)) {
-                ItemStack newItem = newItemList.get(newItemList.indexOf(oldItem));
-                int differenceCount = newItem.getAmount() - oldItem.getAmount();
-                if (differenceCount != 0) {
-                    difference.put(newItem, differenceCount);
+        Logger.debugLog("Old items: " + oldItems);
+
+        for (ItemStack oldItem : oldItems.keySet()) {
+            for (ItemStack newItem : newItems.keySet()) {
+                if (oldItem.isSimilar(newItem)) {
+
+                    if (oldItems.get(oldItem) != newItems.get(newItem)) {
+                        difference.put(newItem.clone(), newItems.get(newItem) - oldItems.get(oldItem));
+                    }
+
+                    oldItemsCopy.remove(oldItem);
+                    newItemsCopy.remove(newItem);
                 }
-            } else {
-                difference.put(oldItem, -oldItem.getAmount());
             }
-            newItemList.remove(oldItem);
         }
 
-        for (ItemStack newItem : newItemList) {
-            difference.put(newItem, newItem.getAmount());
+        for (ItemStack oldItem : oldItemsCopy.keySet()) {
+            difference.put(oldItem.clone(), -oldItems.get(oldItem));
+        }
+
+        for (ItemStack newItem : newItemsCopy.keySet()) {
+            difference.put(newItem.clone(), newItems.get(newItem));
         }
 
         return difference;
@@ -170,12 +177,10 @@ public class StorageContainer {
     public boolean isValid() {
         boolean isValid = true;
         if (!(block.getState() instanceof Container)) {
-            Logger.errorLog("Block is not a container: " + block);
             isValid = false;
         }
 
-        if (!(Utils.isStorageContainer(block))) {
-            Logger.errorLog("Block is not a storage container: " + block);
+        if (isValid && !(Utils.isStorageContainer(block))) {
             isValid = false;
         }
 

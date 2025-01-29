@@ -240,7 +240,6 @@ public class Storage {
     }
 
     public void updateStorageMap(ItemStack item, int difference) {
-        Logger.debugLog("Updating storage map for " + item + " and " + difference);
         ItemStack clone = item.clone();
         clone.setAmount(1);
 
@@ -317,6 +316,7 @@ public class Storage {
 
         return true;
     }
+
     public void loadStorage () {
         Logger.debugLog("Loading storage");
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
@@ -468,7 +468,7 @@ public class Storage {
 
                 }
             }
-            updateContainer(container, chestInv, searchedItem);
+            updateContainer(container, searchedItem);
         }
 
         if (foundItems != stackSize) {
@@ -501,7 +501,7 @@ public class Storage {
 
                 for (ItemStack i : chestInv.getContents()) {
                     if (foundItems == stackSize) {
-                        updateContainer(container, chestInv, searchedItem);
+                        updateContainer(container, searchedItem);
                         break;
                     }
                     if (i == null) {
@@ -547,7 +547,7 @@ public class Storage {
                         LogBlock.logChestRemove(player, block, itemStack);
                     }
                 }
-                updateContainer(container, chestInv, searchedItem);
+                updateContainer(container, searchedItem);
             }
         }
 
@@ -609,7 +609,7 @@ public class Storage {
 
             LogBlock.logChestInsert(player, block, itemStack);
 
-            updateContainer(container, chestInv, itemKey);
+            updateContainer(container, itemKey);
         }
 
         if (remainingItems.getAmount() != 0 && !getEmptyContainers().isEmpty()) {
@@ -653,7 +653,7 @@ public class Storage {
 
                 LogBlock.logChestInsert(player, block, itemStack);
 
-                updateContainer(container, chestInv, itemKey);
+                updateContainer(container, itemKey);
             }
         }
 
@@ -670,32 +670,35 @@ public class Storage {
 
         return remainingItems;
     }
-    public void updateContainer(StorageContainer container, Inventory containerInv, ItemStack itemKey) {
+    public void updateContainer(StorageContainer container, ItemStack... itemKeys) {
         Map<Block, Boolean> itemsChests = new HashMap<>();
         Block block = container.getBlock();
+        Inventory containerInv = container.getInventory();
 
-        if (getItemsContainers().get(itemKey) != null) {
-            itemsChests = getItemsContainers().get(itemKey);
-        }
-
-        if (containerInv.containsAtLeast(itemKey, 1)) {
-
-            itemsChests.put(block, true);
-
-            for (ItemStack item : containerInv.getContents()) {
-                if (item != null && item.isSimilar(itemKey) && item.getAmount() != item.getMaxStackSize()){
-                    itemsChests.put(block, false);
-                    break;
-                }
+        for (ItemStack itemKey : itemKeys) {
+            if (getItemsContainers().get(itemKey) != null) {
+                itemsChests = getItemsContainers().get(itemKey);
             }
 
-        } else {
-            itemsChests.remove(block);
+            if (containerInv != null && containerInv.containsAtLeast(itemKey, 1)) {
+
+                itemsChests.put(block, true);
+
+                for (ItemStack item : containerInv.getContents()) {
+                    if (item != null && item.isSimilar(itemKey) && item.getAmount() != item.getMaxStackSize()) {
+                        itemsChests.put(block, false);
+                        break;
+                    }
+                }
+
+            } else {
+                itemsChests.remove(block);
+            }
+
+            getItemsContainers().put(itemKey, itemsChests);
         }
 
-        getItemsContainers().put(itemKey, itemsChests);
-
-        if (containerInv.firstEmpty() == -1) {
+        if (containerInv == null || containerInv.firstEmpty() == -1) {
             getEmptyContainers().remove(block);
         } else {
             if (!getEmptyContainers().contains(block)) {
