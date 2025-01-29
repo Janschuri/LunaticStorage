@@ -104,6 +104,7 @@ public class ChestClickListener implements Listener {
                 } else {
                     String chestID = Utils.serializeCoords(container.getLocation());
                     chests.add(chestID);
+                    containerBlocks.add(container.getBlock());
                 }
             } else {
                 String chestID = Utils.serializeCoords(container.getLocation());
@@ -114,7 +115,7 @@ public class ChestClickListener implements Listener {
             if (addChestsToPersistentDataContainer(dataContainer, worldKey, chests)) {
 
                 for (Block block : containerBlocks) {
-                    if (!Utils.isContainer(block)) {
+                    if (!Utils.isStorageContainer(block)) {
 
                         StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
 

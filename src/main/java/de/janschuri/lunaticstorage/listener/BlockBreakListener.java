@@ -8,7 +8,6 @@ import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -39,7 +38,7 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if ((Utils.isPanel(block) || Utils.isContainer(block)) && LunaticStorage.isDebug()) {
+        if ((Utils.isPanel(block) || Utils.isStorageContainer(block)) && LunaticStorage.isDebug()) {
             Logger.debugLog("Panel block broken");
             if (!player.isSneaking()) {
                 Logger.debugLog("Player is not sneaking");
@@ -137,7 +136,7 @@ public class BlockBreakListener implements Listener {
             dropEvents.put(event, newItems);
         }
 
-        if (Utils.isContainer(block)) {
+        if (Utils.isStorageContainer(block)) {
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
 
             dataContainer.remove(Key.STORAGE_CONTAINER);

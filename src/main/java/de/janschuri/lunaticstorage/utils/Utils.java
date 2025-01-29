@@ -132,7 +132,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
     }
 
-    public static boolean isContainer(Block block) {
+    public static boolean isStorageContainer(Block block) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER);
     }

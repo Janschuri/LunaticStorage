@@ -59,13 +59,16 @@ public class Storage {
 
                 if (storageItems.get(block) == null) {
                     if (storageItem != null) {
+                        Logger.debugLog("Storage item added");
                         update = true;
                     }
                 } else {
                     if (storageItem == null) {
+                        Logger.debugLog("Storage item removed");
                         update = true;
                     } else {
                         if (!storageItems.get(block).isSimilar(storageItem)) {
+                            Logger.debugLog("Storage item changed");
                             update = true;
                         }
                     }
@@ -75,13 +78,16 @@ public class Storage {
                     ItemStack rangeItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE, PersistentDataType.BYTE_ARRAY));
                     if (rangeItems.get(block) == null) {
                         if (rangeItem != null) {
+                            Logger.debugLog("Range item added");
                             update = true;
                         }
                     } else {
                         if (rangeItem == null) {
+                            Logger.debugLog("Range item removed");
                             update = true;
                         } else {
                             if (!rangeItems.get(block).isSimilar(rangeItem)) {
+                                Logger.debugLog("Range item changed");
                                 update = true;
                             }
                         }
@@ -152,7 +158,6 @@ public class Storage {
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 update = true;
             }
-            dataContainer.remove(Key.STORAGE_ITEM);
         } else {
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack oldItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
@@ -162,12 +167,26 @@ public class Storage {
             } else {
                 update = true;
             }
-            dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
         }
+
+        saveStorageItem(item);
+
         if (update) {
+            Logger.debugLog("Storage item changed, updating storage");
             loadStorage();
         }
         StorageGUI.updateStorageGUIs(block);
+    }
+
+    private void saveStorageItem(ItemStack item) {
+        storageItems.put(block, item);
+
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        if (item == null) {
+            dataContainer.remove(Key.STORAGE_ITEM);
+        } else {
+            dataContainer.set(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
+        }
     }
 
     public void setRangeItem(ItemStack item) {
@@ -177,6 +196,7 @@ public class Storage {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         if (item == null) {
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
+                Logger.debugLog("Range item removed");
                 update = true;
             }
             dataContainer.remove(Key.RANGE_ITEM);
@@ -184,15 +204,18 @@ public class Storage {
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack oldItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
                 if (!oldItem.isSimilar(item)) {
+                    Logger.debugLog("Range item changed");
                     update = true;
                 }
             } else {
+                Logger.debugLog("Range item added");
                 update = true;
             }
             dataContainer.set(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
         }
 
         if (update) {
+            Logger.debugLog("Range item changed, updating storage");
             loadStorage();
         }
         StorageGUI.updateStorageGUIs(block);
@@ -295,7 +318,7 @@ public class Storage {
         return true;
     }
     public void loadStorage () {
-        Logger.debugLog("Loading storage for " + block);
+        Logger.debugLog("Loading storage");
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
         long itemRange = Utils.getRangeFromItem(getRangeItem());
         long panelRange = Utils.getRangeFromBlock(block);
@@ -304,18 +327,18 @@ public class Storage {
         getItemsContainers().clear();
         getEmptyContainers().clear();
 
-        Logger.debugLog(range + "");
+//        Logger.debugLog(range + "");
 
         int loadedContainers = 0;
         int totalContainers = 0;
 
         for (StorageContainer container : chests) {
             if (!container.isValid()) {
-                Logger.debugLog("Removing storage container"
-                        + " " + container.getBlock().getLocation().getBlockX()
-                        + " " + container.getBlock().getLocation().getBlockY()
-                        + " " + container.getBlock().getLocation().getBlockZ()
-                );
+//                Logger.debugLog("Removing storage container"
+//                        + " " + container.getBlock().getLocation().getBlockX()
+//                        + " " + container.getBlock().getLocation().getBlockY()
+//                        + " " + container.getBlock().getLocation().getBlockZ()
+//                );
                 removeContainerFromStorageItem(container);
                 continue;
             }
@@ -345,14 +368,18 @@ public class Storage {
                 updateStorageMap(entry.getKey(), entry.getValue());
             }
     }
-    private void removeContainerFromStorageItem(List<StorageContainer> containers) {
-        for (StorageContainer container : containers) {
-            removeContainerFromStorageItem(container);
+    private void removeContainerFromStorageItem(StorageContainer... containers) {
+        if (containers.length == 0) {
+            return;
         }
-    }
 
-    private void removeContainerFromStorageItem(StorageContainer container) {
-        Utils.removeContainerFromStorageItem(container, getStorageItem());
+        Logger.debugLog("Removing storage container from storage item");
+
+        for (StorageContainer container : containers) {
+            Utils.removeContainerFromStorageItem(container, getStorageItem());
+        }
+
+        saveStorageItem(getStorageItem());
     }
 
     public ItemStack getItemsFromStorage(ItemStack item, Player player) {
@@ -524,7 +551,7 @@ public class Storage {
             }
         }
 
-        removeContainerFromStorageItem(invalidContainers);
+        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
         updateStorageMap(searchedItem, -(foundItems));
 
         searchedItem.setAmount(foundItems);
@@ -638,7 +665,7 @@ public class Storage {
             amount = item.getAmount();
         }
 
-        removeContainerFromStorageItem(invalidContainers);
+        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
         updateStorageMap(item, amount);
 
         return remainingItems;

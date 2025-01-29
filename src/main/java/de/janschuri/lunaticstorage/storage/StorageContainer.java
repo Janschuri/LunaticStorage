@@ -94,7 +94,10 @@ public class StorageContainer {
     }
 
     public void updateStorages(Map<ItemStack, Integer> difference) {
+        Logger.debugLog("Updating storages: " + difference);
+
         for (Block block : getStorageIds()) {
+            Logger.debugLog("Updating storage: " + block);
             Storage storage = Storage.getStorage(block);
             storage.updateStorage(difference);
         }
@@ -167,10 +170,12 @@ public class StorageContainer {
     public boolean isValid() {
         boolean isValid = true;
         if (!(block.getState() instanceof Container)) {
+            Logger.errorLog("Block is not a container: " + block);
             isValid = false;
         }
 
-        if (!(Utils.isContainer(block))) {
+        if (!(Utils.isStorageContainer(block))) {
+            Logger.errorLog("Block is not a storage container: " + block);
             isValid = false;
         }
 
@@ -449,9 +454,5 @@ public class StorageContainer {
 
     public int getBlackListPages() {
         return (int) (getBlacklist().size() / 36.0);
-    }
-
-    public String getBlockCoords() {
-        return Utils.serializeCoords(block.getLocation());
     }
 }
