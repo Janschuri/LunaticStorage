@@ -134,7 +134,7 @@ public class StorageGUI
                         assert meta != null;
                         meta.setDisplayName(getString(SORT_AFTER_NAME_MK));
                         sorterItem.setItemMeta(meta);
-                        return sorterItem;
+                        return getItemWithGuiId(sorterItem, "sorter-by-name");
                     })
                     .comparator(player -> {
                         String locale = player.getLocale();
@@ -149,7 +149,7 @@ public class StorageGUI
                             assert meta != null;
                             meta.setDisplayName(getString(SORT_AFTER_AMOUNT_MK));
                             sorterItem.setItemMeta(meta);
-                            return sorterItem;
+                            return getItemWithGuiId(sorterItem, "sorter-by-amount");
                         })
                         .comparator(player -> {
                             Comparator<Map.Entry<ItemStack, Integer>> comparator;
