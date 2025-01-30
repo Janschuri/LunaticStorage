@@ -3,14 +3,17 @@ package de.janschuri.lunaticstorage.listener;
 import com.mysql.cj.log.Log;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
+import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -39,18 +42,40 @@ public class ContainerEditListener implements Listener {
     }
 
     @EventHandler
-    public void onHopperTransfer(InventoryMoveItemEvent event) {
+    public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
+
         InventoryHolder destination = event.getDestination().getHolder();
         InventoryHolder source = event.getSource().getHolder();
+
+        if (destination instanceof Container container) {
+            Block block = container.getBlock();
+
+            if (Utils.isPanel(block)) {
+                ItemStack item = event.getItem().clone();
+
+                if (item.getAmount() > 1) {
+                    return;
+                }
+
+
+                Storage storage = Storage.getStorage(block);
+                ItemStack returnItem = storage.insertItemsIntoStorage(item, null);
+
+                if (returnItem.getAmount() > 0) {
+                    event.setCancelled(true);
+                } else {
+                    event.setItem(new ItemStack(Material.AIR, 0));
+                }
+
+                return;
+            }
+        }
 
         handleContainerEdit(destination);
         handleContainerEdit(source);
     }
 
     private void handleContainerEdit(InventoryHolder holder) {
-//        if (true) {
-//            return;
-//        }
 
         if (holder instanceof Container container) {
             Block block = container.getBlock();

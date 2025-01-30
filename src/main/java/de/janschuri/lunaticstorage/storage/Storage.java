@@ -583,7 +583,7 @@ public class Storage {
                 continue;
             }
 
-            if (!container.isAllowedPutItem(player, remainingItems)) {
+            if (player != null && !container.isAllowedPutItem(player, remainingItems)) {
                 continue;
             }
 
@@ -591,7 +591,7 @@ public class Storage {
 
             Inventory chestInv = container.getInventory();
 
-            if (!EventUtils.isAllowedPutItem(player, chestInv)) {
+            if (player != null && !EventUtils.isAllowedPutItem(player, chestInv)) {
                 continue;
             }
 
@@ -607,7 +607,9 @@ public class Storage {
             ItemStack itemStack = remainingItems.clone();
             itemStack.setAmount(newAmount);
 
-            LogBlock.logChestInsert(player, block, itemStack);
+            if (player != null) {
+                LogBlock.logChestInsert(player, block, itemStack);
+            }
 
             updateContainer(container, itemKey);
         }
@@ -627,7 +629,7 @@ public class Storage {
                     continue;
                 }
 
-                if (!container.isAllowedPutItem(player, remainingItems)) {
+                if (player != null && !container.isAllowedPutItem(player, remainingItems)) {
                     continue;
                 }
 
@@ -635,7 +637,7 @@ public class Storage {
 
                 Inventory chestInv = container.getInventory();
 
-                if (!EventUtils.isAllowedPutItem(player, chestInv)) {
+                if (player != null && !EventUtils.isAllowedPutItem(player, chestInv)) {
                     continue;
                 }
 
@@ -651,7 +653,9 @@ public class Storage {
                 ItemStack itemStack = remainingItems.clone();
                 itemStack.setAmount(newAmount);
 
-                LogBlock.logChestInsert(player, block, itemStack);
+                if (player != null) {
+                    LogBlock.logChestInsert(player, block, itemStack);
+                }
 
                 updateContainer(container, itemKey);
             }
