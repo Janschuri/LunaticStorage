@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -22,8 +23,19 @@ public class InventoryMoveItemListener implements Listener {
         Inventory destination = event.getDestination();
         Inventory source = event.getSource();
 
-        assert destination.getHolder() instanceof Container;
-        Block block = ((Container) destination.getHolder()).getBlock();
+        Block block = null;
+
+        if (destination.getHolder() instanceof Container) {
+            block = ((Container) destination.getHolder()).getBlock();
+        }
+
+        if (destination.getHolder() instanceof DoubleChest) {
+            block = ((DoubleChest) destination.getHolder()).getLocation().getBlock();
+        }
+
+        if (block == null) {
+            return;
+        }
 
         if (Utils.isPanel(block)) {
             ItemStack item = event.getItem().clone();

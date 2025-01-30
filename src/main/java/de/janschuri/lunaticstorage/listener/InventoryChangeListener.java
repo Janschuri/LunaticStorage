@@ -1,11 +1,10 @@
 package de.janschuri.lunaticstorage.listener;
 
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
-import org.bukkit.event.Cancellable;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -33,8 +32,8 @@ public class InventoryChangeListener implements Listener {
             return;
         }
 
-        if (inventory.getHolder() instanceof Container container) {
-            Block block = container.getBlock();
+        if (inventory.getHolder() instanceof Container || inventory.getHolder() instanceof DoubleChest) {
+            Block block = inventory.getLocation().getBlock();
 
             if (Utils.isStorageContainer(block)) {
                 if (StorageContainer.isLoaded(block)) {
