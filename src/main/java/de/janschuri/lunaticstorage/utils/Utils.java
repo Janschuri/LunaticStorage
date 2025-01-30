@@ -9,6 +9,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -132,7 +133,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
     }
 
-    public static boolean isContainer(Block block) {
+    public static boolean isStorageContainer(Block block) {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         return dataContainer.has(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER);
     }
@@ -342,5 +343,35 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
             storageItem.setItemMeta(meta);
         }
         storageItem.setItemMeta(meta);
+    }
+
+    public static Map<ItemStack, Integer> itemStackArrayToMap(ItemStack[] inventory) {
+        return itemStackArrayToMap(inventory, false);
+    }
+
+    public static Map<ItemStack, Integer> itemStackArrayToMap(ItemStack[] inventory, boolean inverse) {
+        Map<ItemStack, Integer> itemStackMap = new HashMap<>();
+
+        for (ItemStack itemStack : inventory) {
+            if (itemStack != null) {
+                boolean found = false;
+                for (Map.Entry<ItemStack, Integer> entry : itemStackMap.entrySet()) {
+                    ItemStack key = entry.getKey();
+                    if (key.isSimilar(itemStack)) {
+                        int amount = entry.getValue() + itemStack.getAmount();
+                        Logger.infoLog("Amount: " + amount);
+                        itemStackMap.put(key, amount * (inverse ? -1 : 1));
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    itemStackMap.put(itemStack.clone(), itemStack.getAmount() * (inverse ? -1 : 1));
+                }
+            }
+        }
+        return itemStackMap;
     }
 }

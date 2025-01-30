@@ -18,7 +18,6 @@ public class PluginConfig extends LunaticConfigImpl {
 
     public void load() {
         super.load("config.yml");
-        LunaticStorage.debug = getBoolean("debug", false);
     }
 
     public String getLanguageKey() {
@@ -38,6 +37,10 @@ public class PluginConfig extends LunaticConfigImpl {
     public Material getRangeItem() {
         String rangeItem = getString("range_item", "MAGMA_CREAM");
         return Material.getMaterial(rangeItem);
+    }
+
+    public boolean isDebug() {
+        return getBoolean("debug", false);
     }
 
     public int getDefaultRangeItem() {
