@@ -3,16 +3,13 @@ package de.janschuri.lunaticstorage;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.external.Metrics;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
-import de.janschuri.lunaticstorage.config.DatabaseConfig;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.config.PluginConfig;
 import de.janschuri.lunaticstorage.listener.*;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import fr.skytasul.glowingentities.GlowingBlocks;
-import fr.skytasul.glowingentities.GlowingEntities;
 import net.kyori.adventure.text.Component;
-import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
 
@@ -51,7 +48,10 @@ public final class LunaticStorage extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
         getServer().getPluginManager().registerEvents(new PanelClickListener(), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(), this);
+        getServer().getPluginManager().registerEvents(new InventoryMoveItemListener(), this);
+
         getServer().getPluginManager().registerEvents(new ContainerEditListener(), this);
+        getServer().getPluginManager().registerEvents(new InventoryChangeListener(), this);
     }
 
     @Override

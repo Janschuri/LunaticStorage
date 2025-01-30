@@ -8,7 +8,6 @@ import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -49,9 +48,10 @@ public class BlockBreakListener implements Listener {
             if (Utils.isStorageContainer(block)) {
                 StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
 
-                Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
-                    storageContainer.updateContents();
-                }, 20);
+                Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
+
+                storageContainer.updateStorages(difference);
+                storageContainer.unload();
             }
         }
     }
