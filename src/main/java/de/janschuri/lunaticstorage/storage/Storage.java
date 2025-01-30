@@ -1,7 +1,6 @@
 package de.janschuri.lunaticstorage.storage;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticlib.platform.bukkit.util.BukkitUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
@@ -10,18 +9,14 @@ import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class Storage {
 
@@ -327,18 +322,11 @@ public class Storage {
         getItemsContainers().clear();
         getEmptyContainers().clear();
 
-//        Logger.debugLog(range + "");
-
         int loadedContainers = 0;
         int totalContainers = 0;
 
         for (StorageContainer container : chests) {
             if (!container.isValid()) {
-//                Logger.debugLog("Removing storage container"
-//                        + " " + container.getBlock().getLocation().getBlockX()
-//                        + " " + container.getBlock().getLocation().getBlockY()
-//                        + " " + container.getBlock().getLocation().getBlockZ()
-//                );
                 removeContainerFromStorageItem(container);
                 continue;
             }
