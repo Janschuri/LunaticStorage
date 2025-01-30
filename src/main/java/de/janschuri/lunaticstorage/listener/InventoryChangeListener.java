@@ -5,7 +5,9 @@ import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +16,14 @@ import java.util.Map;
 
 public class InventoryChangeListener implements Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryChangeMonitor(InventoryChangeEvent event) {
+        if (event.isCancelled()) {
+            event.getSourceEvent().setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onInventoryChange(InventoryChangeEvent event) {
         Map<ItemStack, Integer> changes = event.getChanges();
 

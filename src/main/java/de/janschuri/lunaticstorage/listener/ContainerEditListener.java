@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 public class ContainerEditListener implements Listener {
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (EventUtils.isFakeEvent(event)) {
             Logger.debugLog("Ignoring fake event");
@@ -187,12 +187,12 @@ public class ContainerEditListener implements Listener {
 
             Inventory inventory = event.getView().getTopInventory();
 
-            InventoryChangeEvent inventoryChangeEvent = new InventoryChangeEvent(inventory, changes);
+            InventoryChangeEvent inventoryChangeEvent = new InventoryChangeEvent(event, inventory, changes);
             Bukkit.getPluginManager().callEvent(inventoryChangeEvent);
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
 
         InventoryHolder holder = event.getInventory().getHolder();
@@ -215,7 +215,7 @@ public class ContainerEditListener implements Listener {
             }
 
             Inventory inventory = event.getView().getTopInventory();
-            InventoryChangeEvent inventoryChangeEvent = new InventoryChangeEvent(inventory, changes);
+            InventoryChangeEvent inventoryChangeEvent = new InventoryChangeEvent(event, inventory, changes);
             Bukkit.getPluginManager().callEvent(inventoryChangeEvent);
         }
     }
