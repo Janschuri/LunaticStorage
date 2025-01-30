@@ -192,11 +192,11 @@ public class StorageContainer {
     }
 
     public boolean isAllowedPutItem(Player player, ItemStack item) {
-        if (!EventUtils.isAllowedInteract(player, block)) {
+        if (player != null && !EventUtils.isAllowedInteract(player, block)) {
             return false;
         }
 
-        if (!EventUtils.isAllowedPutItem(player, getInventory())) {
+        if (player != null && !EventUtils.isAllowedPutItem(player, getInventory())) {
             return false;
         }
 

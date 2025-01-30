@@ -327,18 +327,11 @@ public class Storage {
         getItemsContainers().clear();
         getEmptyContainers().clear();
 
-//        Logger.debugLog(range + "");
-
         int loadedContainers = 0;
         int totalContainers = 0;
 
         for (StorageContainer container : chests) {
             if (!container.isValid()) {
-//                Logger.debugLog("Removing storage container"
-//                        + " " + container.getBlock().getLocation().getBlockX()
-//                        + " " + container.getBlock().getLocation().getBlockY()
-//                        + " " + container.getBlock().getLocation().getBlockZ()
-//                );
                 removeContainerFromStorageItem(container);
                 continue;
             }
@@ -583,7 +576,7 @@ public class Storage {
                 continue;
             }
 
-            if (player != null && !container.isAllowedPutItem(player, remainingItems)) {
+            if (!container.isAllowedPutItem(player, remainingItems)) {
                 continue;
             }
 
@@ -629,7 +622,7 @@ public class Storage {
                     continue;
                 }
 
-                if (player != null && !container.isAllowedPutItem(player, remainingItems)) {
+                if (!container.isAllowedPutItem(player, remainingItems)) {
                     continue;
                 }
 
