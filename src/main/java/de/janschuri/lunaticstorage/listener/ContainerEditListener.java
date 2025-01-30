@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 public class ContainerEditListener implements Listener {
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClick(InventoryClickEvent event) {
         if (EventUtils.isFakeEvent(event)) {
             Logger.debugLog("Ignoring fake event");
@@ -192,7 +192,7 @@ public class ContainerEditListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryDrag(InventoryDragEvent event) {
 
         InventoryHolder holder = event.getInventory().getHolder();
