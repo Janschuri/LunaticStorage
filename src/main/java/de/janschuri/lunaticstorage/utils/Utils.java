@@ -345,8 +345,11 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         storageItem.setItemMeta(meta);
     }
 
-
     public static Map<ItemStack, Integer> itemStackArrayToMap(ItemStack[] inventory) {
+        return itemStackArrayToMap(inventory, false);
+    }
+
+    public static Map<ItemStack, Integer> itemStackArrayToMap(ItemStack[] inventory, boolean inverse) {
         Map<ItemStack, Integer> itemStackMap = new HashMap<>();
 
         for (ItemStack itemStack : inventory) {
@@ -357,7 +360,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
                     if (key.isSimilar(itemStack)) {
                         int amount = entry.getValue() + itemStack.getAmount();
                         Logger.infoLog("Amount: " + amount);
-                        itemStackMap.put(key, amount);
+                        itemStackMap.put(key, amount * (inverse ? -1 : 1));
 
                         found = true;
                         break;
@@ -365,7 +368,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
                 }
 
                 if (!found) {
-                    itemStackMap.put(itemStack.clone(), itemStack.getAmount());
+                    itemStackMap.put(itemStack.clone(), itemStack.getAmount() * (inverse ? -1 : 1));
                 }
             }
         }

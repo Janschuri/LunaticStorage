@@ -18,14 +18,13 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.*;
 
 public class StorageContainer {
-    private static final Map<Block, Map<ItemStack, Integer>> containerContents = new HashMap<>();
     private static final Map<Block, List<Block>> containerStorageIds = new HashMap<>();
 
     private final Block block;
 
     private StorageContainer(Block block) {
         this.block = block;
-        containerContents.computeIfAbsent(block, k -> new HashMap<>());
+
         containerStorageIds.computeIfAbsent(block, k -> new ArrayList<>());
     }
 
@@ -41,15 +40,6 @@ public class StorageContainer {
         }
 
         return getStorageContainer(block);
-    }
-
-    public void setContainerContent(Map<ItemStack, Integer> contents) {
-
-        containerContents.put(block, contents);
-    }
-
-    public Map<ItemStack, Integer> getContainerContents() {
-        return containerContents.get(block);
     }
 
     public List<Block> getStorageIds() {
@@ -91,7 +81,6 @@ public class StorageContainer {
     }
 
     public void unload() {
-        containerContents.remove(block);
         containerStorageIds.remove(block);
     }
 
@@ -102,34 +91,6 @@ public class StorageContainer {
             storage.updateStorage(difference);
             storage.updateContainer(this, difference.keySet().toArray(new ItemStack[0]));
             StorageGUI.updateStorageGUIs(block);
-        }
-    }
-
-    public void updateContents() {
-        if (block.getState() instanceof Container) {
-            ItemStack[] contents = ((Container) block.getState()).getInventory().getContents();
-            Logger.debugLog("contents: " + Arrays.toString(contents));
-            Map<ItemStack, Integer> newContents = Utils.itemStackArrayToMap((contents));
-
-            Logger.debugLog("New contents: " + newContents);
-
-            Map<ItemStack, Integer> difference = getDifference(getContainerContents(), newContents);
-
-            Logger.debugLog("Difference: " + difference);
-
-            if (difference.isEmpty()) {
-                return;
-            }
-
-            setContainerContent(newContents);
-            updateStorages(difference);
-        } else {
-            if (getContainerContents() != null) {
-                updateStorages(getDifference(getContainerContents(), new HashMap<>()));
-            }
-            setContainerContent(new HashMap<>());
-
-            unload();
         }
     }
 
