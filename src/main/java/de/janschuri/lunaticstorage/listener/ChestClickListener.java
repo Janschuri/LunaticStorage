@@ -44,14 +44,23 @@ public class ChestClickListener implements Listener {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
+        if (clickedBlock == null) {
+            return;
+        }
+
+        if (clickedBlock.getState() instanceof Container && Utils.isStorageContainer(clickedBlock)) {
+            try {
+                LunaticStorage.getGlowingBlocks().unsetGlowing(clickedBlock, player);
+            } catch (Exception e) {
+                Logger.errorLog("Error while unsetting glowing block");
+            }
+        }
+
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand.getType() == Material.AIR || !itemInHand.getItemMeta().getPersistentDataContainer().has(Key.STORAGE, PersistentDataType.INTEGER)) {
             return;
         }
 
-        if (clickedBlock == null) {
-            return;
-        }
 
         if (clickedBlock.getState() instanceof Container && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);
