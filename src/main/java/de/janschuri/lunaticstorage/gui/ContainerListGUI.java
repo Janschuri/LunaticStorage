@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.gui;
 import de.janschuri.lunaticlib.CommandMessageKey;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.PlayerSender;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.DecisionGUI;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
@@ -29,34 +30,34 @@ import static de.janschuri.lunaticstorage.LunaticStorage.getMessageAsLegacyStrin
 public class ContainerListGUI extends ListGUI<StorageContainer> implements PaginatedList<StorageContainer> {
 
 
-    private final MessageKey confirmMK = new MessageKey("remove_container_confirm")
+    private final MessageKey confirmMK = new LunaticMessageKey("remove_container_confirm")
             .defaultMessage("§cAre you sure you want to remove the container from the storageitem?");
 
-    private final MessageKey cancelMK = new MessageKey("remove_container_cancel")
+    private final MessageKey cancelMK = new LunaticMessageKey("remove_container_cancel")
             .defaultMessage("§cCancelled removing the container from the storageitem.");
 
-    private final MessageKey removedMK = new MessageKey("container_removed")
+    private final MessageKey removedMK = new LunaticMessageKey("container_removed")
             .defaultMessage("§aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%");
 
-    private final MessageKey guiTitleMK = new MessageKey("remove_container_gui_title")
+    private final MessageKey guiTitleMK = new LunaticMessageKey("remove_container_gui_title")
             .defaultMessage("§eRemove Container");
 
-    private final MessageKey rightClickMK = new MessageKey("right_click")
+    private final MessageKey rightClickMK = new LunaticMessageKey("right_click")
             .defaultMessage("Right click");
 
-    private final MessageKey shiftRightClickMK = new MessageKey("shift_right_click")
+    private final MessageKey shiftRightClickMK = new LunaticMessageKey("shift_right_click")
             .defaultMessage("Shift right click");
 
-    private final MessageKey leftClickMK = new MessageKey("left_click")
+    private final MessageKey leftClickMK = new LunaticMessageKey("left_click")
             .defaultMessage("Left click");
 
-    private final MessageKey shiftLeftClickMK = new MessageKey("shift_left_click")
+    private final MessageKey shiftLeftClickMK = new LunaticMessageKey("shift_left_click")
             .defaultMessage("Shift left click");
 
-    private final MessageKey showContainerMK = new MessageKey("show_container")
+    private final MessageKey showContainerMK = new LunaticMessageKey("show_container")
             .defaultMessage("Show container");
 
-    private final MessageKey removeContainerMK = new MessageKey("remove_container")
+    private final MessageKey removeContainerMK = new LunaticMessageKey("remove_container")
             .defaultMessage("Remove container");
 
 
@@ -120,11 +121,11 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
                                         Utils.removeContainerFromStorageItem(storageContainer, storageItem);
                                         player.sendMessage(
                                                 getMessage(
-                                                        removedMK
-                                                                .placeholder("world", block.getWorld().getName())
-                                                                .placeholder("x", String.valueOf(block.getX()))
-                                                                .placeholder("y", String.valueOf(block.getY()))
-                                                                .placeholder("z", String.valueOf(block.getZ()))
+                                                        removedMK,
+                                                                placeholder("%world%", block.getWorld().getName()),
+                                                                placeholder("%x%", String.valueOf(block.getX())),
+                                                                placeholder("%y%", String.valueOf(block.getY())),
+                                                                placeholder("%z%", String.valueOf(block.getZ()))
                                                 )
                                         );
 

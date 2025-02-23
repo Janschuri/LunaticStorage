@@ -1,8 +1,11 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.*;
+import de.janschuri.lunaticlib.common.command.HasParams;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.storage.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -14,13 +17,13 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
-public class StorageCreate extends Subcommand {
+public class StorageCreate extends StorageCommand implements HasParentCommand, HasParams {
 
-    private CommandMessageKey noItemInHandMk = new CommandMessageKey(this, "no_item_in_hand");
-    private CommandMessageKey noBlockInHandMk = new CommandMessageKey(this, "no_block_in_hand");
+    private CommandMessageKey noItemInHandMk = new LunaticCommandMessageKey(this, "no_item_in_hand");
+    private CommandMessageKey noBlockInHandMk = new LunaticCommandMessageKey(this, "no_block_in_hand");
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -104,6 +107,11 @@ public class StorageCreate extends Subcommand {
 
 
             return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 
     private ItemStack createStorageItem(ItemStack item) {

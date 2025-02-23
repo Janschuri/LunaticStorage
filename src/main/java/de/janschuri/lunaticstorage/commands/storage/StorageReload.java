@@ -1,17 +1,21 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
+import de.janschuri.lunaticlib.Command;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.Sender;
 
-public class StorageReload extends Subcommand {
+import java.util.Map;
 
-    private final CommandMessageKey reloadedMK = new CommandMessageKey(this, "reloaded");
+public class StorageReload extends StorageCommand implements HasParentCommand {
+
+    private final CommandMessageKey reloadedMK = new LunaticCommandMessageKey(this, "reloaded");
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -37,5 +41,10 @@ public class StorageReload extends Subcommand {
             sender.sendMessage(getMessage(reloadedMK));
 
         return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 }

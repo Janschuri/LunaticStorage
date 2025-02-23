@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
@@ -29,8 +30,8 @@ import java.util.UUID;
 
 public class ChestClickListener implements Listener {
 
-    private static final MessageKey containerAlreadyMarked = new MessageKey("container_already_marked");
-    private static final MessageKey containerMarked = new MessageKey("container_marked");
+    private static final MessageKey containerAlreadyMarked = new LunaticMessageKey("container_already_marked");
+    private static final MessageKey containerMarked = new LunaticMessageKey("container_marked");
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {

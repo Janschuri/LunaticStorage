@@ -1,5 +1,6 @@
 package de.janschuri.lunaticstorage.gui;
 
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
@@ -31,25 +32,25 @@ public class StorageGUI
         SortedList<Map.Entry<ItemStack, Integer>>
 {
 
-    private static final MessageKey STORAGE_FULL_MK = new MessageKey("storage_full")
+    private static final MessageKey STORAGE_FULL_MK = new LunaticMessageKey("storage_full")
             .defaultMessage("The storage is full.");
-    private static final MessageKey AMOUNT_MK = new MessageKey("amount")
+    private static final MessageKey AMOUNT_MK = new LunaticMessageKey("amount")
             .defaultMessage("Amount: %amount%");
-    private static final MessageKey PAGE_MK = new MessageKey("page")
+    private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
             .defaultMessage("Page %page%/%pages%");
-    private static final MessageKey TOTAL_ITEMS_MK = new MessageKey("total_items")
+    private static final MessageKey TOTAL_ITEMS_MK = new LunaticMessageKey("total_items")
             .defaultMessage("Total Items: %amount%");
-    private static final MessageKey LOADED_CONTAINERS_MK = new MessageKey("loaded_containers")
+    private static final MessageKey LOADED_CONTAINERS_MK = new LunaticMessageKey("loaded_containers")
             .defaultMessage("Loaded Containers: %amount%");
-    private static final MessageKey TOTAL_CONTAINERS_MK = new MessageKey("total_containers")
+    private static final MessageKey TOTAL_CONTAINERS_MK = new LunaticMessageKey("total_containers")
             .defaultMessage("Total Containers: %amount%");
-    private static final MessageKey RANGE_MK = new MessageKey("range")
+    private static final MessageKey RANGE_MK = new LunaticMessageKey("range")
             .defaultMessage("Range: %range%");
-    private static final MessageKey STORAGE_GUI_TITLE_MK = new MessageKey("storage_gui_title")
+    private static final MessageKey STORAGE_GUI_TITLE_MK = new LunaticMessageKey("storage_gui_title")
             .defaultMessage("Storage GUI");
-    private static final MessageKey SORT_AFTER_NAME_MK = new MessageKey("sort_after_name")
+    private static final MessageKey SORT_AFTER_NAME_MK = new LunaticMessageKey("sort_after_name")
             .defaultMessage("Sort after Name");
-    private static final MessageKey SORT_AFTER_AMOUNT_MK = new MessageKey("sort_after_amount")
+    private static final MessageKey SORT_AFTER_AMOUNT_MK = new LunaticMessageKey("sort_after_amount")
             .defaultMessage("Sort after Amount");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
@@ -500,7 +501,7 @@ public class StorageGUI
     }
 
     private String getString(MessageKey messageKey) {
-        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey, false);
+        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey.noPrefix());
     }
 
     @Override

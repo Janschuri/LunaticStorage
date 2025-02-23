@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.gui;
 
 import de.janschuri.lunaticlib.MessageKey;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
@@ -32,41 +33,41 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
     private final static Map<Integer, Integer> whitelistPages = new HashMap<>();
     private final static Map<Integer, Integer> blacklistPages = new HashMap<>();
 
-    public static final MessageKey PAGE_MK = new MessageKey("page")
+    public static final MessageKey PAGE_MK = new LunaticMessageKey("page")
             .defaultMessage("Page: %page%/%pages%");
-    public static final MessageKey WHITELIST_MODE_MK = new MessageKey("whitelist_mode")
+    public static final MessageKey WHITELIST_MODE_MK = new LunaticMessageKey("whitelist_mode")
             .defaultMessage("§aWhitelist Mode");
-    public static final MessageKey BLACKLIST_MODE_MK = new MessageKey("blacklist_mode")
+    public static final MessageKey BLACKLIST_MODE_MK = new LunaticMessageKey("blacklist_mode")
             .defaultMessage("§cBlacklist Mode");
-    public static final MessageKey MATCH_NBT_MK = new MessageKey("match_nbt")
+    public static final MessageKey MATCH_NBT_MK = new LunaticMessageKey("match_nbt")
             .defaultMessage("§eMatch NBT");
-    public static final MessageKey YES_MK = new MessageKey("yes")
+    public static final MessageKey YES_MK = new LunaticMessageKey("yes")
             .defaultMessage("§aYes");
-    public static final MessageKey NO_MK = new MessageKey("no")
+    public static final MessageKey NO_MK = new LunaticMessageKey("no")
             .defaultMessage("§cNo");
-    public static final MessageKey ADD_CONTAINERS_INV_TO_WHITELIST_MK = new MessageKey("add_containers_inv_to_whitelist")
+    public static final MessageKey ADD_CONTAINERS_INV_TO_WHITELIST_MK = new LunaticMessageKey("add_containers_inv_to_whitelist")
             .defaultMessage("§aAdd containers inventory to whitelist");
-    public static final MessageKey CLEAR_WHITELIST_MK = new MessageKey("clear_whitelist")
+    public static final MessageKey CLEAR_WHITELIST_MK = new LunaticMessageKey("clear_whitelist")
             .defaultMessage("§aClear whitelist");
-    public static final MessageKey CLEAR_BLACKLIST_MK = new MessageKey("clear_blacklist")
+    public static final MessageKey CLEAR_BLACKLIST_MK = new LunaticMessageKey("clear_blacklist")
             .defaultMessage("§cClear blacklist");
-    public static final MessageKey TOGGLE_WHITELIST_MK = new MessageKey("toggle_whitelist")
+    public static final MessageKey TOGGLE_WHITELIST_MK = new LunaticMessageKey("toggle_whitelist")
             .defaultMessage("§aToggle whitelist");
-    public static final MessageKey TOGGLE_BLACKLIST_MK = new MessageKey("toggle_blacklist")
+    public static final MessageKey TOGGLE_BLACKLIST_MK = new LunaticMessageKey("toggle_blacklist")
             .defaultMessage("§cToggle blacklist");
-    public static final MessageKey ADD_ITEM_TO_WHITELIST_MK = new MessageKey("add_item_to_whitelist")
+    public static final MessageKey ADD_ITEM_TO_WHITELIST_MK = new LunaticMessageKey("add_item_to_whitelist")
             .defaultMessage("§aAdd item to whitelist");
-    public static final MessageKey ADD_ITEM_TO_BLACKLIST_MK = new MessageKey("add_item_to_blacklist")
+    public static final MessageKey ADD_ITEM_TO_BLACKLIST_MK = new LunaticMessageKey("add_item_to_blacklist")
             .defaultMessage("§cAdd item to blacklist");
-    public static final MessageKey WHITELIST_ENABLED_MK = new MessageKey("whitelist_enabled")
+    public static final MessageKey WHITELIST_ENABLED_MK = new LunaticMessageKey("whitelist_enabled")
             .defaultMessage("§aWhitelist is enabled");
-    public static final MessageKey WHITELIST_DISABLED_MK = new MessageKey("whitelist_disabled")
+    public static final MessageKey WHITELIST_DISABLED_MK = new LunaticMessageKey("whitelist_disabled")
             .defaultMessage("§cWhitelist is disabled");
-    public static final MessageKey BLACKLIST_ENABLED_MK = new MessageKey("blacklist_enabled")
+    public static final MessageKey BLACKLIST_ENABLED_MK = new LunaticMessageKey("blacklist_enabled")
             .defaultMessage("§aBlacklist is enabled");
-    public static final MessageKey BLACKLIST_DISABLED_MK = new MessageKey("blacklist_disabled")
+    public static final MessageKey BLACKLIST_DISABLED_MK = new LunaticMessageKey("blacklist_disabled")
             .defaultMessage("§cBlacklist is disabled");
-    public static final MessageKey CONTAINER_GUI_TITLE_MK = new MessageKey("container_gui_title")
+    public static final MessageKey CONTAINER_GUI_TITLE_MK = new LunaticMessageKey("container_gui_title")
             .defaultMessage("§6Container GUI");
 
     private static final Map<Block, Map<UUID, Integer>> playerContainerGUIs = new HashMap<>();
@@ -358,7 +359,7 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
     }
 
     private String getString(MessageKey messageKey) {
-        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey, false);
+        return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey.noPrefix());
     }
 
     @Override

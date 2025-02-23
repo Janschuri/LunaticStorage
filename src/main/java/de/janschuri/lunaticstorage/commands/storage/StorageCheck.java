@@ -1,9 +1,10 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.*;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
@@ -11,17 +12,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-public class StorageCheck extends Subcommand {
+import java.util.Map;
 
-    private final MessageKey rangeItemMK = new CommandMessageKey(this, "range_item")
+public class StorageCheck extends StorageCommand implements HasParentCommand {
+
+    private final MessageKey rangeItemMK = new LunaticCommandMessageKey(this, "range_item")
             .defaultMessage("The range of this rangeitem is: %range%");
-    private final MessageKey panelMK = new CommandMessageKey(this, "panel")
+    private final MessageKey panelMK = new LunaticCommandMessageKey(this, "panel")
             .defaultMessage("The range of this panel is: %range%");
-    private final MessageKey wrongItemMK = new CommandMessageKey(this, "wrong_item")
+    private final MessageKey wrongItemMK = new LunaticCommandMessageKey(this, "wrong_item")
             .defaultMessage("You have to hold a storageitem, rangeitem or a panel in your hand.");
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -66,16 +69,16 @@ public class StorageCheck extends Subcommand {
 
         if (Utils.isRangeItem(item)) {
             playerSender.sendMessage(
-                    getMessage(rangeItemMK)
-                            .replaceText(getTextReplacementConfig("%range%", Utils.getRangeFromItem(item) + ""))
+                    getMessage(rangeItemMK,
+                            placeholder("%range%", Utils.getRangeFromItem(item) + ""))
             );
             return true;
         }
 
         if (Utils.isPanelBlockItem(item)) {
             playerSender.sendMessage(
-                    getMessage(panelMK)
-                            .replaceText(getTextReplacementConfig("%range%", Utils.getRangeFromPanelBlockItem(item) + ""))
+                    getMessage(panelMK,
+                            placeholder("%range%", Utils.getRangeFromPanelBlockItem(item) + ""))
             );
             return true;
         }
@@ -83,5 +86,10 @@ public class StorageCheck extends Subcommand {
         playerSender.sendMessage(getMessage(wrongItemMK));
 
         return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 }

@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage;
 
 import de.janschuri.lunaticlib.MessageKey;
+import de.janschuri.lunaticlib.Placeholder;
 import de.janschuri.lunaticlib.platform.bukkit.external.Metrics;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
@@ -126,8 +127,8 @@ public final class LunaticStorage extends JavaPlugin {
         return getInstance().glowingBlocks;
     }
 
-    public static Component getMessage(MessageKey key) {
-        return LunaticStorage.getLanguageConfig().getMessage(key);
+    public static Component getMessage(MessageKey key, Placeholder... placeholders) {
+        return LunaticStorage.getLanguageConfig().getMessage(key, placeholders);
     }
 
     public static String getMessageAsLegacyString(MessageKey key) {

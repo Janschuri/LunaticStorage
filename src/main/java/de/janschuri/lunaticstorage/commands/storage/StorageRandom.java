@@ -1,7 +1,9 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticstorage.commands.Subcommand;
-import de.janschuri.lunaticlib.LunaticCommand;
+import de.janschuri.lunaticlib.Command;
+import de.janschuri.lunaticlib.CommandMessageKey;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
 import org.bukkit.Bukkit;
@@ -11,16 +13,17 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class StorageRandom extends Subcommand {
+public class StorageRandom extends StorageCommand implements HasParentCommand {
 
     private static final String MAIN_COMMAND = "storage";
     private static final String NAME = "random";
     private static final String PERMISSION = "lunaticstorages.admin.random";
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -75,5 +78,10 @@ public class StorageRandom extends Subcommand {
             }
 
         return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 }
