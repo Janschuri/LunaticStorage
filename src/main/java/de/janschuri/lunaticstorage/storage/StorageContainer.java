@@ -6,6 +6,7 @@ import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
@@ -405,6 +406,19 @@ public class StorageContainer {
                 }
             }
         }
+    }
+
+    public boolean isOnWhitelist(ItemStack item) {
+        return getWhitelist().containsKey(item) && getWhitelist().get(item);
+    }
+
+    public boolean isOnWhitelist(Material item) {
+        for (Map.Entry<ItemStack, Boolean> entry : getWhitelist().entrySet()) {
+            if (entry.getKey().getType() == item) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clearWhitelist() {

@@ -50,6 +50,8 @@ public class BlockBreakListener implements Listener {
 
                 Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
 
+                storageContainer.clearWhitelist();
+                storageContainer.clearBlacklist();
                 storageContainer.updateStorages(difference);
                 storageContainer.unload();
             }
