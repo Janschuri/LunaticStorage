@@ -87,4 +87,9 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
     public Map<CommandMessageKey, String> getHelpMessages() {
         return Map.of();
     }
+
+    @Override
+    public boolean isPrimaryCommand() {
+        return true;
+    }
 }

@@ -1,9 +1,6 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticlib.Command;
-import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.PlayerSender;
-import de.janschuri.lunaticlib.Sender;
+import de.janschuri.lunaticlib.*;
 import de.janschuri.lunaticlib.common.command.HasParams;
 import de.janschuri.lunaticlib.common.command.HasParentCommand;
 import de.janschuri.lunaticstorage.LunaticStorage;
@@ -13,6 +10,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -146,11 +144,9 @@ public class StorageGet extends StorageCommand implements HasParentCommand, HasP
     }
 
     @Override
-    public List<Component> getParamsNames() {
+    public List<MessageKey> getParamsNames() {
         return List.of(
-                Component.text("panel"),
-                Component.text("rangeitem"),
-                Component.text("storageitem")
+                TYPE_MK
         );
     }
 }

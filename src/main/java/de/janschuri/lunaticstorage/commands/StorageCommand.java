@@ -1,7 +1,9 @@
 package de.janschuri.lunaticstorage.commands;
 
+import de.janschuri.lunaticlib.CommandMessageKey;
 import de.janschuri.lunaticlib.Sender;
 import de.janschuri.lunaticlib.common.command.LunaticCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.common.config.LunaticLanguageConfig;
 import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticstorage.LunaticStorage;
@@ -29,6 +31,9 @@ public abstract class StorageCommand extends LunaticCommand {
     protected static final MessageKey NO_MK = new LunaticMessageKey("no")
             .defaultMessage("en", "No")
             .defaultMessage("de", "Nein");
+    protected static final MessageKey TYPE_MK = new LunaticMessageKey("item_type")
+            .defaultMessage("en", "type")
+            .defaultMessage("de", "Typ");
 
     @Override
     public LunaticLanguageConfig getLanguageConfig() {

@@ -19,8 +19,14 @@ import java.util.Map;
 
 public class StorageCreate extends StorageCommand implements HasParentCommand, HasParams {
 
-    private CommandMessageKey noItemInHandMk = new LunaticCommandMessageKey(this, "no_item_in_hand");
-    private CommandMessageKey noBlockInHandMk = new LunaticCommandMessageKey(this, "no_block_in_hand");
+    private static final StorageCreate INSTANCE = new StorageCreate();
+
+    private static final CommandMessageKey NO_ITEM_IN_HAND_MK = new LunaticCommandMessageKey(INSTANCE, "no_item_in_hand")
+            .defaultMessage("en", "You need to hold an item in your main hand.")
+            .defaultMessage("de", "Du musst einen Gegenstand in deiner Haupt-Hand halten.");
+    private static final CommandMessageKey NO_BLOCK_IN_HAND_MK = new LunaticCommandMessageKey(INSTANCE, "no_block_in_hand")
+            .defaultMessage("en", "You need to hold a block in your main hand.")
+            .defaultMessage("de", "Du musst einen Block in deiner Haupt-Hand halten.");
 
     @Override
     public Command getParentCommand() {
@@ -75,7 +81,7 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
         Player p = Bukkit.getPlayer(player.getUniqueId());
 
         if (!player.hasItemInMainHand()) {
-            sender.sendMessage(getMessage(noItemInHandMk));
+            sender.sendMessage(getMessage(NO_ITEM_IN_HAND_MK));
             return true;
         }
 
@@ -95,7 +101,7 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
             }
 
             if (!item.getType().isBlock()) {
-                sender.sendMessage(getMessage(noBlockInHandMk));
+                sender.sendMessage(getMessage(NO_BLOCK_IN_HAND_MK));
                 return true;
             }
 
@@ -155,11 +161,9 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
     }
 
     @Override
-    public List<Component> getParamsNames() {
+    public List<MessageKey> getParamsNames() {
         return List.of(
-                Component.text("panel"),
-                Component.text("rangeitem"),
-                Component.text("storageitem")
+                TYPE_MK
         );
     }
 }
