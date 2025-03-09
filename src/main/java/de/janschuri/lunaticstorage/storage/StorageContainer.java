@@ -109,8 +109,6 @@ public class StorageContainer {
         Map<ItemStack, Integer> oldItemsCopy = new HashMap<>(oldItems);
         Map<ItemStack, Integer> newItemsCopy = new HashMap<>(newItems);
 
-        Logger.debugLog("Old items: " + oldItems);
-
         for (ItemStack oldItem : oldItems.keySet()) {
             for (ItemStack newItem : newItems.keySet()) {
                 if (oldItem.isSimilar(newItem)) {

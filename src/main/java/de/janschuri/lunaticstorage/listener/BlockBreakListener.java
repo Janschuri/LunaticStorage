@@ -39,9 +39,7 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if ((Utils.isPanel(block) || Utils.isStorageContainer(block)) && LunaticStorage.isDebug()) {
-            Logger.debugLog("Panel block broken");
             if (!player.isSneaking()) {
-                Logger.debugLog("Player is not sneaking");
                 event.setCancelled(true);
             }
 
@@ -61,8 +59,6 @@ public class BlockBreakListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockDropMonitor(BlockDropItemEvent event) {
         if (dropEvents.containsKey(event)) {
-            Logger.debugLog("New Item List: " + event.getItems());
-            Logger.debugLog("Old Item List: " + dropEvents.get(event));
 
             List<Item> oldItems = dropEvents.get(event);
             List<Item> newItems = event.getItems();
@@ -73,11 +69,7 @@ public class BlockBreakListener implements Listener {
                 }
             }
 
-            Logger.debugLog("New Item List: " + event.getItems());
-
-
             dropEvents.remove(event);
-            Logger.debugLog("BlockDropItemEvent removed");
             return;
         }
     }
