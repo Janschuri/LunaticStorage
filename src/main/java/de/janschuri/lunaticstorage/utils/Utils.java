@@ -359,7 +359,6 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
                     ItemStack key = entry.getKey();
                     if (key.isSimilar(itemStack)) {
                         int amount = entry.getValue() + itemStack.getAmount();
-                        Logger.infoLog("Amount: " + amount);
                         itemStackMap.put(key, amount * (inverse ? -1 : 1));
 
                         found = true;
