@@ -76,7 +76,6 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockDrop(BlockDropItemEvent event) {
-        Logger.debugLog("BlockDropItemEvent");
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -131,8 +130,6 @@ public class BlockBreakListener implements Listener {
             dataContainer.remove(Key.PANEL_BLOCK);
             dataContainer.remove(Key.PANEL_RANGE);
             dataContainer.remove(Key.RANGE_ITEM);
-
-            Logger.debugLog("Items: " + newItems);
 
             event.getItems().addAll(newItems);
 

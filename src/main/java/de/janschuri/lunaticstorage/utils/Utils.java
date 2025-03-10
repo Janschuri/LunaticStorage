@@ -222,6 +222,10 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
+        if (!container.has(Key.RANGE, PersistentDataType.LONG)) {
+            return 0;
+        }
+
         return container.get(Key.RANGE, PersistentDataType.LONG);
     }
 

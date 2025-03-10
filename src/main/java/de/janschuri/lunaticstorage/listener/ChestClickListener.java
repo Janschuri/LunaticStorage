@@ -37,7 +37,6 @@ public class ChestClickListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
 
         if (EventUtils.isFakeEvent(event)) {
-            Logger.debugLog("Ignoring fake event");
             return;
         }
 

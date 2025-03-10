@@ -50,10 +50,6 @@ public class Storage {
 
         Storage storage = new Storage(block);
 
-        if (storage == null) {
-            storage = new Storage(block);
-        }
-
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
             ItemStack newStorageItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
@@ -74,8 +70,6 @@ public class Storage {
                 }
             }
 
-            storageItems.put(block, newStorageItem);
-
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack newRangeItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
@@ -93,10 +87,13 @@ public class Storage {
                     }
                 }
 
-                rangeItems.put(block, newRangeItem);
+                if (update) {
+                    rangeItems.put(block, newRangeItem);
+                }
             }
 
             if (update) {
+                storageItems.put(block, newStorageItem);
                 storage.loadStorage();
             }
         }
@@ -341,6 +338,8 @@ public class Storage {
         getStorageMap().clear();
         getItemsContainers().clear();
         getEmptyContainers().clear();
+        getPreferredContainers().clear();
+        getPreferredContainersByMaterial().clear();
 
         int loadedContainers = 0;
         int totalContainers = 0;
@@ -512,8 +511,6 @@ public class Storage {
         itemKey.setAmount(1);
 
         List<StorageContainer> invalidContainers = new ArrayList<>();
-
-        Logger.debugLog(getPreferredContainers().toString());
 
         List<StorageContainer> preferredContainers = new ArrayList<>();
         if (getPreferredContainers().get(itemKey) != null) {
