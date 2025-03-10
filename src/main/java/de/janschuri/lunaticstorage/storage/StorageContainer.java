@@ -259,12 +259,28 @@ public class StorageContainer {
 
     public void addToWhitelist(ItemStack item, boolean matchNBT) {
         Map<ItemStack, Boolean> whitelist = getWhitelist();
+        ItemStack itemKey = item.clone();
+        itemKey.setAmount(1);
 
-        if (whitelist.containsKey(item)) {
-            return;
+        whitelist.put(itemKey, matchNBT);
+
+        List<Block> storageIds = getStorageIds();
+        if (matchNBT) {
+            for (Block storageId : storageIds) {
+                Storage storage = Storage.getStorage(storageId);
+                if (storage != null) {
+                    storage.addPreferredContainer(this, itemKey);
+                }
+            }
+        } else {
+            for (Block storageId : storageIds) {
+                Storage storage = Storage.getStorage(storageId);
+                if (storage != null) {
+                    storage.addPreferredContainer(this, itemKey.getType());
+                }
+            }
         }
 
-        whitelist.put(item, matchNBT);
         setWhitelist(whitelist);
     }
 
