@@ -40,7 +40,7 @@ public final class LunaticStorage extends JavaPlugin {
 
         loadConfig();
 
-        int pluginId = 21912;
+        int pluginId = 24545;
         Metrics metrics = new Metrics(this, pluginId);
 
         new PlatformImpl().registerCommand(this, new Storage());
