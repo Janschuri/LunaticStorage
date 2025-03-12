@@ -32,25 +32,35 @@ public class StorageGUI
 {
 
     private static final MessageKey STORAGE_FULL_MK = new LunaticMessageKey("storage_full")
-            .defaultMessage("The storage is full.");
+            .defaultMessage("en", "The storage is full.")
+            .defaultMessage("de", "Der Speicher ist voll.");
     private static final MessageKey AMOUNT_MK = new LunaticMessageKey("amount")
-            .defaultMessage("Amount: %amount%");
+            .defaultMessage("en", "Amount: %amount%")
+            .defaultMessage("de", "Menge: %amount%");
     private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
-            .defaultMessage("Page %page%/%pages%");
+            .defaultMessage("en", "Page %page%/%pages%")
+            .defaultMessage("de", "Seite %page%/%pages%");
     private static final MessageKey TOTAL_ITEMS_MK = new LunaticMessageKey("total_items")
-            .defaultMessage("Total Items: %amount%");
+            .defaultMessage("en", "Total Items: %amount%")
+            .defaultMessage("de", "Gesamtanzahl der Gegenstände: %amount%");
     private static final MessageKey LOADED_CONTAINERS_MK = new LunaticMessageKey("loaded_containers")
-            .defaultMessage("Loaded Containers: %amount%");
+            .defaultMessage("en", "Loaded Containers: %amount%")
+            .defaultMessage("de", "Geladene Container: %amount%");
     private static final MessageKey TOTAL_CONTAINERS_MK = new LunaticMessageKey("total_containers")
-            .defaultMessage("Total Containers: %amount%");
+            .defaultMessage("en", "Total Containers: %amount%")
+            .defaultMessage("de", "Gesamtanzahl der Container: %amount%");
     private static final MessageKey RANGE_MK = new LunaticMessageKey("range")
-            .defaultMessage("Range: %range%");
+            .defaultMessage("en", "Range: %range%")
+            .defaultMessage("de", "Reichweite: %range%");
     private static final MessageKey STORAGE_GUI_TITLE_MK = new LunaticMessageKey("storage_gui_title")
-            .defaultMessage("Storage GUI");
+            .defaultMessage("en", "Storage GUI")
+            .defaultMessage("de", "Lager GUI");
     private static final MessageKey SORT_AFTER_NAME_MK = new LunaticMessageKey("sort_after_name")
-            .defaultMessage("Sort after Name");
+            .defaultMessage("en", "Sort after Name")
+            .defaultMessage("de", "Sortieren nach Name");
     private static final MessageKey SORT_AFTER_AMOUNT_MK = new LunaticMessageKey("sort_after_amount")
-            .defaultMessage("Sort after Amount");
+            .defaultMessage("en", "Sort after Amount")
+            .defaultMessage("de", "Sortieren nach Menge");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();

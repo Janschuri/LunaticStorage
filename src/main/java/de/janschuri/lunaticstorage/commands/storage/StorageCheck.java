@@ -17,11 +17,14 @@ import java.util.Map;
 public class StorageCheck extends StorageCommand implements HasParentCommand {
 
     private final MessageKey rangeItemMK = new LunaticCommandMessageKey(this, "range_item")
-            .defaultMessage("The range of this rangeitem is: %range%");
+            .defaultMessage("en", "The range of this rangeitem is: %range%")
+            .defaultMessage("de", "Die Reichweite dieses Rangeitems ist: %range%");
     private final MessageKey panelMK = new LunaticCommandMessageKey(this, "panel")
-            .defaultMessage("The range of this panel is: %range%");
+            .defaultMessage("en", "The range of this panel is: %range%")
+            .defaultMessage("de", "Die Reichweite dieses Panels ist: %range%");
     private final MessageKey wrongItemMK = new LunaticCommandMessageKey(this, "wrong_item")
-            .defaultMessage("You have to hold a storageitem, rangeitem or a panel in your hand.");
+            .defaultMessage("en", "You have to hold a storageitem, rangeitem or a panel in your hand.")
+            .defaultMessage("de", "Du musst ein Storageitem, Rangeitem oder ein Panel in der Hand halten.");
 
     @Override
     public Command getParentCommand() {

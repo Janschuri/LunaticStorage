@@ -34,41 +34,59 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
     private final static Map<Integer, Integer> blacklistPages = new HashMap<>();
 
     public static final MessageKey PAGE_MK = new LunaticMessageKey("page")
-            .defaultMessage("Page: %page%/%pages%");
+            .defaultMessage("en", "Page: %page%/%pages%")
+            .defaultMessage("de", "Seite: %page%/%pages%");
     public static final MessageKey WHITELIST_MODE_MK = new LunaticMessageKey("whitelist_mode")
-            .defaultMessage("§aWhitelist Mode");
+            .defaultMessage("en", "&aWhitelist Mode")
+            .defaultMessage("de", "&aWhitelist-Modus");
     public static final MessageKey BLACKLIST_MODE_MK = new LunaticMessageKey("blacklist_mode")
-            .defaultMessage("§cBlacklist Mode");
+            .defaultMessage("en", "&cBlacklist Mode")
+            .defaultMessage("de", "&cBlacklist-Modus");
     public static final MessageKey MATCH_NBT_MK = new LunaticMessageKey("match_nbt")
-            .defaultMessage("§eMatch NBT");
+            .defaultMessage("en", "&eMatch NBT")
+            .defaultMessage("de", "&eNBT abgleichen");
     public static final MessageKey YES_MK = new LunaticMessageKey("yes")
-            .defaultMessage("§aYes");
+            .defaultMessage("en", "&aYes")
+            .defaultMessage("de", "&aJa");
     public static final MessageKey NO_MK = new LunaticMessageKey("no")
-            .defaultMessage("§cNo");
+            .defaultMessage("en", "&cNo")
+            .defaultMessage("de", "&cNein");
     public static final MessageKey ADD_CONTAINERS_INV_TO_WHITELIST_MK = new LunaticMessageKey("add_containers_inv_to_whitelist")
-            .defaultMessage("§aAdd containers inventory to whitelist");
+            .defaultMessage("en", "&aAdd containers inventory to whitelist")
+            .defaultMessage("de", "&aInventar des Containers zur Whitelist hinzufügen");
     public static final MessageKey CLEAR_WHITELIST_MK = new LunaticMessageKey("clear_whitelist")
-            .defaultMessage("§aClear whitelist");
+            .defaultMessage("en", "&aClear whitelist")
+            .defaultMessage("de", "&aWhitelist leeren");
     public static final MessageKey CLEAR_BLACKLIST_MK = new LunaticMessageKey("clear_blacklist")
-            .defaultMessage("§cClear blacklist");
+            .defaultMessage("en", "&cClear blacklist")
+            .defaultMessage("de", "&cBlacklist leeren");
     public static final MessageKey TOGGLE_WHITELIST_MK = new LunaticMessageKey("toggle_whitelist")
-            .defaultMessage("§aToggle whitelist");
+            .defaultMessage("en", "&aToggle whitelist")
+            .defaultMessage("de", "&aWhitelist umschalten");
     public static final MessageKey TOGGLE_BLACKLIST_MK = new LunaticMessageKey("toggle_blacklist")
-            .defaultMessage("§cToggle blacklist");
+            .defaultMessage("en", "&cToggle blacklist")
+            .defaultMessage("de", "&cBlacklist umschalten");
     public static final MessageKey ADD_ITEM_TO_WHITELIST_MK = new LunaticMessageKey("add_item_to_whitelist")
-            .defaultMessage("§aAdd item to whitelist");
+            .defaultMessage("en", "&aAdd item to whitelist")
+            .defaultMessage("de", "&aItem zur Whitelist hinzufügen");
     public static final MessageKey ADD_ITEM_TO_BLACKLIST_MK = new LunaticMessageKey("add_item_to_blacklist")
-            .defaultMessage("§cAdd item to blacklist");
+            .defaultMessage("en", "&cAdd item to blacklist")
+            .defaultMessage("de", "&cItem zur Blacklist hinzufügen");
     public static final MessageKey WHITELIST_ENABLED_MK = new LunaticMessageKey("whitelist_enabled")
-            .defaultMessage("§aWhitelist is enabled");
+            .defaultMessage("en", "&aWhitelist is enabled")
+            .defaultMessage("de", "&aWhitelist ist aktiviert");
     public static final MessageKey WHITELIST_DISABLED_MK = new LunaticMessageKey("whitelist_disabled")
-            .defaultMessage("§cWhitelist is disabled");
+            .defaultMessage("en", "&cWhitelist is disabled")
+            .defaultMessage("de", "&cWhitelist ist deaktiviert");
     public static final MessageKey BLACKLIST_ENABLED_MK = new LunaticMessageKey("blacklist_enabled")
-            .defaultMessage("§aBlacklist is enabled");
+            .defaultMessage("en", "&aBlacklist is enabled")
+            .defaultMessage("de", "&aBlacklist ist aktiviert");
     public static final MessageKey BLACKLIST_DISABLED_MK = new LunaticMessageKey("blacklist_disabled")
-            .defaultMessage("§cBlacklist is disabled");
+            .defaultMessage("en", "&cBlacklist is disabled")
+            .defaultMessage("de", "&cBlacklist ist deaktiviert");
     public static final MessageKey CONTAINER_GUI_TITLE_MK = new LunaticMessageKey("container_gui_title")
-            .defaultMessage("§6Container GUI");
+            .defaultMessage("en", "&6Container GUI")
+            .defaultMessage("de", "&6Container GUI");
 
     private static final Map<Block, Map<UUID, Integer>> playerContainerGUIs = new HashMap<>();
 
@@ -168,11 +186,6 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
                     setWhitelist(!isWhitelist());
                     reloadGui();
                 });
-    }
-
-    private InventoryButton createAirButton() {
-        return new InventoryButton()
-                .creator(player -> new ItemStack(Material.AIR));
     }
 
     private InventoryButton createGrayPaneButton() {
@@ -374,5 +387,10 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
         } else {
             setBlacklistPage(i);
         }
+    }
+
+    @Override
+    public String getDefaultTitle() {
+        return getString(CONTAINER_GUI_TITLE_MK);
     }
 }

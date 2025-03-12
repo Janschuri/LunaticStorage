@@ -17,7 +17,8 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
 
 
     private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
-            .defaultMessage("Page %page%/%pages%");
+            .defaultMessage("en", "Page %page%/%pages%")
+            .defaultMessage("de", "Seite %page%/%pages%");
 
     @Override
     public List<Command> getSubcommands() {
