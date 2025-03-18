@@ -222,6 +222,10 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
 
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer container = meta.getPersistentDataContainer();
+        if (!container.has(Key.RANGE, PersistentDataType.LONG)) {
+            return 0;
+        }
+
         return container.get(Key.RANGE, PersistentDataType.LONG);
     }
 
@@ -359,7 +363,6 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
                     ItemStack key = entry.getKey();
                     if (key.isSimilar(itemStack)) {
                         int amount = entry.getValue() + itemStack.getAmount();
-                        Logger.infoLog("Amount: " + amount);
                         itemStackMap.put(key, amount * (inverse ? -1 : 1));
 
                         found = true;

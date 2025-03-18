@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.gui;
 import de.janschuri.lunaticlib.CommandMessageKey;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.PlayerSender;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.DecisionGUI;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
@@ -29,35 +30,45 @@ import static de.janschuri.lunaticstorage.LunaticStorage.getMessageAsLegacyStrin
 public class ContainerListGUI extends ListGUI<StorageContainer> implements PaginatedList<StorageContainer> {
 
 
-    private final MessageKey confirmMK = new MessageKey("remove_container_confirm")
-            .defaultMessage("§cAre you sure you want to remove the container from the storageitem?");
+    private final MessageKey confirmMK = new LunaticMessageKey("remove_container_confirm")
+            .defaultMessage("en", "&cAre you sure you want to remove the container from the storageitem?")
+            .defaultMessage("de", "&cBist du dir sicher, dass du den Container vom Storageitem entfernen willst?");
 
-    private final MessageKey cancelMK = new MessageKey("remove_container_cancel")
-            .defaultMessage("§cCancelled removing the container from the storageitem.");
+    private final MessageKey cancelMK = new LunaticMessageKey("remove_container_cancel")
+            .defaultMessage("en", "&cCancelled removing the container from the storageitem.")
+            .defaultMessage("de", "&cAbbrechen des Entfernens des Containers vom Storageitem.");
 
-    private final MessageKey removedMK = new MessageKey("container_removed")
-            .defaultMessage("§aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%");
+    private final MessageKey removedMK = new LunaticMessageKey("container_removed")
+            .defaultMessage("en", "&aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%")
+            .defaultMessage("de", "&aContainer erfolgreich vom Storageitem in %world% bei %x% %y% %z% entfernt.");
 
-    private final MessageKey guiTitleMK = new MessageKey("remove_container_gui_title")
-            .defaultMessage("§eRemove Container");
+    private final MessageKey guiTitleMK = new LunaticMessageKey("remove_container_gui_title")
+            .defaultMessage("en", "&eRemove Container")
+            .defaultMessage("de", "&eContainer entfernen");
 
-    private final MessageKey rightClickMK = new MessageKey("right_click")
-            .defaultMessage("Right click");
+    private final MessageKey rightClickMK = new LunaticMessageKey("right_click")
+            .defaultMessage("en", "Right click")
+            .defaultMessage("de", "Rechtsklick");
 
-    private final MessageKey shiftRightClickMK = new MessageKey("shift_right_click")
-            .defaultMessage("Shift right click");
+    private final MessageKey shiftRightClickMK = new LunaticMessageKey("shift_right_click")
+            .defaultMessage("en", "Shift right click")
+            .defaultMessage("de", "Shift-Rechtsklick");
 
-    private final MessageKey leftClickMK = new MessageKey("left_click")
-            .defaultMessage("Left click");
+    private final MessageKey leftClickMK = new LunaticMessageKey("left_click")
+            .defaultMessage("en", "Left click")
+            .defaultMessage("de", "Linksklick");
 
-    private final MessageKey shiftLeftClickMK = new MessageKey("shift_left_click")
-            .defaultMessage("Shift left click");
+    private final MessageKey shiftLeftClickMK = new LunaticMessageKey("shift_left_click")
+            .defaultMessage("en", "Shift left click")
+            .defaultMessage("de", "Shift-Linksklick");
 
-    private final MessageKey showContainerMK = new MessageKey("show_container")
-            .defaultMessage("Show container");
+    private final MessageKey showContainerMK = new LunaticMessageKey("show_container")
+            .defaultMessage("en", "Show container")
+            .defaultMessage("de", "Container anzeigen");
 
-    private final MessageKey removeContainerMK = new MessageKey("remove_container")
-            .defaultMessage("Remove container");
+    private final MessageKey removeContainerMK = new LunaticMessageKey("remove_container")
+            .defaultMessage("en", "Remove container")
+            .defaultMessage("de", "Container entfernen");
 
 
 
@@ -78,14 +89,14 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
 
         String coordinates = block.getX() + " " + block.getY() + " " + block.getZ();
 
-        itemMeta.setDisplayName("§eContainer");
+        itemMeta.setDisplayName("&eContainer");
 
         List<String> lore = List.of(
-                "§7Coordinates: " + coordinates,
-                "§7World: " + block.getWorld().getName(),
+                "&7Coordinates: " + coordinates,
+                "&7World: " + block.getWorld().getName(),
                 "",
-                "§e§l" + getMessageAsLegacyString(rightClickMK) + " §r§8- " + getMessageAsLegacyString(showContainerMK),
-                "§4§l" + getMessageAsLegacyString(shiftRightClickMK) + " §r§8- " + getMessageAsLegacyString(removeContainerMK)
+                "&e&l" + getMessageAsLegacyString(rightClickMK) + " &r&8- " + getMessageAsLegacyString(showContainerMK),
+                "&4&l" + getMessageAsLegacyString(shiftRightClickMK) + " &r&8- " + getMessageAsLegacyString(removeContainerMK)
         );
 
         itemMeta.setLore(lore);
@@ -106,11 +117,11 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
                                     try {
                                         LunaticStorage.getGlowingBlocks().unsetGlowing(storageContainer.getBlock(), player);
                                     } catch (ReflectiveOperationException e) {
-                                        player.sendMessage("§cAn error occurred while trying to highlight the container.");
+                                        player.sendMessage("&cAn error occurred while trying to highlight the container.");
                                     }
                                 }, 20 * 30);
                             } catch (ReflectiveOperationException e) {
-                                player.sendMessage("§cAn error occurred while trying to highlight the container.");
+                                player.sendMessage("&cAn error occurred while trying to highlight the container.");
                             }
                         } else {
                             player.closeInventory();
@@ -120,11 +131,11 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
                                         Utils.removeContainerFromStorageItem(storageContainer, storageItem);
                                         player.sendMessage(
                                                 getMessage(
-                                                        removedMK
-                                                                .placeholder("world", block.getWorld().getName())
-                                                                .placeholder("x", String.valueOf(block.getX()))
-                                                                .placeholder("y", String.valueOf(block.getY()))
-                                                                .placeholder("z", String.valueOf(block.getZ()))
+                                                        removedMK,
+                                                                placeholder("%world%", block.getWorld().getName()),
+                                                                placeholder("%x%", String.valueOf(block.getX())),
+                                                                placeholder("%y%", String.valueOf(block.getY())),
+                                                                placeholder("%z%", String.valueOf(block.getZ()))
                                                 )
                                         );
 

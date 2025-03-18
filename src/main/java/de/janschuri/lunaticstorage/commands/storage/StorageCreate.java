@@ -1,8 +1,11 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.*;
+import de.janschuri.lunaticlib.common.command.HasParams;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.storage.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -14,13 +17,19 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
-public class StorageCreate extends Subcommand {
+public class StorageCreate extends StorageCommand implements HasParentCommand, HasParams {
 
-    private CommandMessageKey noItemInHandMk = new CommandMessageKey(this, "no_item_in_hand");
-    private CommandMessageKey noBlockInHandMk = new CommandMessageKey(this, "no_block_in_hand");
+    private static final StorageCreate INSTANCE = new StorageCreate();
+
+    private static final CommandMessageKey NO_ITEM_IN_HAND_MK = new LunaticCommandMessageKey(INSTANCE, "no_item_in_hand")
+            .defaultMessage("en", "You need to hold an item in your main hand.")
+            .defaultMessage("de", "Du musst einen Gegenstand in deiner Haupt-Hand halten.");
+    private static final CommandMessageKey NO_BLOCK_IN_HAND_MK = new LunaticCommandMessageKey(INSTANCE, "no_block_in_hand")
+            .defaultMessage("en", "You need to hold a block in your main hand.")
+            .defaultMessage("de", "Du musst einen Block in deiner Haupt-Hand halten.");
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -72,7 +81,7 @@ public class StorageCreate extends Subcommand {
         Player p = Bukkit.getPlayer(player.getUniqueId());
 
         if (!player.hasItemInMainHand()) {
-            sender.sendMessage(getMessage(noItemInHandMk));
+            sender.sendMessage(getMessage(NO_ITEM_IN_HAND_MK));
             return true;
         }
 
@@ -92,7 +101,7 @@ public class StorageCreate extends Subcommand {
             }
 
             if (!item.getType().isBlock()) {
-                sender.sendMessage(getMessage(noBlockInHandMk));
+                sender.sendMessage(getMessage(NO_BLOCK_IN_HAND_MK));
                 return true;
             }
 
@@ -104,6 +113,11 @@ public class StorageCreate extends Subcommand {
 
 
             return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 
     private ItemStack createStorageItem(ItemStack item) {
@@ -147,11 +161,9 @@ public class StorageCreate extends Subcommand {
     }
 
     @Override
-    public List<Component> getParamsNames() {
+    public List<MessageKey> getParamsNames() {
         return List.of(
-                Component.text("panel"),
-                Component.text("rangeitem"),
-                Component.text("storageitem")
+                TYPE_MK
         );
     }
 }

@@ -1,23 +1,27 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
+import de.janschuri.lunaticlib.Command;
 import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.LunaticCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
+import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticstorage.commands.Subcommand;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.gui.ContainerGUI;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-public class StorageContainer extends Subcommand {
+import java.util.Map;
 
-    private final CommandMessageKey notContainerMK = new CommandMessageKey(this, "not_container");
+public class StorageContainer extends StorageCommand implements HasParentCommand {
+
+    private final CommandMessageKey notContainerMK = new LunaticCommandMessageKey(this, "not_container");
 
     @Override
-    public LunaticCommand getParentCommand() {
+    public Command getParentCommand() {
         return new Storage();
     }
 
@@ -61,5 +65,10 @@ public class StorageContainer extends Subcommand {
 
         GUIManager.openGUI(ContainerGUI.getContainerGUI(player, container), player);
         return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
     }
 }

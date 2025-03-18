@@ -1,16 +1,27 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
+import de.janschuri.lunaticlib.Command;
+import de.janschuri.lunaticlib.CommandMessageKey;
+import de.janschuri.lunaticlib.MessageKey;
+import de.janschuri.lunaticlib.common.command.HasHelpCommand;
+import de.janschuri.lunaticlib.common.command.HasSubcommands;
 import de.janschuri.lunaticlib.common.command.LunaticHelpCommand;
-import de.janschuri.lunaticstorage.commands.Subcommand;
-import de.janschuri.lunaticlib.LunaticCommand;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
+import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticlib.Sender;
 
 import java.util.List;
+import java.util.Map;
 
-public class Storage extends Subcommand {
+public class Storage extends StorageCommand implements HasSubcommands, HasHelpCommand {
+
+
+    private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
+            .defaultMessage("en", "Page %page%/%pages%")
+            .defaultMessage("de", "Seite %page%/%pages%");
 
     @Override
-    public List<LunaticCommand> getSubcommands() {
+    public List<Command> getSubcommands() {
         return List.of(
             new StorageRandom(),
             new StorageReload(),
@@ -24,7 +35,17 @@ public class Storage extends Subcommand {
 
     @Override
     public LunaticHelpCommand getHelpCommand() {
-        return new LunaticHelpCommand(getLanguageConfig(), this);
+        return new LunaticHelpCommand(this);
+    }
+
+    @Override
+    public MessageKey pageParamName() {
+        return PAGE_MK;
+    }
+
+    @Override
+    public MessageKey getHelpHeader() {
+        return null;
     }
 
     @Override
@@ -50,7 +71,7 @@ public class Storage extends Subcommand {
 
         final String subcommand = args[0];
 
-        for (LunaticCommand sc : getSubcommands()) {
+        for (Command sc : getSubcommands()) {
             if (checkIsSubcommand(sc, subcommand)) {
                 String[] newArgs = new String[args.length - 1];
                 System.arraycopy(args, 1, newArgs, 0, args.length - 1);
@@ -60,6 +81,16 @@ public class Storage extends Subcommand {
         getHelpCommand().execute(sender, new String[0]);
 
 
+        return true;
+    }
+
+    @Override
+    public Map<CommandMessageKey, String> getHelpMessages() {
+        return Map.of();
+    }
+
+    @Override
+    public boolean isPrimaryCommand() {
         return true;
     }
 }

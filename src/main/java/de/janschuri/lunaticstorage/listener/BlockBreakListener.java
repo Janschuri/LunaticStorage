@@ -39,9 +39,7 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if ((Utils.isPanel(block) || Utils.isStorageContainer(block)) && LunaticStorage.isDebug()) {
-            Logger.debugLog("Panel block broken");
             if (!player.isSneaking()) {
-                Logger.debugLog("Player is not sneaking");
                 event.setCancelled(true);
             }
 
@@ -50,6 +48,8 @@ public class BlockBreakListener implements Listener {
 
                 Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
 
+                storageContainer.clearWhitelist();
+                storageContainer.clearBlacklist();
                 storageContainer.updateStorages(difference);
                 storageContainer.unload();
             }
@@ -59,8 +59,6 @@ public class BlockBreakListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockDropMonitor(BlockDropItemEvent event) {
         if (dropEvents.containsKey(event)) {
-            Logger.debugLog("New Item List: " + event.getItems());
-            Logger.debugLog("Old Item List: " + dropEvents.get(event));
 
             List<Item> oldItems = dropEvents.get(event);
             List<Item> newItems = event.getItems();
@@ -71,18 +69,13 @@ public class BlockBreakListener implements Listener {
                 }
             }
 
-            Logger.debugLog("New Item List: " + event.getItems());
-
-
             dropEvents.remove(event);
-            Logger.debugLog("BlockDropItemEvent removed");
             return;
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockDrop(BlockDropItemEvent event) {
-        Logger.debugLog("BlockDropItemEvent");
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
@@ -137,8 +130,6 @@ public class BlockBreakListener implements Listener {
             dataContainer.remove(Key.PANEL_BLOCK);
             dataContainer.remove(Key.PANEL_RANGE);
             dataContainer.remove(Key.RANGE_ITEM);
-
-            Logger.debugLog("Items: " + newItems);
 
             event.getItems().addAll(newItems);
 

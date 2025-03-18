@@ -6,6 +6,7 @@ import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
@@ -107,8 +108,6 @@ public class StorageContainer {
 
         Map<ItemStack, Integer> oldItemsCopy = new HashMap<>(oldItems);
         Map<ItemStack, Integer> newItemsCopy = new HashMap<>(newItems);
-
-        Logger.debugLog("Old items: " + oldItems);
 
         for (ItemStack oldItem : oldItems.keySet()) {
             for (ItemStack newItem : newItems.keySet()) {
@@ -260,12 +259,28 @@ public class StorageContainer {
 
     public void addToWhitelist(ItemStack item, boolean matchNBT) {
         Map<ItemStack, Boolean> whitelist = getWhitelist();
+        ItemStack itemKey = item.clone();
+        itemKey.setAmount(1);
 
-        if (whitelist.containsKey(item)) {
-            return;
+        whitelist.put(itemKey, matchNBT);
+
+        List<Block> storageIds = getStorageIds();
+        if (matchNBT) {
+            for (Block storageId : storageIds) {
+                Storage storage = Storage.getStorage(storageId);
+                if (storage != null) {
+                    storage.addPreferredContainer(this, itemKey);
+                }
+            }
+        } else {
+            for (Block storageId : storageIds) {
+                Storage storage = Storage.getStorage(storageId);
+                if (storage != null) {
+                    storage.addPreferredContainer(this, itemKey.getType());
+                }
+            }
         }
 
-        whitelist.put(item, matchNBT);
         setWhitelist(whitelist);
     }
 
@@ -405,6 +420,19 @@ public class StorageContainer {
                 }
             }
         }
+    }
+
+    public boolean isOnWhitelist(ItemStack item) {
+        return getWhitelist().containsKey(item) && getWhitelist().get(item);
+    }
+
+    public boolean isOnWhitelist(Material item) {
+        for (Map.Entry<ItemStack, Boolean> entry : getWhitelist().entrySet()) {
+            if (entry.getKey().getType() == item) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clearWhitelist() {

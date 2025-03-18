@@ -26,7 +26,6 @@ public class ContainerEditListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (EventUtils.isFakeEvent(event)) {
-            Logger.debugLog("Ignoring fake event");
             return;
         }
 

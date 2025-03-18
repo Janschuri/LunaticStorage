@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
@@ -29,14 +30,13 @@ import java.util.UUID;
 
 public class ChestClickListener implements Listener {
 
-    private static final MessageKey containerAlreadyMarked = new MessageKey("container_already_marked");
-    private static final MessageKey containerMarked = new MessageKey("container_marked");
+    private static final MessageKey containerAlreadyMarked = new LunaticMessageKey("container_already_marked");
+    private static final MessageKey containerMarked = new LunaticMessageKey("container_marked");
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
 
         if (EventUtils.isFakeEvent(event)) {
-            Logger.debugLog("Ignoring fake event");
             return;
         }
 
@@ -44,14 +44,23 @@ public class ChestClickListener implements Listener {
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
 
+        if (clickedBlock == null) {
+            return;
+        }
+
+        if (clickedBlock.getState() instanceof Container && Utils.isStorageContainer(clickedBlock)) {
+            try {
+                LunaticStorage.getGlowingBlocks().unsetGlowing(clickedBlock, player);
+            } catch (Exception e) {
+                Logger.errorLog("Error while unsetting glowing block");
+            }
+        }
+
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand.getType() == Material.AIR || !itemInHand.getItemMeta().getPersistentDataContainer().has(Key.STORAGE, PersistentDataType.INTEGER)) {
             return;
         }
 
-        if (clickedBlock == null) {
-            return;
-        }
 
         if (clickedBlock.getState() instanceof Container && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);

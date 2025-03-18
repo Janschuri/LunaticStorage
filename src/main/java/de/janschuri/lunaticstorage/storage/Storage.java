@@ -22,6 +22,8 @@ public class Storage {
 
     private static final Map<Block, Map<ItemStack, Integer>> storageMaps = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Map<Block, Boolean>>> itemsContainersMap = new HashMap<>();
+    private static final Map<Block, Map<ItemStack, List<StorageContainer>>> preferredContainersMap = new HashMap<>();
+    private static final Map<Block, Map<Material, List<StorageContainer>>> preferredContainersMapByMaterial = new HashMap<>();
     private static final Map<Block, List<Block>> emptyContainersMap = new HashMap<>();
     private static final Map<Block, ItemStack> storageItems = new HashMap<>();
     private static final Map<Block, ItemStack> rangeItems = new HashMap<>();
@@ -40,62 +42,63 @@ public class Storage {
         rangeItems.computeIfAbsent(this.block, k -> null);
         storageLoadedContainerAmounts.computeIfAbsent(this.block, k -> 0);
         storageContainerAmounts.computeIfAbsent(this.block, k -> 0);
+        preferredContainersMap.computeIfAbsent(this.block, k -> new HashMap<>());
+        preferredContainersMapByMaterial.computeIfAbsent(this.block, k -> new HashMap<>());
     }
 
     public static Storage getStorage(Block block) {
 
         Storage storage = new Storage(block);
 
-            PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-            if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack storageItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
+            ItemStack newStorageItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
-                boolean update = false;
+            boolean update = false;
 
-                if (storageItems.get(block) == null) {
-                    if (storageItem != null) {
-                        Logger.debugLog("Storage item added");
+            if (storage.getStorageItem() == null) {
+                if (newStorageItem != null) {
+                    update = true;
+                }
+            } else {
+                if (newStorageItem == null) {
+                    update = true;
+                } else {
+                    if (!storage.getStorageItem().isSimilar(newStorageItem)) {
+                        update = true;
+                    }
+                }
+            }
+
+            if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
+                ItemStack newRangeItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
+
+                if (storage.getRangeItem() == null) {
+                    if (newRangeItem != null) {
                         update = true;
                     }
                 } else {
-                    if (storageItem == null) {
-                        Logger.debugLog("Storage item removed");
+                    if (newRangeItem == null) {
                         update = true;
                     } else {
-                        if (!storageItems.get(block).isSimilar(storageItem)) {
-                            Logger.debugLog("Storage item changed");
+                        if (!storage.getRangeItem().isSimilar(newRangeItem)) {
                             update = true;
-                        }
-                    }
-                }
-
-                if (dataContainer.has(Key.RANGE, PersistentDataType.BYTE_ARRAY)) {
-                    ItemStack rangeItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE, PersistentDataType.BYTE_ARRAY));
-                    if (rangeItems.get(block) == null) {
-                        if (rangeItem != null) {
-                            Logger.debugLog("Range item added");
-                            update = true;
-                        }
-                    } else {
-                        if (rangeItem == null) {
-                            Logger.debugLog("Range item removed");
-                            update = true;
-                        } else {
-                            if (!rangeItems.get(block).isSimilar(rangeItem)) {
-                                Logger.debugLog("Range item changed");
-                                update = true;
-                            }
                         }
                     }
                 }
 
                 if (update) {
-                    storageItems.put(block, storageItem);
-                    storage.loadStorage();
+                    rangeItems.put(block, newRangeItem);
                 }
             }
 
-            return storage;
+            if (update) {
+                storageItems.put(block, newStorageItem);
+                storage.loadStorage();
+            }
+        }
+
+        return storage;
     }
 
     public static void removeStorage(Block block) {
@@ -106,6 +109,24 @@ public class Storage {
         rangeItems.remove(block);
         storageLoadedContainerAmounts.remove(block);
         storageContainerAmounts.remove(block);
+        preferredContainersMap.remove(block);
+        preferredContainersMapByMaterial.remove(block);
+    }
+
+    private void setStorageContainerAmounts(int totalContainers) {
+        storageLoadedContainerAmounts.put(block, totalContainers);
+    }
+
+    private void setStorageLoadedContainerAmounts(int loadedContainers) {
+        storageContainerAmounts.put(block, loadedContainers);
+    }
+
+    private Map<ItemStack, List<StorageContainer>> getPreferredContainers() {
+        return preferredContainersMap.get(block);
+    }
+
+    private Map<Material, List<StorageContainer>> getPreferredContainersByMaterial() {
+        return preferredContainersMapByMaterial.get(block);
     }
 
     public ItemStack getStorageItem() {
@@ -120,16 +141,8 @@ public class Storage {
         return storageContainerAmounts.get(block);
     }
 
-    private void setContainersAmount(int amount) {
-        storageContainerAmounts.put(block, amount);
-    }
-
     public int getLoadedContainersAmount() {
         return storageLoadedContainerAmounts.get(block);
-    }
-
-    private void setLoadedContainersAmount(int amount) {
-        storageLoadedContainerAmounts.put(block, amount);
     }
 
     public Map<ItemStack, Integer> getStorageMap() {
@@ -145,7 +158,6 @@ public class Storage {
     }
 
     public void setStorageItem(ItemStack item) {
-        storageItems.put(block, item);
         boolean update = false;
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
@@ -167,7 +179,6 @@ public class Storage {
         saveStorageItem(item);
 
         if (update) {
-            Logger.debugLog("Storage item changed, updating storage");
             loadStorage();
         }
         StorageGUI.updateStorageGUIs(block);
@@ -185,13 +196,11 @@ public class Storage {
     }
 
     public void setRangeItem(ItemStack item) {
-        rangeItems.put(block, item);
         boolean update = false;
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         if (item == null) {
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                Logger.debugLog("Range item removed");
                 update = true;
             }
             dataContainer.remove(Key.RANGE_ITEM);
@@ -199,21 +208,30 @@ public class Storage {
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack oldItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
                 if (!oldItem.isSimilar(item)) {
-                    Logger.debugLog("Range item changed");
                     update = true;
                 }
             } else {
-                Logger.debugLog("Range item added");
                 update = true;
             }
-            dataContainer.set(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
         }
 
+        saveRangeItem(item);
+
         if (update) {
-            Logger.debugLog("Range item changed, updating storage");
             loadStorage();
         }
         StorageGUI.updateStorageGUIs(block);
+    }
+
+    private void saveRangeItem(ItemStack item) {
+        rangeItems.put(block, item);
+
+        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        if (item == null) {
+            dataContainer.remove(Key.RANGE_ITEM);
+        } else {
+            dataContainer.set(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY, ItemStackUtils.serializeItemStack(item));
+        }
     }
 
     public List<Map.Entry<ItemStack, Integer>> getStorageList() {
@@ -313,7 +331,6 @@ public class Storage {
     }
 
     public void loadStorage () {
-        Logger.debugLog("Loading storage");
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
         long itemRange = Utils.getRangeFromItem(getRangeItem());
         long panelRange = Utils.getRangeFromBlock(block);
@@ -321,13 +338,17 @@ public class Storage {
         getStorageMap().clear();
         getItemsContainers().clear();
         getEmptyContainers().clear();
+        getPreferredContainers().clear();
+        getPreferredContainersByMaterial().clear();
 
         int loadedContainers = 0;
         int totalContainers = 0;
 
+        List<StorageContainer> invalidContainers = new ArrayList<>();
+
         for (StorageContainer container : chests) {
             if (!container.isValid()) {
-                removeContainerFromStorageItem(container);
+                invalidContainers.add(container);
                 continue;
             }
             totalContainers++;
@@ -336,19 +357,18 @@ public class Storage {
                 loadedContainers++;
                 container.addStorageId(block);
                 Inventory chestInv = container.getInventory();
+
+                addContainerWhitelist(container);
+
                 addInventoryToMap(chestInv, container);
             } else {
-                Logger.debugLog("Unload storage container"
-                        + " " + container.getBlock().getLocation().getBlockX()
-                        + " " + container.getBlock().getLocation().getBlockY()
-                        + " " + container.getBlock().getLocation().getBlockZ()
-                );
                 container.removeStorageId(container.getBlock());
             }
         }
 
-        setLoadedContainersAmount(loadedContainers);
-        setContainersAmount(totalContainers);
+        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+        setStorageLoadedContainerAmounts(loadedContainers);
+        setStorageContainerAmounts(totalContainers);
     }
 
     public void updateStorage(Map<ItemStack, Integer> difference) {
@@ -360,8 +380,6 @@ public class Storage {
         if (containers.length == 0) {
             return;
         }
-
-        Logger.debugLog("Removing storage container from storage item");
 
         for (StorageContainer container : containers) {
             Utils.removeContainerFromStorageItem(container, getStorageItem());
@@ -387,7 +405,32 @@ public class Storage {
 
         List<StorageContainer> invalidContainers = new ArrayList<>();
 
-        for (StorageContainer container: nonFullstackContainers) {
+        foundItems = getFoundItems(player, searchedItem, stackSize, foundItems, invalidContainers, nonFullstackContainers);
+
+        if (foundItems != stackSize) {
+
+            List<StorageContainer> fullstackContainers = new ArrayList<>();
+
+            if (getItemsContainers().get(searchedItem) != null) {
+                fullstackContainers = getItemsContainers().get(searchedItem).entrySet().stream()
+                        .filter(Map.Entry::getValue)
+                        .map(entry -> StorageContainer.getStorageContainer(entry.getKey()))
+                        .toList();
+            }
+
+            foundItems = getFoundItems(player, searchedItem, stackSize, foundItems, invalidContainers, fullstackContainers);
+        }
+
+        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+        updateStorageMap(searchedItem, -(foundItems));
+
+        searchedItem.setAmount(foundItems);
+
+        return searchedItem;
+    }
+
+    private int getFoundItems(Player player, ItemStack searchedItem, int stackSize, int foundItems, List<StorageContainer> invalidContainers, List<StorageContainer> fullstackContainers) {
+        for (StorageContainer container : fullstackContainers) {
             if (foundItems == stackSize) {
                 break;
             }
@@ -410,6 +453,7 @@ public class Storage {
 
             for (ItemStack i : chestInv.getContents()) {
                 if (foundItems == stackSize) {
+                    updateContainer(container, searchedItem);
                     break;
                 }
                 if (i == null) {
@@ -453,115 +497,85 @@ public class Storage {
                     itemStack.setAmount(amount);
 
                     LogBlock.logChestRemove(player, block, itemStack);
-
                 }
             }
             updateContainer(container, searchedItem);
         }
-
-        if (foundItems != stackSize) {
-
-            List<StorageContainer> fullstackContainers = new ArrayList<>();
-
-            if (getItemsContainers().get(searchedItem) != null) {
-                fullstackContainers = getItemsContainers().get(searchedItem).entrySet().stream()
-                        .filter(Map.Entry::getValue)
-                        .map(entry -> StorageContainer.getStorageContainer(entry.getKey()))
-                        .toList();
-            }
-
-            for (StorageContainer container : fullstackContainers) {
-                if (foundItems == stackSize) {
-                    break;
-                }
-                if (!container.isValid()) {
-                    invalidContainers.add(container);
-                    continue;
-                }
-
-                Block block = container.getBlock();
-
-                Inventory chestInv = container.getInventory();
-
-                if (!container.isAllowedTakeItem(player)) {
-                    continue;
-                }
-
-                for (ItemStack i : chestInv.getContents()) {
-                    if (foundItems == stackSize) {
-                        updateContainer(container, searchedItem);
-                        break;
-                    }
-                    if (i == null) {
-                        continue;
-                    }
-                    if (!i.isSimilar(searchedItem)) {
-                        continue;
-                    }
-
-                    int amount = i.getAmount();
-                    int amountNeeded = stackSize - foundItems;
-
-                    if (amountNeeded < amount) {
-                        container.getInventory().removeItem(i);
-                        i.setAmount(i.getAmount() - amountNeeded);
-                        container.getInventory().addItem(i);
-                        container.update();
-                        foundItems = foundItems + amountNeeded;
-
-                        ItemStack itemStack = i.clone();
-                        itemStack.setAmount(amountNeeded);
-
-                        LogBlock.logChestRemove(player, block, itemStack);
-
-                    } else if (amountNeeded == amount) {
-                        container.getInventory().removeItem(i);
-                        container.update();
-                        foundItems = foundItems + amount;
-
-                        ItemStack itemStack = i.clone();
-                        itemStack.setAmount(amountNeeded);
-
-                        LogBlock.logChestRemove(player, block, itemStack);
-
-                    } else {
-                        container.getInventory().removeItem(i);
-                        container.update();
-                        foundItems = foundItems + amount;
-
-                        ItemStack itemStack = i.clone();
-                        itemStack.setAmount(amount);
-
-                        LogBlock.logChestRemove(player, block, itemStack);
-                    }
-                }
-                updateContainer(container, searchedItem);
-            }
-        }
-
-        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        updateStorageMap(searchedItem, -(foundItems));
-
-        searchedItem.setAmount(foundItems);
-
-        return searchedItem;
+        return foundItems;
     }
+
     public ItemStack insertItemsIntoStorage(ItemStack item, Player player) {
 
         ItemStack remainingItems = item.clone();
         ItemStack itemKey = remainingItems.clone();
         itemKey.setAmount(1);
 
-        List<StorageContainer> containers = new ArrayList<>();
-        if (getItemsContainers().get(itemKey) != null) {
-            containers = getItemsContainers().get(itemKey).entrySet().stream()
-                    .filter(entry -> !entry.getValue())
-                    .map(entry -> StorageContainer.getStorageContainer(entry.getKey()))
-                    .toList();
-        }
-
         List<StorageContainer> invalidContainers = new ArrayList<>();
 
+        List<StorageContainer> preferredContainers = new ArrayList<>();
+        if (getPreferredContainers().get(itemKey) != null) {
+            preferredContainers = getPreferredContainers().get(itemKey)
+                    .stream()
+                    .filter(storageContainer -> storageContainer.isOnWhitelist(item))
+                    .filter(StorageContainer::isValid)
+                    .toList();
+
+            getPreferredContainers().put(itemKey, preferredContainers);
+        }
+
+
+        remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, preferredContainers, invalidContainers);
+
+        if (remainingItems.getAmount() != 0) {
+            List<StorageContainer> preferredContainersByMaterial = new ArrayList<>();
+            if (getPreferredContainersByMaterial().get(itemKey.getType()) != null) {
+                preferredContainersByMaterial = getPreferredContainersByMaterial().get(itemKey.getType())
+                                .stream()
+                                .filter(storageContainer -> storageContainer.isOnWhitelist(itemKey.getType()))
+                                .filter(StorageContainer::isValid)
+                                .toList();
+
+                getPreferredContainersByMaterial().put(itemKey.getType(), preferredContainersByMaterial);
+            }
+
+            remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, preferredContainersByMaterial, invalidContainers);
+        }
+
+        if (remainingItems.getAmount() != 0) {
+            List<StorageContainer> containersWithItem = new ArrayList<>();
+            if (getItemsContainers().get(itemKey) != null) {
+                containersWithItem = getItemsContainers().get(itemKey).entrySet().stream()
+                        .filter(entry -> !entry.getValue())
+                        .map(entry -> StorageContainer.getStorageContainer(entry.getKey()))
+                        .toList();
+            }
+
+            remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, containersWithItem, invalidContainers);
+        }
+
+        if (remainingItems.getAmount() != 0 && !getEmptyContainers().isEmpty()) {
+            List<StorageContainer> emptyChests = getEmptyContainers().stream()
+                    .map(StorageContainer::getStorageContainer)
+                    .toList();
+
+            remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, emptyChests, invalidContainers);
+        }
+
+        int amount = 0;
+
+        if (remainingItems.getType() != Material.AIR) {
+            amount = item.getAmount() - remainingItems.getAmount();
+        } else {
+            amount = item.getAmount();
+        }
+
+        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+        updateStorageMap(item, amount);
+
+        return remainingItems;
+    }
+
+    private ItemStack insertAndGetOverflow(Player player, ItemStack remainingItems, ItemStack itemKey, List<StorageContainer> containers, List<StorageContainer> invalidContainers) {
         for (StorageContainer container : containers) {
             if (remainingItems.getAmount() == 0 || remainingItems.getType() == Material.AIR) {
                 break;
@@ -599,65 +613,9 @@ public class Storage {
 
             updateContainer(container, itemKey);
         }
-
-        if (remainingItems.getAmount() != 0 && !getEmptyContainers().isEmpty()) {
-
-            List<StorageContainer> emptyChests = getEmptyContainers().stream()
-                    .map(StorageContainer::getStorageContainer)
-                    .toList();
-
-            for (StorageContainer container : emptyChests) {
-                if (remainingItems.getAmount() == 0 || remainingItems.getType() == Material.AIR) {
-                    break;
-                }
-                if (!container.isValid()) {
-                    invalidContainers.add(container);
-                    continue;
-                }
-
-                if (!container.isAllowedPutItem(player, remainingItems)) {
-                    continue;
-                }
-
-                Block block = container.getBlock();
-
-                Inventory chestInv = container.getInventory();
-
-                if (!EventUtils.isAllowedPutItem(player, chestInv)) {
-                    continue;
-                }
-
-                int oldAmount = remainingItems.getAmount();
-
-                remainingItems = chestInv.addItem(remainingItems).get(0);
-                container.update();
-                if (remainingItems == null) {
-                    remainingItems = new ItemStack(Material.AIR);
-                }
-
-                int newAmount = oldAmount - remainingItems.getAmount();
-                ItemStack itemStack = remainingItems.clone();
-                itemStack.setAmount(newAmount);
-
-                LogBlock.logChestInsert(player, block, itemStack);
-
-                updateContainer(container, itemKey);
-            }
-        }
-
-        int amount = 0;
-
-        if (remainingItems.getType() != Material.AIR) {
-            amount = item.getAmount() - remainingItems.getAmount();
-        } else {
-            amount = item.getAmount();
-        }
-
-        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        updateStorageMap(item, amount);
-
         return remainingItems;
     }
+
     public void updateContainer(StorageContainer container, ItemStack... itemKeys) {
         Map<Block, Boolean> itemsChests = new HashMap<>();
         Block block = container.getBlock();
@@ -693,12 +651,57 @@ public class Storage {
                 getEmptyContainers().add(block);
             }
         }
+
+        addContainerWhitelist(container);
+    }
+
+    private void addContainerWhitelist(StorageContainer container) {
+        Map<ItemStack, Boolean> whitelist = container.getWhitelist();
+
+        if (whitelist != null) {
+            for (Map.Entry<ItemStack, Boolean> entry : whitelist.entrySet()) {
+                if (entry.getValue()) {
+                    Map<ItemStack, List<StorageContainer>> preferredContainers = getPreferredContainers();
+                    ItemStack itemKey = entry.getKey().clone();
+                    itemKey.setAmount(1);
+                    List<StorageContainer> containers = preferredContainers.computeIfAbsent(itemKey, k -> new ArrayList<>());
+                    if (!containers.contains(container)) {
+                        containers.add(container);
+                    }
+                    getPreferredContainers().put(entry.getKey(), containers);
+                } else {
+                    Map<Material, List<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
+                    List<StorageContainer> containers = preferredContainers.computeIfAbsent(entry.getKey().getType(), k -> new ArrayList<>());
+                    if (!containers.contains(container)) {
+                        containers.add(container);
+                    }
+                    getPreferredContainersByMaterial().put(entry.getKey().getType(), containers);
+                }
+            }
+        }
+    }
+
+    public void addPreferredContainer(StorageContainer container, ItemStack item) {
+        Map<ItemStack, List<StorageContainer>> preferredContainers = getPreferredContainers();
+        List<StorageContainer> containers = preferredContainers.computeIfAbsent(item, k -> new ArrayList<>());
+        if (!containers.contains(container)) {
+            containers.add(container);
+        }
+        getPreferredContainers().put(item, containers);
+    }
+
+    public void addPreferredContainer(StorageContainer container, Material item) {
+        Map<Material, List<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
+        List<StorageContainer> containers = preferredContainers.computeIfAbsent(item, k -> new ArrayList<>());
+        if (!containers.contains(container)) {
+            containers.add(container);
+        }
+        getPreferredContainersByMaterial().put(item, containers);
     }
 
     public ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
 
         if (!Utils.isStorageItem(item) && !item.getType().equals(Material.AIR)) {
-            Logger.debugLog("insertStorageItem: not storage item");
             return item;
         }
 
@@ -749,7 +752,6 @@ public class Storage {
 
     public ItemStack insertRangeItem(ItemStack item, boolean swapItems) {
         if (!Utils.isRangeItem(item) && !item.getType().equals(Material.AIR)) {
-            Logger.debugLog("insertRangeItem: not range item");
             return item;
         }
 
