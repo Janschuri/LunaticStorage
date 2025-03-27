@@ -16,15 +16,20 @@ import java.util.Map;
 
 public class StorageCheck extends StorageCommand implements HasParentCommand {
 
-    private final MessageKey rangeItemMK = new LunaticCommandMessageKey(this, "range_item")
+    private static final StorageCheck INSTANCE = new StorageCheck();
+
+    private static final MessageKey RANGE_ITEM_MK = new LunaticCommandMessageKey(INSTANCE, "range_item")
             .defaultMessage("en", "The range of this rangeitem is: %range%")
             .defaultMessage("de", "Die Reichweite dieses Rangeitems ist: %range%");
-    private final MessageKey panelMK = new LunaticCommandMessageKey(this, "panel")
+    private static final MessageKey PANEL_MK = new LunaticCommandMessageKey(INSTANCE, "panel")
             .defaultMessage("en", "The range of this panel is: %range%")
             .defaultMessage("de", "Die Reichweite dieses Panels ist: %range%");
-    private final MessageKey wrongItemMK = new LunaticCommandMessageKey(this, "wrong_item")
+    private static final MessageKey WRONG_ITEM_MK = new LunaticCommandMessageKey(INSTANCE, "wrong_item")
             .defaultMessage("en", "You have to hold a storageitem, rangeitem or a panel in your hand.")
             .defaultMessage("de", "Du musst ein Storageitem, Rangeitem oder ein Panel in der Hand halten.");
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Check the information of an item."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Überprüfe die Informationen eines Items."));
 
     @Override
     public Command getParentCommand() {
@@ -72,7 +77,7 @@ public class StorageCheck extends StorageCommand implements HasParentCommand {
 
         if (Utils.isRangeItem(item)) {
             playerSender.sendMessage(
-                    getMessage(rangeItemMK,
+                    getMessage(RANGE_ITEM_MK,
                             placeholder("%range%", Utils.getRangeFromItem(item) + ""))
             );
             return true;
@@ -80,19 +85,21 @@ public class StorageCheck extends StorageCommand implements HasParentCommand {
 
         if (Utils.isPanelBlockItem(item)) {
             playerSender.sendMessage(
-                    getMessage(panelMK,
+                    getMessage(PANEL_MK,
                             placeholder("%range%", Utils.getRangeFromPanelBlockItem(item) + ""))
             );
             return true;
         }
 
-        playerSender.sendMessage(getMessage(wrongItemMK));
+        playerSender.sendMessage(getMessage(WRONG_ITEM_MK));
 
         return true;
     }
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 }

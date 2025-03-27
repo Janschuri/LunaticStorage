@@ -3,14 +3,13 @@ package de.janschuri.lunaticstorage.commands.storage;
 import de.janschuri.lunaticlib.*;
 import de.janschuri.lunaticlib.common.command.HasParams;
 import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.storage.Key;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Merchant;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -18,6 +17,11 @@ import java.util.List;
 import java.util.Map;
 
 public class StorageGet extends StorageCommand implements HasParentCommand, HasParams {
+
+    private static final StorageGet INSTANCE = new StorageGet();
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Get a storage item, range item or a panel."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Erhalte ein Storageitem, Rangeitem oder ein Panel."));
 
     @Override
     public Command getParentCommand() {
@@ -97,7 +101,9 @@ public class StorageGet extends StorageCommand implements HasParentCommand, HasP
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 
     private ItemStack createStorageItem() {

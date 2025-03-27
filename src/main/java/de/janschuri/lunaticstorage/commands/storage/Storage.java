@@ -6,6 +6,7 @@ import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.common.command.HasHelpCommand;
 import de.janschuri.lunaticlib.common.command.HasSubcommands;
 import de.janschuri.lunaticlib.common.command.LunaticHelpCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticlib.Sender;
@@ -15,10 +16,17 @@ import java.util.Map;
 
 public class Storage extends StorageCommand implements HasSubcommands, HasHelpCommand {
 
+    private static final Storage INSTANCE = new Storage();
 
     private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
             .defaultMessage("en", "Page %page%/%pages%")
             .defaultMessage("de", "Seite %page%/%pages%");
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Show the storage help page."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Zeige die Storage Hilfe Seite."));
+    private static final CommandMessageKey HELP_HEADER_MK = new LunaticCommandMessageKey(INSTANCE, "help_header")
+            .defaultMessage("en", "Storage-Help")
+            .defaultMessage("de", "Storage-Hilfe");
 
     @Override
     public List<Command> getSubcommands() {
@@ -45,7 +53,7 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
 
     @Override
     public MessageKey getHelpHeader() {
-        return null;
+        return HELP_HEADER_MK;
     }
 
     @Override
@@ -86,7 +94,9 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 
     @Override

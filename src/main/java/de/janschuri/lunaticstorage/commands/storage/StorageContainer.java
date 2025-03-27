@@ -18,7 +18,14 @@ import java.util.Map;
 
 public class StorageContainer extends StorageCommand implements HasParentCommand {
 
-    private final CommandMessageKey notContainerMK = new LunaticCommandMessageKey(this, "not_container");
+    private static final StorageContainer INSTANCE = new StorageContainer();
+    private static final CommandMessageKey NOT_CONTAINER_MK = new LunaticCommandMessageKey(INSTANCE, "not_container")
+            .defaultMessage("en", "The block you are looking at is not a container.")
+            .defaultMessage("de", "Der Block den du anschaust ist kein Container.");
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Open the container GUI."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Öffne die Container GUI."));
+
 
     @Override
     public Command getParentCommand() {
@@ -51,12 +58,12 @@ public class StorageContainer extends StorageCommand implements HasParentCommand
         Block block = player.getTargetBlockExact(5);
 
         if (block == null) {
-            sender.sendMessage(getMessage(notContainerMK));
+            sender.sendMessage(getMessage(NOT_CONTAINER_MK));
             return true;
         }
 
         if (!Utils.isStorageContainer(block)) {
-            sender.sendMessage(getMessage(notContainerMK));
+            sender.sendMessage(getMessage(NOT_CONTAINER_MK));
             return true;
         }
 
@@ -69,6 +76,8 @@ public class StorageContainer extends StorageCommand implements HasParentCommand
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 }

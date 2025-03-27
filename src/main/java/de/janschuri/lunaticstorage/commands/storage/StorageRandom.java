@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.commands.storage;
 import de.janschuri.lunaticlib.Command;
 import de.janschuri.lunaticlib.CommandMessageKey;
 import de.janschuri.lunaticlib.common.command.HasParentCommand;
+import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticlib.PlayerSender;
 import de.janschuri.lunaticlib.Sender;
@@ -18,9 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class StorageRandom extends StorageCommand implements HasParentCommand {
 
-    private static final String MAIN_COMMAND = "storage";
-    private static final String NAME = "random";
-    private static final String PERMISSION = "lunaticstorages.admin.random";
+    private static final StorageRandom INSTANCE = new StorageRandom();
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Get random items for tests."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Erhalte zufällige Items für Tests."));
 
     @Override
     public Command getParentCommand() {
@@ -82,6 +84,8 @@ public class StorageRandom extends StorageCommand implements HasParentCommand {
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 }

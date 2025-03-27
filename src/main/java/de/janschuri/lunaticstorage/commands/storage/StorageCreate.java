@@ -27,6 +27,9 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
     private static final CommandMessageKey NO_BLOCK_IN_HAND_MK = new LunaticCommandMessageKey(INSTANCE, "no_block_in_hand")
             .defaultMessage("en", "You need to hold a block in your main hand.")
             .defaultMessage("de", "Du musst einen Block in deiner Haupt-Hand halten.");
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Create a storage item, range item or a panel."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Erstelle ein Storageitem, Rangeitem oder ein Panel."));
 
     @Override
     public Command getParentCommand() {
@@ -117,7 +120,9 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 
     private ItemStack createStorageItem(ItemStack item) {

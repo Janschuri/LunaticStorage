@@ -12,6 +12,11 @@ import java.util.Map;
 
 public class StorageReload extends StorageCommand implements HasParentCommand {
 
+    private static final StorageReload INSTANCE = new StorageReload();
+    private static final CommandMessageKey HELP_MK = new LunaticCommandMessageKey(INSTANCE, "help")
+            .defaultMessage("en", INSTANCE.getDefaultHelpMessage("Reload the config."))
+            .defaultMessage("de", INSTANCE.getDefaultHelpMessage("Lade die Config neu."));
+
     private final CommandMessageKey reloadedMK = new LunaticCommandMessageKey(this, "reloaded");
 
     @Override
@@ -45,6 +50,8 @@ public class StorageReload extends StorageCommand implements HasParentCommand {
 
     @Override
     public Map<CommandMessageKey, String> getHelpMessages() {
-        return Map.of();
+        return Map.of(
+                HELP_MK, getPermission()
+        );
     }
 }
