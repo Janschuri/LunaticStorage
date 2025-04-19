@@ -3,7 +3,6 @@ package de.janschuri.lunaticstorage.storage;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.platform.bukkit.external.LogBlock;
 import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
@@ -22,9 +21,9 @@ public class Storage {
 
     private static final Map<Block, Map<ItemStack, Integer>> storageMaps = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Map<Block, Boolean>>> itemsContainersMap = new HashMap<>();
-    private static final Map<Block, Map<ItemStack, List<StorageContainer>>> preferredContainersMap = new HashMap<>();
-    private static final Map<Block, Map<Material, List<StorageContainer>>> preferredContainersMapByMaterial = new HashMap<>();
-    private static final Map<Block, List<Block>> emptyContainersMap = new HashMap<>();
+    private static final Map<Block, Map<ItemStack, ArrayList<StorageContainer>>> preferredContainersMap = new HashMap<>();
+    private static final Map<Block, Map<Material, ArrayList<StorageContainer>>> preferredContainersMapByMaterial = new HashMap<>();
+    private static final Map<Block, ArrayList<Block>> emptyContainersMap = new HashMap<>();
     private static final Map<Block, ItemStack> storageItems = new HashMap<>();
     private static final Map<Block, ItemStack> rangeItems = new HashMap<>();
     private static final Map<Block, Integer> storageLoadedContainerAmounts = new HashMap<>();
@@ -121,11 +120,11 @@ public class Storage {
         storageContainerAmounts.put(block, loadedContainers);
     }
 
-    private Map<ItemStack, List<StorageContainer>> getPreferredContainers() {
+    private Map<ItemStack, ArrayList<StorageContainer>> getPreferredContainers() {
         return preferredContainersMap.get(block);
     }
 
-    private Map<Material, List<StorageContainer>> getPreferredContainersByMaterial() {
+    private Map<Material, ArrayList<StorageContainer>> getPreferredContainersByMaterial() {
         return preferredContainersMapByMaterial.get(block);
     }
 
@@ -520,7 +519,7 @@ public class Storage {
                     .filter(StorageContainer::isValid)
                     .toList();
 
-            getPreferredContainers().put(itemKey, preferredContainers);
+            getPreferredContainers().put(itemKey, new ArrayList<>(preferredContainers));
         }
 
 
@@ -535,7 +534,7 @@ public class Storage {
                                 .filter(StorageContainer::isValid)
                                 .toList();
 
-                getPreferredContainersByMaterial().put(itemKey.getType(), preferredContainersByMaterial);
+                getPreferredContainersByMaterial().put(itemKey.getType(), new ArrayList<>(preferredContainersByMaterial));
             }
 
             remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, preferredContainersByMaterial, invalidContainers);
@@ -661,29 +660,29 @@ public class Storage {
         if (whitelist != null) {
             for (Map.Entry<ItemStack, Boolean> entry : whitelist.entrySet()) {
                 if (entry.getValue()) {
-                    Map<ItemStack, List<StorageContainer>> preferredContainers = getPreferredContainers();
+                    Map<ItemStack, ArrayList<StorageContainer>> preferredContainers = getPreferredContainers();
                     ItemStack itemKey = entry.getKey().clone();
                     itemKey.setAmount(1);
-                    List<StorageContainer> containers = preferredContainers.computeIfAbsent(itemKey, k -> new ArrayList<>());
+                    ArrayList<StorageContainer> containers = preferredContainers.computeIfAbsent(itemKey, k -> new ArrayList<>());
                     if (!containers.contains(container)) {
                         containers.add(container);
                     }
                     getPreferredContainers().put(entry.getKey(), containers);
                 } else {
-                    Map<Material, List<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
+                    Map<Material, ArrayList<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
                     List<StorageContainer> containers = preferredContainers.computeIfAbsent(entry.getKey().getType(), k -> new ArrayList<>());
                     if (!containers.contains(container)) {
                         containers.add(container);
                     }
-                    getPreferredContainersByMaterial().put(entry.getKey().getType(), containers);
+                    getPreferredContainersByMaterial().put(entry.getKey().getType(), new ArrayList<>(containers));
                 }
             }
         }
     }
 
     public void addPreferredContainer(StorageContainer container, ItemStack item) {
-        Map<ItemStack, List<StorageContainer>> preferredContainers = getPreferredContainers();
-        List<StorageContainer> containers = preferredContainers.computeIfAbsent(item, k -> new ArrayList<>());
+        Map<ItemStack, ArrayList<StorageContainer>> preferredContainers = getPreferredContainers();
+        ArrayList<StorageContainer> containers = preferredContainers.computeIfAbsent(item, k -> new ArrayList<>());
         if (!containers.contains(container)) {
             containers.add(container);
         }
@@ -691,12 +690,12 @@ public class Storage {
     }
 
     public void addPreferredContainer(StorageContainer container, Material item) {
-        Map<Material, List<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
+        Map<Material, ArrayList<StorageContainer>> preferredContainers = getPreferredContainersByMaterial();
         List<StorageContainer> containers = preferredContainers.computeIfAbsent(item, k -> new ArrayList<>());
         if (!containers.contains(container)) {
             containers.add(container);
         }
-        getPreferredContainersByMaterial().put(item, containers);
+        getPreferredContainersByMaterial().put(item, new ArrayList<>(containers));
     }
 
     public ItemStack insertStorageItem(ItemStack item, boolean swapItems) {
