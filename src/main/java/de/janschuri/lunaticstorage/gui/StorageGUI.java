@@ -61,6 +61,15 @@ public class StorageGUI
     private static final MessageKey SORT_AFTER_AMOUNT_MK = new LunaticMessageKey("sort_after_amount")
             .defaultMessage("en", "Sort after Amount")
             .defaultMessage("de", "Sortieren nach Menge");
+    private static final MessageKey SORT_ASCENDING_MK = new LunaticMessageKey("sort_ascending")
+            .defaultMessage("en", "Sort Ascending")
+            .defaultMessage("de", "Aufsteigend sortieren");
+    private static final MessageKey SORT_DESCENDING_MK = new LunaticMessageKey("sort_descending")
+            .defaultMessage("en", "Sort Descending")
+            .defaultMessage("de", "Absteigend sortieren");
+    private static final MessageKey SEARCH_ITEM_MK = new LunaticMessageKey("search_item")
+            .defaultMessage("en", "Search Item...")
+            .defaultMessage("de", "Item suchen...");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -530,6 +539,38 @@ public class StorageGUI
 
                     reloadGui();
                 });
+    }
+
+    @Override
+    public ItemStack getSearchItem(Player player) {
+        ItemStack item = new ItemStack(Material.COMPASS);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(SEARCH_ITEM_MK));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Override
+    public ItemStack getAscendingIcon() {
+        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/b221da4418bd3bfb42eb64d2ab429c61decb8f4bf7d4cfb77a162be3dcb0b927");
+        ItemMeta meta = arrow.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(SORT_ASCENDING_MK));
+        arrow.setItemMeta(meta);
+
+        return getItemWithGuiId(arrow, "ascending");
+    }
+
+    @Override
+    public ItemStack getDescendingIcon() {
+        ItemStack arrow = ItemStackUtils.getSkullFromURL("https://textures.minecraft.net/texture/a3852bf616f31ed67c37de4b0baa2c5f8d8fca82e72dbcafcba66956a81c4");
+        ItemMeta meta = arrow.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(SORT_DESCENDING_MK));
+        arrow.setItemMeta(meta);
+
+        return getItemWithGuiId(arrow, "descending");
     }
 
 }
