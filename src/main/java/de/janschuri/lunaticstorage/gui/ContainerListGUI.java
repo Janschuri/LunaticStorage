@@ -43,32 +43,44 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
             .defaultMessage("de", "&aContainer erfolgreich vom Storageitem in %world% bei %x% %y% %z% entfernt.");
 
     private final MessageKey guiTitleMK = new LunaticMessageKey("remove_container_gui_title")
+            .noPrefix()
             .defaultMessage("en", "&eRemove Container")
             .defaultMessage("de", "&eContainer entfernen");
 
     private final MessageKey rightClickMK = new LunaticMessageKey("right_click")
-            .defaultMessage("en", "Right click")
-            .defaultMessage("de", "Rechtsklick");
+            .noPrefix()
+            .defaultMessage("en", "&e&lRight click &r&8- ")
+            .defaultMessage("de", "&e&lRechtsklick &r&8- ");
 
     private final MessageKey shiftRightClickMK = new LunaticMessageKey("shift_right_click")
-            .defaultMessage("en", "Shift right click")
-            .defaultMessage("de", "Shift-Rechtsklick");
-
-    private final MessageKey leftClickMK = new LunaticMessageKey("left_click")
-            .defaultMessage("en", "Left click")
-            .defaultMessage("de", "Linksklick");
-
-    private final MessageKey shiftLeftClickMK = new LunaticMessageKey("shift_left_click")
-            .defaultMessage("en", "Shift left click")
-            .defaultMessage("de", "Shift-Linksklick");
+            .noPrefix()
+            .defaultMessage("en", "&4&lShift right click &r&8- ")
+            .defaultMessage("de", "&4&lShift-Rechtsklick &r&8- ");
 
     private final MessageKey showContainerMK = new LunaticMessageKey("show_container")
+            .noPrefix()
             .defaultMessage("en", "Show container")
             .defaultMessage("de", "Container anzeigen");
 
     private final MessageKey removeContainerMK = new LunaticMessageKey("remove_container")
+            .noPrefix()
             .defaultMessage("en", "Remove container")
             .defaultMessage("de", "Container entfernen");
+
+    private final MessageKey coordinatesMK = new LunaticMessageKey("coordinates")
+            .noPrefix()
+            .defaultMessage("en", "Coordinates")
+            .defaultMessage("de", "Koordinaten");
+
+    private final MessageKey worldMK = new LunaticMessageKey("world")
+            .noPrefix()
+            .defaultMessage("en", "World")
+            .defaultMessage("de", "Welt");
+
+    private final MessageKey containerMK = new LunaticMessageKey("container")
+            .noPrefix()
+            .defaultMessage("en", "Container")
+            .defaultMessage("de", "Container");
 
 
 
@@ -89,14 +101,14 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
 
         String coordinates = block.getX() + " " + block.getY() + " " + block.getZ();
 
-        itemMeta.setDisplayName("&eContainer");
+        itemMeta.setDisplayName(getMessageAsLegacyString(containerMK));
 
         List<String> lore = List.of(
-                "&7Coordinates: " + coordinates,
-                "&7World: " + block.getWorld().getName(),
+                getMessageAsLegacyString(coordinatesMK) + ": " + coordinates,
+                getMessageAsLegacyString(worldMK) + ": " + block.getWorld().getName(),
                 "",
-                "&e&l" + getMessageAsLegacyString(rightClickMK) + " &r&8- " + getMessageAsLegacyString(showContainerMK),
-                "&4&l" + getMessageAsLegacyString(shiftRightClickMK) + " &r&8- " + getMessageAsLegacyString(removeContainerMK)
+                getMessageAsLegacyString(rightClickMK) + getMessageAsLegacyString(showContainerMK),
+                getMessageAsLegacyString(shiftRightClickMK) + getMessageAsLegacyString(removeContainerMK)
         );
 
         itemMeta.setLore(lore);
