@@ -107,8 +107,8 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
                 getMessageAsLegacyString(coordinatesMK) + ": " + coordinates,
                 getMessageAsLegacyString(worldMK) + ": " + block.getWorld().getName(),
                 "",
-                getMessageAsLegacyString(rightClickMK) + getMessageAsLegacyString(showContainerMK),
-                getMessageAsLegacyString(shiftRightClickMK) + getMessageAsLegacyString(removeContainerMK)
+                getMessageAsLegacyString(rightClickMK) + ": " + getMessageAsLegacyString(showContainerMK),
+                getMessageAsLegacyString(shiftRightClickMK) + ": " + getMessageAsLegacyString(removeContainerMK)
         );
 
         itemMeta.setLore(lore);
