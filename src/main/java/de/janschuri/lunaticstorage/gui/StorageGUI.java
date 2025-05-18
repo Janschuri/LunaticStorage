@@ -70,6 +70,12 @@ public class StorageGUI
     private static final MessageKey SEARCH_ITEM_MK = new LunaticMessageKey("search_item")
             .defaultMessage("en", "Search Item...")
             .defaultMessage("de", "Item suchen...");
+    private static final MessageKey STORAGE_ITEM_SLOT_MK = new LunaticMessageKey("storage_item_slot")
+            .defaultMessage("en", "Storage Item Slot")
+            .defaultMessage("de", "Storage-Linker Slot");
+    private static final MessageKey RANGE_ITEM_SLOT_MK = new LunaticMessageKey("range_item_slot")
+            .defaultMessage("en", "Range Item Slot")
+            .defaultMessage("de", "Range-Upgrade Slot");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -221,8 +227,16 @@ public class StorageGUI
     }
 
     private InventoryButton createStoragePaneButton() {
+
+        ItemStack item = new ItemStack(Material.CYAN_STAINED_GLASS_PANE);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(STORAGE_ITEM_SLOT_MK));
+        item.setItemMeta(meta);
+
+
         return new InventoryButton()
-                .creator(player -> new ItemStack(Material.CYAN_STAINED_GLASS_PANE))
+                .creator(player -> item)
                 .consumer(event -> {
                     if (processingClickEvent()) {
                         return;
@@ -239,8 +253,15 @@ public class StorageGUI
     }
 
     private InventoryButton createRangePaneButton() {
+
+        ItemStack item = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(RANGE_ITEM_SLOT_MK));
+        item.setItemMeta(meta);
+
         return new InventoryButton()
-                .creator(player -> new ItemStack(Material.RED_STAINED_GLASS_PANE))
+                .creator(player -> item)
                 .consumer(event -> {
                     if (processingClickEvent()) {
                         return;
