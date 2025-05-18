@@ -113,11 +113,11 @@ public class Storage {
     }
 
     private void setStorageContainerAmounts(int totalContainers) {
-        storageLoadedContainerAmounts.put(block, totalContainers);
+        storageContainerAmounts.put(block, totalContainers);
     }
 
     private void setStorageLoadedContainerAmounts(int loadedContainers) {
-        storageContainerAmounts.put(block, loadedContainers);
+        storageLoadedContainerAmounts.put(block, loadedContainers);
     }
 
     private Map<ItemStack, ArrayList<StorageContainer>> getPreferredContainers() {
