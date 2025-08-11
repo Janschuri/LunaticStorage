@@ -388,6 +388,10 @@ public class Storage {
     }
 
     public ItemStack getItemsFromStorage(ItemStack item, Player player) {
+        return getItemsFromStorage(item, player, item.getMaxStackSize());
+    }
+
+    public ItemStack getItemsFromStorage(ItemStack item, Player player, int stackSize) {
         ItemStack searchedItem = item.clone();
 
         List<StorageContainer> nonFullstackContainers = new ArrayList<>();
@@ -399,7 +403,6 @@ public class Storage {
                     .toList();
         }
 
-        int stackSize = searchedItem.getMaxStackSize();
         int foundItems = 0;
 
         List<StorageContainer> invalidContainers = new ArrayList<>();
