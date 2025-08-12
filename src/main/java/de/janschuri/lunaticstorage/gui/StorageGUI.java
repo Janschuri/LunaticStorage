@@ -9,7 +9,6 @@ import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SearchableList;
 import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SortedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import de.janschuri.lunaticlib.MessageKey;
 import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
