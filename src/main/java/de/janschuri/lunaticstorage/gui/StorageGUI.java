@@ -379,7 +379,7 @@ public class StorageGUI
                         return false;
                     }
 
-                    return !Utils.isStorageItem(item);
+                    return !Utils.isStorageItem(item) && !Utils.isRangeItem(item);
                 })
                 .consumer(event -> {
                     if (processingClickEvent()) {
@@ -413,7 +413,7 @@ public class StorageGUI
                         return false;
                     }
 
-                    return Utils.isStorageItem(item);
+                    return Utils.isStorageItem(item) || Utils.isRangeItem(item);
                 })
                 .consumer(event -> {
                     if (processingClickEvent()) {
@@ -424,7 +424,16 @@ public class StorageGUI
 
                     ItemStack item = event.getCurrentItem();
 
-                    ItemStack newItem = getStorage().insertStorageItem(item, false);
+                    ItemStack newItem = new ItemStack(Material.AIR);
+
+                    if (Utils.isStorageItem(item)) {
+                        newItem = getStorage().insertStorageItem(item, false);
+                    }
+
+                    if (Utils.isRangeItem(item)) {
+                        newItem = getStorage().insertRangeItem(item, false);
+                    }
+
                     event.setCurrentItem(newItem);
 
                     reloadGui();
@@ -495,7 +504,54 @@ public class StorageGUI
                     Player player = (Player) event.getWhoClicked();
                     ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
-                    if (cursorItem.getType().equals(Material.AIR)) {
+                    if (event.isShiftClick()) {
+                        boolean hasEmptySlot = player.getInventory().firstEmpty() != -1;
+
+                        int amountInInventory = 0;
+
+                        for (ItemStack invItem : player.getInventory().getContents()) {
+                            if (invItem != null && invItem.isSimilar(item)) {
+                                amountInInventory += invItem.getAmount();
+                            }
+                        }
+
+                        int maxStackSize = item.getMaxStackSize();
+                        int spaceInInventory = amountInInventory % maxStackSize;
+
+                        int itemsToGet = spaceInInventory;
+
+                        if (hasEmptySlot) {
+                            itemsToGet =  maxStackSize;
+                        }
+
+                        ItemStack newItem = getStorage().getItemsFromStorage(item, player, itemsToGet);
+
+                        ItemStack addItem = newItem.clone();
+                        addItem.setAmount(Math.min(spaceInInventory, newItem.getAmount()));
+
+                        player.getInventory().addItem(addItem);
+
+                        ItemStack setItem = newItem.clone();
+                        setItem.setAmount(newItem.getAmount() - addItem.getAmount());
+
+                        int[] indexOrder = {
+                                8, 7, 6, 5, 4, 3, 2, 1, 0,
+                                35, 34, 33, 32, 31, 30, 29, 28, 27,
+                                26, 25, 24, 23, 22, 21, 20, 19, 18,
+                                17, 16, 15, 14, 13, 12, 11, 10, 9
+                        };
+
+                        for (int i = 0; i < indexOrder.length; i++) {
+                            int slot = indexOrder[i];
+
+                            ItemStack stack = player.getInventory().getItem(slot);
+                            if (stack == null || stack.getType().equals(Material.AIR)) {
+                                player.getInventory().setItem(slot, setItem);
+                                break;
+                            }
+                        }
+
+                    } else if (cursorItem.getType().equals(Material.AIR)) {
                         ItemStack newItem = getStorage().getItemsFromStorage(item, player);
 
                         if (!newItem.getType().equals(Material.AIR)) {
