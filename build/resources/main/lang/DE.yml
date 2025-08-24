@@ -1,0 +1,93 @@
+prefix: "&9[LunaticStorage]&r "
+messages:
+  reload: "Konfiguration wurde neu geladen."
+  no_permission: "Du keine Rechte dies zu tun!"
+  left_click: "Linksklick"
+  right_click: "Rechtsklick"
+  shift_left_click: "Shift + Linksklick"
+  shift_right_click: "Shift + Rechtsklick"
+  container_marked: "Container wurde markiert."
+  container_already_marked: "Container ist bereits markiert."
+  remove_container: "Container löschen"
+  show_container: "Container durch Leuchten anzeigen"
+  remove_container_gui_title: "Container löschen"
+  remove_container_confirm: "&cBist du sicher, dass du den Container aus dem StorageItem entfernen möchtest?"
+  remove_container_cancel: "&cEntfernen des Containers aus dem StorageItem abgebrochen."
+  container_removed: "&aDer Container wurde erfolgreich aus dem StorageItem in %world% an %x% %y% %z% entfernt."
+  storage_full: "Der Speicher ist voll."
+  amount: "Menge: %amount%"
+  page: "Seite: %page%/%pages%"
+  storage_gui_title: "Speicher"
+  container_gui_title: "Container"
+  gui_title_full_storage: "&cSpeicher ist voll"
+  range: "Reichweite: %range%"
+  total_items: "Gesamtmenge: %amount%"
+  loaded_containers: "Geladene Container: %amount%"
+  total_containers: "Gesamte Container: %amount%"
+  yes: "&aJa"
+  no: "&cNein"
+  match_nbt: "Übereinstimmend mit NBT"
+  whitelist_mode: "Whitelist-Modus"
+  blacklist_mode: "Blacklist-Modus"
+  add_containers_inv_to_whitelist: "Füge daas Inventars des Containers zur Whitelist hinzu."
+  clear_whitelist: "Whitelist löschen"
+  clear_blacklist: "Blacklist löschen"
+  toggle_whitelist: "Whitelist umschalten"
+  toggle_blacklist: "Blacklist umschalten"
+  add_item_to_whitelist: "Füge Item zur Whitelist hinzu."
+  add_item_to_blacklist: "Füge Item zur Blacklist hinzu."
+  whitelist_enabled: "Whitelist aktiviert."
+  blacklist_enabled: "Blacklist aktiviert."
+  whitelist_disabled: "Whitelist deaktiviert."
+  blacklist_disabled: "Blacklist deaktiviert."
+  sort_after_name: "Sortiere nach Name"
+  sort_after_amount: "Sortiere nach Menge"
+  wrong_usage: "Falsche Benutzung."
+  no_number: "Du musst eine Zahl angeben."
+commands:
+  storage:
+    aliases:
+      - storage
+    subcommands:
+      get:
+        aliases:
+          - get
+        messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range) - erhalte das angegebene Item und gib die Reichweite an (nur für rangeitem und panel)"
+      create:
+        aliases:
+          - create
+        messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range) - erstelle das angegebene Item und gib die Reichweite an (nur für rangeitem und panel)"
+          no_item_in_hand: "Du musst ein Item in der Hand halten."
+          no_block_in_hand: "Du musst einen Block in der Hand halten."
+      reload:
+        aliases:
+          - reload
+        messages:
+          help: "&6/%command% %subcommand% - lade die Konfiguration neu"
+          reloaded: "Konfiguration wurde neu geladen."
+      random:
+        aliases:
+          - random
+        messages:
+          help: "&6/%command% %subcommand% - erhalte zufällige Items zum Testen"
+      container:
+        aliases:
+          - container
+        messages:
+          help: "&6/%command% %subcommand% - öffne die Container-GUI"
+          not_container: "Der Block den du anschaust ist kein Container."
+      check:
+        aliases:
+          - check
+        messages:
+          help: "&6/%command% %subcommand% - erhalte Informationen über das Item in der Hand"
+          range_item: "Die Reichweite des Items beträgt %range% Blöcke."
+          panel_item: "Das Panel hat eine Reichweite von %range% Blöcken."
+          wrong_item: "Das Item in deiner Hand ist kein RangeItem, StorageItem oder PanelItem."
+      help:
+        aliases:
+          - help
+        messages:
+          help: "&6/%command% %subcommand% - zeige die Hilfe an"

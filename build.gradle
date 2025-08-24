@@ -22,11 +22,14 @@ repositories {
     maven {
         url = 'https://www.iani.de/nexus/content/repositories/snapshots/'
     }
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
-    compileOnly 'de.janschuri:lunaticlib:1.4.4'
+    compileOnly name: 'LunaticLib-1.4.5'
     compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     implementation 'com.jeff-media:custom-block-data:2.2.4'
     implementation 'fr.skytasul:glowingentities:1.4.3'
@@ -50,11 +53,12 @@ tasks.register('shade', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets.main.output)
 
-    configurations.runtimeClasspath.get().forEach { file ->
-        from(zipTree(file.absoluteFile)) {
+    configurations.runtimeClasspath.each { file ->
+	from(zipTree(file)) {
             exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
         }
     }
+
 
     doLast {
         println "Shaded jar created: ${archiveFile.get().asFile}"

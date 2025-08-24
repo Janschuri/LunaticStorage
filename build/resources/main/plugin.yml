@@ -1,0 +1,13 @@
+name: LunaticStorage
+version: '${project.version}'
+main: de.janschuri.lunaticstorage.LunaticStorage
+api-version: '1.19'
+
+commands:
+  lunaticstorage:
+    description: Open storage command
+    usage: /storage
+    aliases:
+      - storage
+depend:
+  - LunaticLib

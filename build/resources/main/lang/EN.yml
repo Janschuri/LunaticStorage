@@ -1,0 +1,95 @@
+prefix: "&9[LunaticStorage]&r "
+messages:
+  reload: "The configuration has been reloaded."
+  no_permission: "You don't have permission to do that!"
+  left_click: "Left click"
+  right_click: "Right click"
+  shift_left_click: "Shift + Left click"
+  shift_right_click: "Shift + Right click"
+  container_marked: "Container has been marked."
+  container_already_marked: "Container is already marked."
+  remove_container: "Delete container"
+  show_container: "Show container by glow"
+  remove_container_gui_title: "Delete container"
+  remove_container_confirm: "&cAre you sure you want to remove the container from the storageitem?"
+  remove_container_cancel: "&cCancelled removing the container from the storageitem."
+  container_removed: "&aSuccessfully removed the container from storageitem in %world% at %x% %y% %z%"
+  storage_full: "The storage is full."
+  amount: "Amount: %amount%"
+  page: "Page: %page%/%pages%"
+  storage_gui_title: "Storage"
+  container_gui_title: "Container"
+  gui_title_full_storage: "&cStorage is full"
+  range: "Range: %range%"
+  total_items: "Total amount: %amount%"
+  loaded_containers: "Loaded containers: %amount%"
+  total_containers: "Total containers: %amount%"
+  yes: "&aYes"
+  no: "&cNo"
+  match_nbt: "Match NBT"
+  whitelist_mode: "Whitelist-Mode"
+  blacklist_mode: "Blacklist-Mode"
+  add_containers_inv_to_whitelist: "Add the container's inventory to the whitelist."
+  clear_whitelist: "Clear whitelist"
+  clear_blacklist: "Clear blacklist"
+  toggle_whitelist: "Toggle whitelist"
+  toggle_blacklist: "Toggle blacklist"
+  add_item_to_whitelist: "Add item to whitelist."
+  add_item_to_blacklist: "Add item to blacklist."
+  whitelist_enabled: "Whitelist enabled."
+  blacklist_enabled: "Blacklist enabled."
+  whitelist_disabled: "Whitelist disabled."
+  blacklist_disabled: "Blacklist disabled."
+  sort_after_name: "Sort after name"
+  sort_after_amount: "Sort after amount"
+  wrong_usage: "Wrong usage."
+  no_number: "You must specify a number."
+help_header: "--- --- --- ---[%header%]--- --- --- ---"
+help_footer: "--- --- -[Seite %page%/%pages%]- --- ---"
+commands:
+  storage:
+    help_header: "Storage-Hilfe"
+    aliases:
+      - storage
+    subcommands:
+      get:
+        aliases:
+          - get
+        messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range)&7 - get the specified item and specify the range (only for rangeitem and panel)"
+      create:
+        aliases:
+          - create
+        messages:
+          help: "&6/%command% %subcommand% <storageitem|panel|rangeitem> (range)&7 - create the specified item and specify the range (only for rangeitem and panel)"
+          no_item_in_hand: "You must hold an item in your hand."
+          no_block_in_hand: "You must hold a block in your hand."
+      reload:
+        aliases:
+          - reload
+        messages:
+          help: "&6/%command% %subcommand%&7 - reload the configuration"
+          reloaded: "The configuration has been reloaded."
+      random:
+        aliases:
+          - random
+        messages:
+          help: "&6/%command% %subcommand%&7 - get a random items for testing"
+      container:
+        aliases:
+          - container
+        messages:
+          help: "&6/%command% %subcommand%&7 - open a containers gui"
+          not_container: "The block you are looking at is not a container."
+      check:
+        aliases:
+          - check
+        messages:
+          help: "&6/%command% %subcommand% - get information about the item in your hand"
+          range_item: "The range of the rangeitem in your hand is %range% blocks."
+          panel_item: "The range of the panel in your hand is %range% blocks."
+      help:
+        aliases:
+          - help
+        messages:
+          help: "&6/%command% %subcommand%&7 - show this help message"
