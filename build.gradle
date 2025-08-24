@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+}
+
+group = 'de.janschuri'
+version = '1.1.7'
+description = 'LunaticStorage'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://repo.codemc.org/repository/maven-public/'
+    }
+    maven {
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        url = 'https://www.iani.de/nexus/content/repositories/snapshots/'
+    }
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
+    compileOnly 'de.janschuri:lunaticlib:1.4.4'
+    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
+    implementation 'com.jeff-media:custom-block-data:2.2.4'
+    implementation 'fr.skytasul:glowingentities:1.4.3'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+            'Implementation-Title': project.description,
+            'Implementation-Version': project.version
+        )
+    }
+}
+
+tasks.register('shade', Jar) {
+    archiveClassifier.set('')
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.output)
+
+    configurations.runtimeClasspath.get().forEach { file ->
+        from(zipTree(file.absoluteFile)) {
+            exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+        }
+    }
+
+    doLast {
+        println "Shaded jar created: ${archiveFile.get().asFile}"
+    }
+}
