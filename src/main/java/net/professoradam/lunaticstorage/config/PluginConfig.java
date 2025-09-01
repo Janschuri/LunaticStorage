@@ -49,4 +49,8 @@ public class PluginConfig extends LunaticConfig {
     public int getDefaultRangePanel() {
         return getInt("default_range", 5);
     }
+
+    public double getPanelPrice() {
+        return getDouble("panel_price", 100.0);
+    }
 }

@@ -85,18 +85,29 @@ public class StorageGet extends StorageCommand implements HasParentCommand, HasP
             if (range == -1) {
                 range = LunaticStorage.getPluginConfig().getDefaultRangePanel();
             }
+            // Panel price logic
+            PlayerSender player = (PlayerSender) sender;
+            Player p = Bukkit.getPlayer(player.getUniqueId());
+            double panelPrice = LunaticStorage.getPluginConfig().getPanelPrice();
+            if (!net.professoradam.lunaticstorage.utils.Utils.hasEnoughMoney(p, panelPrice)) {
+                sender.sendMessage("You do not have enough money to buy a panel.");
+                return true;
+            }
+            boolean paid = net.professoradam.lunaticstorage.utils.Utils.withdrawMoney(p, panelPrice);
+            if (!paid) {
+                sender.sendMessage("Failed to withdraw money for panel.");
+                return true;
+            }
             item = createPanelItem(range);
         } else {
             sender.sendMessage(getMessage(WRONG_USAGE_MK));
             return true;
         }
 
-            PlayerSender player = (PlayerSender) sender;
-
-
-            Player p = Bukkit.getPlayer(player.getUniqueId());
-            p.getInventory().addItem(item);
-            return true;
+        PlayerSender player = (PlayerSender) sender;
+        Player p = Bukkit.getPlayer(player.getUniqueId());
+        p.getInventory().addItem(item);
+        return true;
     }
 
     @Override

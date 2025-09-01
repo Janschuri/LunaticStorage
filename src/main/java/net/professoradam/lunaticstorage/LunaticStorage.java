@@ -11,6 +11,12 @@ import net.professoradam.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
 
@@ -133,5 +139,52 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static String getMessageAsLegacyString(MessageKey key) {
         return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(key);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("buy") && sender instanceof Player && args.length == 1) {
+            Player player = (Player) sender;
+            String itemName = args[0].toLowerCase();
+
+            if (itemName.equals("storage_panel") || itemName.equals("storage_linker")) {
+                int price = itemName.equals("storage_panel") ? 5000 : 2500;
+                if (net.professoradamgeldplugin.api.ProfessorEconomyAPI.getBalance(player.getUniqueId()) >= price) {
+                    boolean success = net.professoradamgeldplugin.api.ProfessorEconomyAPI.withdraw(player.getUniqueId(), price);
+                    if (success) {
+                        ItemStack item = itemName.equals("storage_panel")
+                            ? createStoragePanelItem()
+                            : createStorageLinkerItem();
+                        player.getInventory().addItem(item);
+                        player.sendMessage("§aYou bought a " + itemName.replace("_", " ") + "!");
+                    } else {
+                        player.sendMessage("§cTransaction failed!");
+                    }
+                } else {
+                    player.sendMessage("§cYou don't have enough money!");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Add these methods to create the items:
+    private ItemStack createStoragePanelItem() {
+        // TODO: Replace with your actual storage panel item creation logic
+        ItemStack item = new ItemStack(Material.COMMAND_BLOCK); // Example
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("Storage Panel");
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack createStorageLinkerItem() {
+        // TODO: Replace with your actual storage linker item creation logic
+        ItemStack item = new ItemStack(Material.STICK); // Example
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("Storage Linker");
+        item.setItemMeta(meta);
+        return item;
     }
 }

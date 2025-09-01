@@ -9,12 +9,14 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import net.professoradamgeldplugin.api.ProfessorEconomyAPI;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -376,4 +378,20 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         }
         return itemStackMap;
     }
+
+    /**
+     * Checks if the player has at least the given amount of money.
+     */
+    public static boolean hasEnoughMoney(Player player, double amount) {
+        return ProfessorEconomyAPI.getBalance(player.getUniqueId()) >= amount;
+    }
+
+    /**
+     * Withdraws the given amount of money from the player.
+     * Returns true if successful, false otherwise.
+     */
+    public static boolean withdrawMoney(Player player, double amount) {
+        return ProfessorEconomyAPI.withdraw(player.getUniqueId(), (int) amount);
+    }
 }
+
