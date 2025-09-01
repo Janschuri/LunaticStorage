@@ -1,8 +1,8 @@
 name: LunaticStorage
 version: '${project.version}'
-main: de.janschuri.lunaticstorage.LunaticStorage
+main: net.professoradam.lunaticstorage.LunaticStorage
 api-version: '1.19'
-
+softdepend: ProfessorAdamGeldPlugin
 commands:
   lunaticstorage:
     description: Open storage command

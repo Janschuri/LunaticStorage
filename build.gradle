@@ -30,7 +30,7 @@ repositories {
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
     compileOnly name: 'LunaticLib-1.4.5'
-    implementation name: 'ProfessorAdamGeldPlugin' // changed from compileOnly
+    compileOnly name: 'ProfessorAdamGeldPlugin' // changed from compileOnly
     runtimeOnly name: 'ProfessorAdamGeldPlugin'
     compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     implementation 'com.jeff-media:custom-block-data:2.2.4'
