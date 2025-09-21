@@ -1,0 +1,67 @@
+# ----------------------------------------------
+# ProfessorAdamGeldPlugin – Plugin Summary
+#
+# ProfessorAdamGeldPlugin is a Minecraft server plugin that introduces a virtual economy and a range of interactive features to enhance your gameplay experience. With this plugin, you can manage your in-game money, trade with other players, buy and sell items, create shops, and manage land plots. The plugin is designed for both players and server administrators, making server life more engaging and organized.
+#
+# Features & Commands:
+# - /money: Check your current account balance.
+# - /pay <player> <amount>: Transfer coins to another player.
+# - /buy: Purchase items from the server shop.
+# - /sell: Sell your items for coins.
+# - /chestshop: Create your own chest-based shop to trade with others.
+# - /gs: Create a new land plot (Grundstück) to claim and protect your area.
+# - /gsdelete: Remove your current land plot.
+# - /gsinfo: Get information about the land plot you are standing on.
+# - /gsshow: Visually mark the borders of your land plot with stone bricks.
+# - /exchange: Exchange coins for gold or gold for coins.
+# - /openchant: Buy powerful enchantment books.
+# - /spawnplane: Spawn an airplane for fun and fast travel.
+# - /atm: Deposit or withdraw cash at an ATM block.
+# - /baltop: View the top balances on the server.
+# - /jobs: See available jobs and rewards.
+# - /ecoapi: Admin and API commands for economy infrastructure.
+# - /cash: Convert coins to cash items and vice versa.
+#
+# Enjoy a richer Minecraft experience with easy-to-use commands and a robust economy system!
+# ----------------------------------------------
+name: ProfessorAdamGeldPlugin
+version: 1.0
+main: net.professoradamgeldplugin.Main
+api-version: 1.20
+softdepend: [Vault, LuckPerms, Towny, PEconomy]
+commands:
+  money:
+    description: Zeigt deinen Kontostand (Check your current account balance)
+  pay:
+    description: Überweise Coins an andere Spieler (Transfer coins to another player)
+  buy:
+    description: Kaufe Items (Purchase items from the server shop)
+  sell:
+    description: Verkaufe Items (Sell your items for coins)
+  chestshop:
+    description: Erstelle einen ChestShop (Create your own chest-based shop to trade with others)
+  gs:
+    description: Erstellt ein neues Grundstück (Create a new land plot to claim and protect your area)
+  gsdelete:
+    description: Entfernt dein Grundstück unter dir (Remove your current land plot)
+  gsinfo:
+    description: Zeigt Infos über das Grundstück, auf dem du stehst (Get information about the land plot you are standing on)
+  gsshow:
+    description: Markiert Grundstücksgrenze mit Steinziegeln (Visually mark the borders of your land plot with stone bricks)
+  exchange:
+    description: Tausche Coins gegen Gold oder umgekehrt (Exchange coins for gold or gold for coins)
+  openchant:
+    description: Kaufe OP-Verzauberungsbücher (Buy powerful enchantment books)
+  spawnplane:
+    description: Spawns an airplane (Spawn an airplane for fun and fast travel)
+  atm:
+    description: Bargeld am Geldautomaten einzahlen oder abheben (Deposit or withdraw cash at an ATM block)
+  baltop:
+    description: Zeigt die reichsten Spieler an (Show the richest players)
+  jobs:
+    description: Zeigt verfügbare Jobs und Belohnungen (Show available jobs and rewards)
+  ecoapi:
+    description: Admin- und API-Kommandos für Economy-Infrastruktur (set, reset, resetall, top, all)
+    permission: professoradamgeld.admin
+  cash:
+    description: Wandle Coins in Bargeld um oder umgekehrt (Convert coins to cash items and vice versa)

@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 Implementation-Title: LunaticStorage2
-Implementation-Version: 1.1.7
+Implementation-Version: 2.0.1
 

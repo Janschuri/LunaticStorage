@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'net.professoradam'
-version = '1.1.7'
+version = '2.0.1'
 description = 'LunaticStorage2'
 
 java {
@@ -25,13 +25,15 @@ repositories {
     flatDir {
         dirs 'libs'
     }
+    maven {
+        url = 'https://mintai.ddns.net/maven'
+    }
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT'
     compileOnly name: 'LunaticLib-1.4.5'
-    compileOnly name: 'ProfessorAdamGeldPlugin' // changed from compileOnly
-    runtimeOnly name: 'ProfessorAdamGeldPlugin'
+    compileOnly 'net.professoradam:ProfessorAdamGeldPlugin:1.0.0'
     compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     implementation 'com.jeff-media:custom-block-data:2.2.4'
     implementation 'fr.skytasul:glowingentities:1.4.3'

@@ -1,7 +1,7 @@
-name: LunaticStorage
+name: LunaticStorage2
 version: '${project.version}'
 main: net.professoradam.lunaticstorage.LunaticStorage
-api-version: '1.19'
+api-version: '1.21'
 softdepend: ProfessorAdamGeldPlugin
 commands:
   lunaticstorage:
