@@ -47,10 +47,14 @@ hs_err_pid*
 .DS_Store
 .AppleDouble
 .LSOverride
-
+# Gradle
+build/
+.gitignore
+.gradle
+build.gradle
 # Icon must end with two \r
 Icon
-
+libs/
 # Thumbnails
 ._*
 
