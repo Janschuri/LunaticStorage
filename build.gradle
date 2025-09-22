@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group = 'net.professoradam'
+group = 'de.janschuri'
 version = '2.0.1'
 description = 'LunaticStorage2'
 

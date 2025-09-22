@@ -1,1 +1,33 @@
-ProfessorAdamGeldPlugin/
+# Ignore everything except the libs folder and compiled JAR files
+*
+!libs/
+!build/libs/*.jar
+
+# Gradle specific files
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Build directories
+build/
+!build/libs/
+
+# IDE specific files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore all class files
+*.class
