@@ -2,12 +2,20 @@ name: LunaticStorage
 version: '${project.version}'
 main: de.janschuri.lunaticstorage.LunaticStorage
 api-version: '1.19'
-
+soft-depend:
+  - Vault
+  - ProfessorAdamGeldPlugin
+  - LuckPerms
 commands:
   lunaticstorage:
     description: Open storage command
     usage: /storage
     aliases:
       - storage
+  buy:
+    description: Buy items using the economy system.
+    usage: /buy STORAGE_PANEL
+    permission: lunaticstorage.buy
+    permission-message: You do not have permission to use this command.
 depend:
   - LunaticLib

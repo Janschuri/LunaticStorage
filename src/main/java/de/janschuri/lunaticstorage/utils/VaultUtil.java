@@ -1,8 +1,9 @@
 package de.janschuri.lunaticstorage.utils;
 
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
+
+import net.milkbowl.vault.economy.Economy;
 
 public class VaultUtil {
 
@@ -18,7 +19,8 @@ public class VaultUtil {
             Bukkit.getLogger().warning("Vault not found or economy provider not available.");
         }
     }
-
+// Following implementations arent there to be used, just too many plugins check for them and crash if not available, better
+// to have them anyway
     public static boolean hasEconomy() {
         return economy != null;
     }
