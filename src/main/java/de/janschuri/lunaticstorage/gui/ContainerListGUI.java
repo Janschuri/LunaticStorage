@@ -13,15 +13,21 @@ import de.janschuri.lunaticstorage.utils.Utils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static de.janschuri.lunaticstorage.LunaticStorage.getMessage;
-import static de.janschuri.lunaticstorage.LunaticStorage.getMessageAsLegacyString;
 
 public class ContainerListGUI extends ListGUI<StorageContainer> implements PaginatedList<StorageContainer> {
 
@@ -78,14 +84,94 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
             .defaultMessage("en", "Container")
             .defaultMessage("de", "Container");
 
+    private final MessageKey addContainerMK = new LunaticMessageKey("add_container_button")
+            .noPrefix()
+            .defaultMessage("en", "&aAlle Container in Reichweite hinzufügen")
+            .defaultMessage("de", "&aAdd all containers in range");
+
+    private final MessageKey containersInRangeMK = new LunaticMessageKey("containers_in_range")
+            .noPrefix()
+            .defaultMessage("en", "&eContainers in range: %count%")
+            .defaultMessage("de", "&eContainer in Reichweite: %count%");
+
+    private final MessageKey returnMK = new LunaticMessageKey("return_button")
+            .noPrefix()
+            .defaultMessage("en", "&cClose")
+            .defaultMessage("de", "&cSchließen");
 
 
     private int page = 0;
     private ItemStack storageItem;
 
+    private static List<Container> containersInRange;
+
+    private int range = -1;
+    private Location loc = null;
+    private Consumer<InventoryClickEvent> onCloseConsumer = null;
+    private BiConsumer<InventoryClickEvent, List<Container>> onAddContainersInRange = null;
+
     public ContainerListGUI(ItemStack itemStack) {
         super();
         storageItem = itemStack;
+    }
+
+    @Override
+    public void init(Player player) {
+        this.loadContainersInRange();
+        if (range >= 0 && loc != null && containersInRange != null) {
+            this.addButton(4, addContainerButton());
+        }
+
+        if (this.onCloseConsumer != null) {
+            this.addButton(0, returnButton());
+        }
+
+        super.init(player);
+    }
+
+    public ContainerListGUI range(int range) {
+        this.range = range;
+        return this;
+    }
+
+    public ContainerListGUI location(Location location) {
+        this.loc = location;
+        return this;
+    }
+
+    public ContainerListGUI loadContainersInRange() {
+
+        if (this.range < 0 || this.loc == null) {
+            return this;
+        }
+
+        List<Container> containersInRange = new ArrayList<>();
+
+        for (int x = -this.range; x <= this.range; x++) {
+            for (int y = -this.range; y <= this.range; y++) {
+                for (int z = -this.range; z <= this.range; z++) {
+                    Block block = loc.getBlock().getRelative(x, y, z);
+
+                    if (block.getState() instanceof Container container) {
+                        containersInRange.add(container);
+                    }
+                }
+            }
+        }
+
+        this.containersInRange = containersInRange;
+
+        return this;
+    }
+
+    public ContainerListGUI onClose(Consumer<InventoryClickEvent> consumer) {
+        this.onCloseConsumer = consumer;
+        return this;
+    }
+
+    public ContainerListGUI onAddContainersInRange(BiConsumer<InventoryClickEvent, List<Container>> consumer) {
+        this.onAddContainersInRange = consumer;
+        return this;
     }
 
     @Override
@@ -176,5 +262,42 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
     @Override
     public void setPage(int i) {
         page = i;
+    }
+
+    private InventoryButton addContainerButton() {
+        ItemStack itemStack = new ItemStack(Material.LIGHTNING_ROD);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+
+        itemMeta.displayName(getMessage(addContainerMK));
+
+        List<Component> lore = List.of(
+                getMessage(containersInRangeMK,
+                        placeholder("%count%", String.valueOf(containersInRange.size()))
+                )
+        );
+        itemMeta.lore(lore);
+        itemStack.setItemMeta(itemMeta);
+
+        return new InventoryButton()
+                .creator(player -> itemStack)
+                .consumer(event -> {
+                    if (this.onAddContainersInRange == null) {
+                        return;
+                    }
+
+                    this.onAddContainersInRange.accept(event, containersInRange);
+                });
+    }
+
+    private InventoryButton returnButton() {
+        ItemStack itemStack = new ItemStack(Material.BARRIER);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+
+        itemMeta.displayName(getMessage(returnMK));
+        itemStack.setItemMeta(itemMeta);
+
+        return new InventoryButton()
+                .creator(player -> itemStack)
+                .consumer(onCloseConsumer);
     }
 }
