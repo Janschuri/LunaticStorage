@@ -76,4 +76,6 @@ tasks.withType<Javadoc>() {
 
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     relocate("org.bstats", "de.janschuri.lunaticstorage.libs.bstats")
+    relocate("com.jeff_media.customblockdata", "de.janschuri.lunaticstorage.libs.customblockdata")
+    relocate("de.janschuri.lunaticlib", "de.janschuri.lunaticstorage.libs.lunaticlib")
 }

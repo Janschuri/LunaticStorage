@@ -9,5 +9,3 @@ commands:
     usage: /storage
     aliases:
       - storage
-depend:
-  - LunaticLib

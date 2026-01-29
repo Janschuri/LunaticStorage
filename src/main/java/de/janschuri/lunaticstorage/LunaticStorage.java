@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage;
 import de.janschuri.lunaticlib.config.MessageKey;
 import de.janschuri.lunaticlib.platform.paper.commands.PaperCommandAdapter;
 import de.janschuri.lunaticlib.platform.paper.commands.PaperCommandHandler;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.PaperInventoryGUIHandler;
 import de.janschuri.lunaticlib.utils.Placeholder;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
@@ -50,6 +51,7 @@ public final class LunaticStorage extends JavaPlugin {
         PaperCommandAdapter commandAdapter = new PaperCommandAdapter();
         PaperCommandHandler.initialize(commandAdapter);
         PaperCommandHandler.getAdapter().registerCommand(this, new Storage());
+        PaperInventoryGUIHandler.initialize(instance);
 
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);

@@ -86,7 +86,7 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
         PlayerSender playerSender = (PlayerSender) sender;
         Player player = Bukkit.getPlayer(playerSender.getUniqueId());
 
-        if (!player.getInventory().getItemInMainHand().getType().isAir()) {
+        if (player.getInventory().getItemInMainHand().getType().isAir()) {
             sender.sendMessage(getMessage(NO_ITEM_IN_HAND_MK));
             return true;
         }
