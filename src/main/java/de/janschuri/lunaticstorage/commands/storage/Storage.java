@@ -1,15 +1,17 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticlib.Command;
-import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.common.command.HasHelpCommand;
-import de.janschuri.lunaticlib.common.command.HasSubcommands;
-import de.janschuri.lunaticlib.common.command.LunaticHelpCommand;
-import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
-import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
+import de.janschuri.lunaticlib.commands.Command;
+import de.janschuri.lunaticlib.commands.impl.HasHelpCommand;
+import de.janschuri.lunaticlib.commands.impl.HasSubcommands;
+import de.janschuri.lunaticlib.commands.impl.LunaticHelpCommand;
+import de.janschuri.lunaticlib.config.CommandMessageKey;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.config.impl.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
+import de.janschuri.lunaticlib.sender.Sender;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
-import de.janschuri.lunaticlib.Sender;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -47,13 +49,18 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
     }
 
     @Override
-    public MessageKey pageParamName() {
-        return PAGE_MK;
+    public Component pageParam() {
+        return getMessage(PAGE_MK.noPrefix());
     }
 
     @Override
-    public MessageKey getHelpHeader() {
-        return HELP_HEADER_MK;
+    public Component getHelpHeader() {
+        return getMessage(HELP_HEADER_MK.noPrefix());
+    }
+
+    @Override
+    public Component getHelpFooter(int page, int pages) {
+       return getLanguageConfig().getHelpFooter(this, page, pages);
     }
 
     @Override

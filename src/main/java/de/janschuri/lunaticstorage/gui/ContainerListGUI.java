@@ -1,28 +1,24 @@
 package de.janschuri.lunaticstorage.gui;
 
-import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.PlayerSender;
-import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.DecisionGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
+import de.janschuri.lunaticlib.inventorygui.buttons.InventoryButton;
+import de.janschuri.lunaticlib.inventorygui.guis.DecisionGUI;
+import de.janschuri.lunaticlib.inventorygui.guis.ListGUI;
+import de.janschuri.lunaticlib.inventorygui.handler.GUIManager;
+import de.janschuri.lunaticlib.inventorygui.interfaces.list.PaginatedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Utils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
-import java.util.Map;
 
 import static de.janschuri.lunaticstorage.LunaticStorage.getMessage;
 import static de.janschuri.lunaticstorage.LunaticStorage.getMessageAsLegacyString;
@@ -101,17 +97,17 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
 
         String coordinates = block.getX() + " " + block.getY() + " " + block.getZ();
 
-        itemMeta.setDisplayName(getMessageAsLegacyString(containerMK));
+        itemMeta.displayName(getMessage(containerMK));
 
-        List<String> lore = List.of(
-                getMessageAsLegacyString(coordinatesMK) + ": " + coordinates,
-                getMessageAsLegacyString(worldMK) + ": " + block.getWorld().getName(),
-                "",
-                getMessageAsLegacyString(rightClickMK) + ": " + getMessageAsLegacyString(showContainerMK),
-                getMessageAsLegacyString(shiftRightClickMK) + ": " + getMessageAsLegacyString(removeContainerMK)
+        List<Component> lore = List.of(
+                getMessage(coordinatesMK).append(Component.text(": " + coordinates)),
+                getMessage(worldMK).append(Component.text(": " + block.getWorld().getName())),
+                Component.text(" "),
+                getMessage(rightClickMK).append(Component.text(": ")).append(getMessage(showContainerMK)),
+                getMessage(shiftRightClickMK).append(Component.text(": ")).append(getMessage(removeContainerMK))
         );
 
-        itemMeta.setLore(lore);
+        itemMeta.lore(lore);
 
         itemStack.setItemMeta(itemMeta);
 

@@ -1,6 +1,6 @@
 package de.janschuri.lunaticstorage.config;
 
-import de.janschuri.lunaticlib.common.config.LunaticConfig;
+import de.janschuri.lunaticlib.config.impl.LunaticConfig;
 import org.bukkit.Material;
 
 import java.nio.file.Path;

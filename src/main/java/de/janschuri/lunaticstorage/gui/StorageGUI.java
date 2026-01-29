@@ -1,17 +1,17 @@
 package de.janschuri.lunaticstorage.gui;
 
-import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.PlayerInvButton;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SearchableList;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.SortedList;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
+import de.janschuri.lunaticlib.inventorygui.buttons.InventoryButton;
+import de.janschuri.lunaticlib.inventorygui.buttons.PlayerInvButton;
+import de.janschuri.lunaticlib.inventorygui.guis.ListGUI;
+import de.janschuri.lunaticlib.inventorygui.interfaces.list.PaginatedList;
+import de.janschuri.lunaticlib.inventorygui.interfaces.list.SearchableList;
+import de.janschuri.lunaticlib.inventorygui.interfaces.list.SortedList;
+import de.janschuri.lunaticlib.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Utils;
-import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

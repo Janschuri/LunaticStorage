@@ -1,6 +1,6 @@
 package de.janschuri.lunaticstorage.config;
 
-import de.janschuri.lunaticlib.common.config.LunaticLanguageConfig;
+import de.janschuri.lunaticlib.config.impl.LunaticLanguageConfig;
 import de.janschuri.lunaticstorage.LunaticStorage;
 
 import java.nio.file.Path;

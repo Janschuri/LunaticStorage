@@ -1,10 +1,12 @@
 package de.janschuri.lunaticstorage.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.utils.PaperUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -19,7 +21,7 @@ import org.json.JSONObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
+public class Utils extends PaperUtils {
 
 
     public static String serializeCoords(Location block) {
@@ -93,7 +95,7 @@ public class Utils extends de.janschuri.lunaticlib.common.utils.Utils {
         String name;
 
         if (itemStack.getItemMeta() != null && itemStack.getItemMeta().hasDisplayName()) {
-            name = itemStack.getItemMeta().getDisplayName();
+            name = PlainTextComponentSerializer.plainText().serialize(itemStack.getItemMeta().displayName());
         } else {
             if (language != null) {
                 name = language.getString(nameKey);

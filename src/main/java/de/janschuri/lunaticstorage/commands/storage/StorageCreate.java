@@ -1,9 +1,12 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticlib.*;
-import de.janschuri.lunaticlib.common.command.HasParams;
-import de.janschuri.lunaticlib.common.command.HasParentCommand;
-import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.commands.Command;
+import de.janschuri.lunaticlib.commands.impl.HasParams;
+import de.janschuri.lunaticlib.commands.impl.HasParentCommand;
+import de.janschuri.lunaticlib.config.CommandMessageKey;
+import de.janschuri.lunaticlib.config.impl.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.sender.PlayerSender;
+import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.storage.Key;
@@ -80,16 +83,16 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
             }
         }
 
-        PlayerSender player = (PlayerSender) sender;
-        Player p = Bukkit.getPlayer(player.getUniqueId());
+        PlayerSender playerSender = (PlayerSender) sender;
+        Player player = Bukkit.getPlayer(playerSender.getUniqueId());
 
-        if (!player.hasItemInMainHand()) {
+        if (!player.getInventory().getItemInMainHand().getType().isAir()) {
             sender.sendMessage(getMessage(NO_ITEM_IN_HAND_MK));
             return true;
         }
 
-        assert p != null;
-        ItemStack item = p.getInventory().getItemInMainHand();
+        assert player != null;
+        ItemStack item = player.getInventory().getItemInMainHand();
 
         if (type.equalsIgnoreCase("storageitem")) {
             createStorageItem(item);
@@ -166,9 +169,9 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
     }
 
     @Override
-    public List<MessageKey> getParamsNames() {
+    public List<Component> getParamsNames() {
         return List.of(
-                TYPE_MK
+                getMessage(TYPE_MK.noPrefix())
         );
     }
 }
