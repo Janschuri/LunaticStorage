@@ -1,9 +1,9 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.commands.Command;
-import de.janschuri.lunaticlib.commands.impl.HasParentCommand;
+import de.janschuri.lunaticlib.commands.HasParentCommand;
 import de.janschuri.lunaticlib.config.CommandMessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;

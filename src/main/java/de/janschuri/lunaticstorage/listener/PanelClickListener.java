@@ -1,6 +1,6 @@
 package de.janschuri.lunaticstorage.listener;
 
-import de.janschuri.lunaticlib.inventorygui.handler.GUIManager;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;

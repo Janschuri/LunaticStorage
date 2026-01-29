@@ -1,7 +1,6 @@
 package de.janschuri.lunaticstorage.utils;
 
-
-import de.janschuri.lunaticlib.utils.impl.LunaticLogger;
+import de.janschuri.lunaticlib.utils.LunaticLogger;
 import de.janschuri.lunaticstorage.LunaticStorage;
 
 public class Logger {
@@ -18,15 +17,15 @@ public class Logger {
         }
     }
 
-    public static void infoLog(String msg) {
+    public static void info(String msg) {
         logger.info(msg);
     }
 
-    public static void warnLog(String msg) {
+    public static void warn(String msg) {
         logger.warn(msg);
     }
 
-    public static void errorLog(String msg) {
+    public static void error(String msg) {
         logger.error(msg);
     }
 

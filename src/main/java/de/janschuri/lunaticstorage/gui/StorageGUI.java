@@ -1,14 +1,14 @@
 package de.janschuri.lunaticstorage.gui;
 
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.config.MessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
-import de.janschuri.lunaticlib.inventorygui.buttons.InventoryButton;
-import de.janschuri.lunaticlib.inventorygui.buttons.PlayerInvButton;
-import de.janschuri.lunaticlib.inventorygui.guis.ListGUI;
-import de.janschuri.lunaticlib.inventorygui.interfaces.list.PaginatedList;
-import de.janschuri.lunaticlib.inventorygui.interfaces.list.SearchableList;
-import de.janschuri.lunaticlib.inventorygui.interfaces.list.SortedList;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.buttons.InventoryButton;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.buttons.PlayerInvButton;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.guis.ListGUI;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.PaginatedList;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.SearchableList;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.SortedList;
+import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Utils;

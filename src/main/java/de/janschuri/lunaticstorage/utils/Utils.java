@@ -1,8 +1,8 @@
 package de.janschuri.lunaticstorage.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticlib.utils.ItemStackUtils;
-import de.janschuri.lunaticlib.utils.PaperUtils;
+import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
+import de.janschuri.lunaticlib.platform.paper.utils.PaperUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.StorageContainer;

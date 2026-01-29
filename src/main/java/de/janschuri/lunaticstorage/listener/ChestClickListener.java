@@ -1,9 +1,9 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.config.MessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
-import de.janschuri.lunaticlib.utils.EventUtils;
+import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
@@ -52,7 +52,7 @@ public class ChestClickListener implements Listener {
             try {
                 LunaticStorage.getGlowingBlocks().unsetGlowing(clickedBlock, player);
             } catch (Exception e) {
-                Logger.errorLog("Error while unsetting glowing block");
+                Logger.error("Error while unsetting glowing block");
             }
         }
 

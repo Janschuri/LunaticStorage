@@ -1,11 +1,11 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.commands.Command;
-import de.janschuri.lunaticlib.commands.impl.HasParentCommand;
+import de.janschuri.lunaticlib.commands.HasParentCommand;
 import de.janschuri.lunaticlib.config.CommandMessageKey;
+import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.config.MessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticCommandMessageKey;
-import de.janschuri.lunaticlib.inventorygui.handler.GUIManager;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticlib.sender.PlayerSender;
 import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
@@ -67,7 +67,7 @@ public class StorageCheck extends StorageCommand implements HasParentCommand {
         Player player = Bukkit.getPlayer(playerSender.getUniqueId());
 
         if (player == null) {
-            Logger.errorLog("Player is null!");
+            Logger.error("Player is null!");
             return false;
         }
 

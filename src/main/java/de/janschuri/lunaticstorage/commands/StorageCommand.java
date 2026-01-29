@@ -1,9 +1,9 @@
 package de.janschuri.lunaticstorage.commands;
 
-import de.janschuri.lunaticlib.commands.impl.LunaticCommand;
+import de.janschuri.lunaticlib.commands.LunaticCommand;
+import de.janschuri.lunaticlib.config.LunaticLanguageConfig;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.config.MessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticLanguageConfig;
-import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
 import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import net.kyori.adventure.text.Component;

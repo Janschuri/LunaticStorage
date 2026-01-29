@@ -1,15 +1,14 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
 import de.janschuri.lunaticlib.commands.Command;
-import de.janschuri.lunaticlib.commands.impl.HasHelpCommand;
-import de.janschuri.lunaticlib.commands.impl.HasSubcommands;
-import de.janschuri.lunaticlib.commands.impl.LunaticHelpCommand;
+import de.janschuri.lunaticlib.commands.HasHelpCommand;
+import de.janschuri.lunaticlib.commands.HasSubcommands;
+import de.janschuri.lunaticlib.commands.LunaticHelpCommand;
 import de.janschuri.lunaticlib.config.CommandMessageKey;
+import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
 import de.janschuri.lunaticlib.config.MessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticCommandMessageKey;
-import de.janschuri.lunaticlib.config.impl.LunaticMessageKey;
 import de.janschuri.lunaticlib.sender.Sender;
-import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import net.kyori.adventure.text.Component;
 
@@ -49,7 +48,7 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
     }
 
     @Override
-    public Component pageParam() {
+    public Component getPageParam() {
         return getMessage(PAGE_MK.noPrefix());
     }
 
