@@ -22,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,18 +97,25 @@ public class Utils extends PaperUtils {
     public static String getMCLanguage(ItemStack itemStack, String locale) {
         String nameKey = ItemStackUtils.getKey(itemStack);
         JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
-        String name;
+        String name = itemStack.getType().toString();
 
-        if (itemStack.getItemMeta() != null && itemStack.getItemMeta().hasDisplayName()) {
-            name = PlainTextComponentSerializer.plainText().serialize(itemStack.getItemMeta().displayName());
-        } else {
-            if (language != null) {
-                name = language.getString(nameKey);
-            } else {
-                name = itemStack.getType().toString();
-            }
+        if (language != null && language.has(nameKey)) {
+            name = language.getString(nameKey);
         }
-        return name.toLowerCase();
+
+        return name;
+    }
+
+    @Nullable
+    public static String getMCLanguageByKey(String key, String locale) {
+        JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
+
+        if (language != null) {
+            Logger.info("Getting language for key: " + key + " in locale: " + locale);
+            return language.getString(key);
+        } else {
+            return null;
+        }
     }
 
     public static boolean isContainerBlock(Material material) {

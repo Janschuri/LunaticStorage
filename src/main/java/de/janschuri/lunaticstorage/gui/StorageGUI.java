@@ -13,14 +13,21 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -80,6 +87,12 @@ public class StorageGUI
     private static final MessageKey RANGE_ITEM_SLOT_MK = new LunaticMessageKey("range_item_slot")
             .defaultMessage("en", "Range Item Slot")
             .defaultMessage("de", "Range-Upgrade Slot");
+    private static final MessageKey RESET_SEARCH_MK = new LunaticMessageKey("reset_search")
+            .defaultMessage("en", "Reset Search")
+            .defaultMessage("de", "Suche zurücksetzen");
+    private static final MessageKey CURRENT_SEARCH_MK = new LunaticMessageKey("current_search")
+            .defaultMessage("en", "Current Search: %search%")
+            .defaultMessage("de", "Aktuelle Suche: %search%");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -126,6 +139,10 @@ public class StorageGUI
         createRangeButton(storage.getRangeItem());
         addButton(createItemButton(storage));
         addButton(createStoragePlayerInvButton());
+
+        if (!getSearch().isEmpty()) {
+            addButton(1, resetSearchButton());
+        }
 
         super.init(player);
     }
@@ -508,8 +525,56 @@ public class StorageGUI
             if (search.isEmpty()) {
                 return true;
             }
-            String language = Utils.getMCLanguage(entry.getKey(), locale);
-            return language.toLowerCase().contains(search.toLowerCase());
+
+            ItemStack item = entry.getKey();
+
+            String language = Utils.getMCLanguage(item, locale);
+
+            Component displayNameComponent = item.displayName();
+
+            String name = displayNameComponent == null ? "" : PlainTextComponentSerializer.plainText().serialize(displayNameComponent);
+
+            String type = item.getType().name();
+
+            List<Component> lore = entry.getKey().getItemMeta() != null ? entry.getKey().getItemMeta().lore() : null;
+            String concanetedLore = "";
+            if (lore != null) {
+                for (Component line : lore) {
+                    if (line instanceof TextComponent textComponent) {
+                        concanetedLore = concanetedLore + textComponent.content() + " ";
+                    }
+                }
+            }
+
+            String concanetedEnchantLore = "";
+
+            Set<Enchantment> enchants = entry.getKey().getEnchantments().keySet();
+
+            for (Enchantment enchantment : enchants) {
+                String key = enchantment.getKey().getKey();
+                Logger.info("Enchantment Key: " + key);
+                String enchantName = Utils.getMCLanguageByKey("enchantment.minecraft." + key, locale);
+
+                if (enchantName == null || enchantName.isEmpty()) {
+                    enchantName = key;
+                }
+
+                concanetedEnchantLore = concanetedEnchantLore + enchantName + " ";
+            }
+
+
+            Logger.info("Search Filter Values:");
+            Logger.info("Language: " + language);
+            Logger.info("Name: " + name);
+            Logger.info("Type: " + type);
+            Logger.info("Enchantment Lore: " + concanetedEnchantLore);
+            Logger.info("Lore: " + concanetedLore);
+
+            return language.toLowerCase().contains(search.toLowerCase()) ||
+                    name.toLowerCase().contains(search.toLowerCase()) ||
+                    type.toLowerCase().contains(search.toLowerCase()) ||
+                    concanetedEnchantLore.toLowerCase().contains(search.toLowerCase()) ||
+                    concanetedLore.toLowerCase().contains(search.toLowerCase());
         };
     }
 
@@ -688,8 +753,50 @@ public class StorageGUI
         ItemMeta meta = item.getItemMeta();
         assert meta != null;
         meta.setDisplayName(getString(SEARCH_ITEM_MK));
+
+        List<String> lore = new ArrayList<>();
+
+        if (!getSearch().isEmpty()) {
+            String currentSearch = getString(CURRENT_SEARCH_MK)
+                    .replace("%search%", getSearch());
+            lore.add("");
+            lore.add(currentSearch);
+        }
+
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private InventoryButton resetSearchButton() {
+        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(RESET_SEARCH_MK));
+
+        List<String> lore = new ArrayList<>();
+
+        if (!getSearch().isEmpty()) {
+            String currentSearch = getString(CURRENT_SEARCH_MK)
+                    .replace("%search%", getSearch());
+            lore.add("");
+            lore.add(currentSearch);
+        }
+
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+
+        return new InventoryButton()
+                .creator(player -> item)
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    setSearch("");
+
+                    reloadGui();
+                });
     }
 
     @Override
