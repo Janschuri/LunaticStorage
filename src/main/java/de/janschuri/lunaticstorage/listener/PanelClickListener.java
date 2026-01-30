@@ -1,23 +1,16 @@
 package de.janschuri.lunaticstorage.listener;
 
-import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
-import de.janschuri.lunaticstorage.storage.Key;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 

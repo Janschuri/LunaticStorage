@@ -1,14 +1,11 @@
 package de.janschuri.lunaticstorage.commands;
 
-import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.Sender;
-import de.janschuri.lunaticlib.common.command.LunaticCommand;
-import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
-import de.janschuri.lunaticlib.common.config.LunaticLanguageConfig;
-import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
+import de.janschuri.lunaticlib.commands.LunaticCommand;
+import de.janschuri.lunaticlib.config.LunaticLanguageConfig;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.config.LanguageConfig;
-import de.janschuri.lunaticlib.MessageKey;
 import net.kyori.adventure.text.Component;
 
 public abstract class StorageCommand extends LunaticCommand {

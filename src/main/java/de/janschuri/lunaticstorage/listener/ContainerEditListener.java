@@ -1,7 +1,6 @@
 package de.janschuri.lunaticstorage.listener;
 
-import de.janschuri.lunaticlib.platform.bukkit.util.EventUtils;
-import de.janschuri.lunaticstorage.utils.Logger;
+import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;

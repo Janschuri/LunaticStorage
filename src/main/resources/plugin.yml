@@ -1,5 +1,5 @@
 name: LunaticStorage
-version: '${project.version}'
+version: '${version}'
 main: de.janschuri.lunaticstorage.LunaticStorage
 api-version: '1.19'
 
@@ -9,5 +9,3 @@ commands:
     usage: /storage
     aliases:
       - storage
-depend:
-  - LunaticLib

@@ -1,16 +1,19 @@
 package de.janschuri.lunaticstorage;
 
-import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.Placeholder;
-import de.janschuri.lunaticlib.platform.bukkit.external.Metrics;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.platform.paper.commands.PaperCommandAdapter;
+import de.janschuri.lunaticlib.platform.paper.commands.PaperCommandHandler;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.PaperInventoryGUIHandler;
+import de.janschuri.lunaticlib.utils.Placeholder;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.config.PluginConfig;
 import de.janschuri.lunaticstorage.listener.*;
 import de.janschuri.lunaticstorage.utils.Logger;
-import de.janschuri.lunaticlib.platform.bukkit.PlatformImpl;
+import de.janschuri.lunaticstorage.utils.Utils;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import net.kyori.adventure.text.Component;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
 
@@ -30,6 +33,7 @@ public final class LunaticStorage extends JavaPlugin {
     private static LanguageConfig languageConfig;
     private static PluginConfig pluginConfig;
     private GlowingBlocks glowingBlocks;
+    private static boolean installedLogBlock = false;
 
     @Override
     public void onEnable() {
@@ -43,7 +47,11 @@ public final class LunaticStorage extends JavaPlugin {
         int pluginId = 24545;
         Metrics metrics = new Metrics(this, pluginId);
 
-        new PlatformImpl().registerCommand(this, new Storage());
+
+        PaperCommandAdapter commandAdapter = new PaperCommandAdapter();
+        PaperCommandHandler.initialize(commandAdapter);
+        PaperCommandHandler.getAdapter().registerCommand(this, new Storage());
+        PaperInventoryGUIHandler.initialize(instance);
 
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
         getServer().getPluginManager().registerEvents(new ChestClickListener(), this);
@@ -53,6 +61,10 @@ public final class LunaticStorage extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new ContainerEditListener(), this);
         getServer().getPluginManager().registerEvents(new InventoryChangeListener(), this);
+
+        if (Utils.classExists("de.diddiz.LogBlock.LogBlock")) {
+            installedLogBlock = true;
+        }
     }
 
     @Override
@@ -72,7 +84,7 @@ public final class LunaticStorage extends JavaPlugin {
         debug = pluginConfig.isDebug();
 
         if (pluginConfig.isDebug()) {
-            Logger.infoLog("Debug mode enabled.");
+            Logger.info("Debug mode enabled.");
         }
 
         languageConfig = new LanguageConfig(dataDirectory, pluginConfig.getLanguageKey());
@@ -133,5 +145,9 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static String getMessageAsLegacyString(MessageKey key) {
         return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(key);
+    }
+
+    public static boolean isInstalledLogBlock() {
+        return installedLogBlock;
     }
 }

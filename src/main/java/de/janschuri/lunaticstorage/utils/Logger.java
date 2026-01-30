@@ -1,33 +1,32 @@
 package de.janschuri.lunaticstorage.utils;
 
-
-import de.janschuri.lunaticlib.common.logger.AbstractLogger;
+import de.janschuri.lunaticlib.utils.LunaticLogger;
 import de.janschuri.lunaticstorage.LunaticStorage;
 
-public class Logger extends AbstractLogger {
+public class Logger {
 
-    private static final org.slf4j.Logger logger = Logger.getLogger("LunaticStorage");
+    private static final de.janschuri.lunaticlib.utils.Logger logger = LunaticLogger.getLogger("LunaticStorage");
 
     public static boolean isDebug() {
         return LunaticStorage.isDebug();
     }
 
-    public static void debugLog(String msg) {
+    public static void debug(String msg) {
         if (isDebug()) {
-            debug(logger, msg);
+            logger.debug(msg);
         }
     }
 
-    public static void infoLog(String msg) {
-        info(logger, msg);
+    public static void info(String msg) {
+        logger.info(msg);
     }
 
-    public static void warnLog(String msg) {
-        warn(logger, msg);
+    public static void warn(String msg) {
+        logger.warn(msg);
     }
 
-    public static void errorLog(String msg) {
-        error(logger, msg);
+    public static void error(String msg) {
+        logger.error(msg);
     }
 
 }

@@ -1,12 +1,12 @@
 package de.janschuri.lunaticstorage.commands.storage;
 
-import de.janschuri.lunaticlib.Command;
-import de.janschuri.lunaticlib.CommandMessageKey;
-import de.janschuri.lunaticlib.PlayerSender;
-import de.janschuri.lunaticlib.Sender;
-import de.janschuri.lunaticlib.common.command.HasParentCommand;
-import de.janschuri.lunaticlib.common.config.LunaticCommandMessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
+import de.janschuri.lunaticlib.commands.Command;
+import de.janschuri.lunaticlib.commands.HasParentCommand;
+import de.janschuri.lunaticlib.config.CommandMessageKey;
+import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
+import de.janschuri.lunaticlib.sender.PlayerSender;
+import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.gui.ContainerGUI;
 import de.janschuri.lunaticstorage.utils.Utils;

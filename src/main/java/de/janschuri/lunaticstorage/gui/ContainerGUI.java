@@ -1,30 +1,20 @@
 package de.janschuri.lunaticstorage.gui;
 
-import de.janschuri.lunaticlib.MessageKey;
-import de.janschuri.lunaticlib.common.config.LunaticMessageKey;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.GUIManager;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryButton;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.InventoryHandler;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.ListGUI;
-import de.janschuri.lunaticlib.platform.bukkit.inventorygui.list.PaginatedList;
-import de.janschuri.lunaticlib.platform.bukkit.util.ItemStackUtils;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
+import de.janschuri.lunaticlib.config.MessageKey;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.buttons.InventoryButton;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.guis.ListGUI;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.PaginatedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
-import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
-import de.janschuri.lunaticstorage.utils.Utils;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> implements PaginatedList<Map.Entry<ItemStack, Boolean>> {
 
@@ -168,8 +158,9 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
     }
 
     @Override
-    public List getItems() {
-        return Arrays.asList((isWhitelist() ? getStorageContainer().getWhitelist() : getStorageContainer().getBlacklist()).entrySet().toArray());
+    public List<Map.Entry<ItemStack, Boolean>> getItems() {
+        Map<ItemStack, Boolean> items = isWhitelist() ? getStorageContainer().getWhitelist() : getStorageContainer().getBlacklist();
+        return new ArrayList<>(items.entrySet());
     }
 
     private InventoryButton toggleModeButton() {
@@ -177,7 +168,7 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
                 .creator(player -> {
                     ItemStack item = new ItemStack((isWhitelist() ? Material.WHITE_WOOL : Material.BLACK_WOOL));
                     ItemMeta meta = item.getItemMeta();
-                    meta.setDisplayName((isWhitelist() ? getString(WHITELIST_MODE_MK) : getString(BLACKLIST_MODE_MK)));
+                    meta.displayName((isWhitelist() ? getMessage(WHITELIST_MODE_MK) : getMessage(BLACKLIST_MODE_MK)));
 
                     item.setItemMeta(meta);
                     return item;
@@ -373,6 +364,10 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
 
     private String getString(MessageKey messageKey) {
         return LunaticStorage.getLanguageConfig().getMessageAsLegacyString(messageKey.noPrefix());
+    }
+
+    private Component getMessage(MessageKey messageKey) {
+        return LunaticStorage.getLanguageConfig().getMessage(messageKey.noPrefix());
     }
 
     @Override
