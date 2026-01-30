@@ -6,6 +6,7 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.external.LogBlock;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -29,6 +30,7 @@ public class Storage {
     private static final Map<Block, Integer> storageLoadedContainerAmounts = new HashMap<>();
     private static final Map<Block, Integer> storageContainerAmounts = new HashMap<>();
 
+    private static final Map<String, ItemStack> deserializedItemStackCache = new HashMap<>();
 
     private final Block block;
 
@@ -45,13 +47,24 @@ public class Storage {
         preferredContainersMapByMaterial.computeIfAbsent(this.block, k -> new HashMap<>());
     }
 
+    private static ItemStack deserializeItemStack(byte[] data) {
+        String hash = Arrays.toString(data);
+        if (deserializedItemStackCache.containsKey(hash)) {
+            return deserializedItemStackCache.get(hash).clone();
+        } else {
+            ItemStack itemStack = ItemStackUtils.deserializeItemStack(data);
+            deserializedItemStackCache.put(hash, itemStack);
+            return itemStack;
+        }
+    }
+
     public static Storage getStorage(Block block) {
 
         Storage storage = new Storage(block);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
         if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-            ItemStack newStorageItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
+            ItemStack newStorageItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
             boolean update = false;
 
@@ -70,7 +83,7 @@ public class Storage {
             }
 
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack newRangeItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
+                ItemStack newRangeItem = deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
                 if (storage.getRangeItem() == null) {
                     if (newRangeItem != null) {
@@ -166,7 +179,7 @@ public class Storage {
             }
         } else {
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack oldItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
+                ItemStack oldItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
                 if (!oldItem.isSimilar(item)) {
                     update = true;
                 }
@@ -205,7 +218,7 @@ public class Storage {
             dataContainer.remove(Key.RANGE_ITEM);
         } else {
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack oldItem = ItemStackUtils.deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
+                ItemStack oldItem = deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
                 if (!oldItem.isSimilar(item)) {
                     update = true;
                 }

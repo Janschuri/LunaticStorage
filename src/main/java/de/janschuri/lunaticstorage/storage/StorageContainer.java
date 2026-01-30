@@ -4,14 +4,19 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -29,6 +34,10 @@ public class StorageContainer {
     }
 
     public static StorageContainer getStorageContainer(Block block) {
+        if (!Utils.isStorageContainer(block)) {
+            initializeStorageContainer(block);
+        }
+
         return new StorageContainer(block);
     }
 
@@ -40,6 +49,21 @@ public class StorageContainer {
         }
 
         return getStorageContainer(block);
+    }
+
+    private static void initializeStorageContainer(Block block) {
+        if (!Utils.isContainerBlock(block.getType())) {
+            Logger.error("Tried to initialize StorageContainer for non-container block at " + Utils.serializeCoords(block.getLocation()));
+            return;
+        }
+
+        StorageContainer storageContainer = new StorageContainer(block);
+        if (!storageContainer.getInventory().isEmpty()) {
+            storageContainer.addInvToWhitelist();
+            storageContainer.setWhitelistEnabled(true);
+        }
+        PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
     }
 
     public List<Block> getStorageIds() {
@@ -447,5 +471,116 @@ public class StorageContainer {
 
     public int getBlackListPages() {
         return (int) (getBlacklist().size() / 36.0);
+    }
+
+    public static int addContainersToStorageItem(ItemStack itemInHand, World world, Container... containers) {
+        List<String> chests = new ArrayList<>();
+        List<Block> containerBlocks = new ArrayList<>();
+
+        int containerCount = 0;
+        for (Container container : containers) {
+            if (container instanceof Chest) {
+                Chest chest = (Chest) container;
+                if (Utils.isDoubleChest(chest)) {
+                    DoubleChest doubleChest = (DoubleChest) chest.getInventory().getHolder();
+                    Chest leftChest = (Chest) doubleChest.getLeftSide();
+                    Chest rightChest = (Chest) doubleChest.getRightSide();
+                    String leftChestID = Utils.serializeCoords(leftChest.getLocation());
+                    String rightChestID = Utils.serializeCoords(rightChest.getLocation());
+                    chests.add(leftChestID);
+                    chests.add(rightChestID);
+                    containerBlocks.add(leftChest.getBlock());
+                    containerBlocks.add(rightChest.getBlock());
+                } else {
+                    String chestID = Utils.serializeCoords(container.getLocation());
+                    chests.add(chestID);
+                    containerBlocks.add(container.getBlock());
+                }
+            } else {
+                String chestID = Utils.serializeCoords(container.getLocation());
+                chests.add(chestID);
+                containerBlocks.add(container.getBlock());
+            }
+
+            int addingCount = addContainersToStorageItem(itemInHand, world, chests);
+            containerCount += addingCount;
+        }
+
+        return containerCount;
+    }
+
+    public static int addContainersToStorageItem(ItemStack itemInHand, World world, List<String> chests) {
+        UUID worldUUID = world.getUID();
+        ItemMeta storageMeta = itemInHand.getItemMeta();
+        PersistentDataContainer dataContainer = storageMeta.getPersistentDataContainer();
+
+        // Check if the storage item already has the world in its list and add it if not
+        if (!dataContainer.has(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING)) {
+            dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, worldUUID.toString());
+            itemInHand.setItemMeta(storageMeta);
+        } else {
+            String worldUUIDString = dataContainer.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+            List<UUID> worlds = new ArrayList<>();
+            if (worldUUIDString != null) {
+                worlds = Utils.getUUIDListFromString(worldUUIDString);
+            }
+            if (!worlds.contains(worldUUID)) {
+                worlds.add(worldUUID);
+                dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, Utils.getUUIDListAsString(worlds));
+                itemInHand.setItemMeta(storageMeta);
+            }
+        }
+
+        int count = addChestsToPersistentDataContainer(dataContainer, worldUUID, chests);
+
+        if (count > 0) {
+            itemInHand.setItemMeta(storageMeta);
+        }
+
+        return count;
+    }
+
+    private static int addChestsToPersistentDataContainer(PersistentDataContainer dataContainer, UUID worldUUID, List<String> chests) {
+        NamespacedKey worldKey = new NamespacedKey(LunaticStorage.getInstance(), worldUUID.toString());
+
+        if (!dataContainer.has(worldKey, PersistentDataType.BYTE_ARRAY)) {
+            byte[] worldChests = Utils.getArrayFromList(chests);
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, worldChests);
+            return chests.size();
+        } else {
+            byte[] bytes = dataContainer.get(worldKey, PersistentDataType.BYTE_ARRAY);
+            List<String> oldChests = Utils.getListFromByteArray(bytes);
+            Logger.debug("Old chests: " + Arrays.toString(oldChests.toArray()));
+
+            int marked = 0;
+
+            for (String chest : chests) {
+                if (!oldChests.contains(chest)) {
+                    oldChests.add(chest);
+                    marked++;
+                }
+            }
+
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, Utils.getArrayFromList(oldChests));
+
+            return marked;
+        }
+    }
+
+    public static void setChestsToPersistentDataContainer(ItemStack item, Map<UUID, List<String>> chests) {
+        ItemMeta storageMeta = item.getItemMeta();
+        PersistentDataContainer dataContainer = storageMeta.getPersistentDataContainer();
+
+        if (!dataContainer.has(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING)) {
+            String worldsString = Utils.getUUIDListAsString(new ArrayList<>(chests.keySet()));
+            dataContainer.set(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING, worldsString);
+        }
+
+        for (Map.Entry<UUID, List<String>> entry : chests.entrySet()) {
+            NamespacedKey worldKey = new NamespacedKey(LunaticStorage.getInstance(), entry.getKey().toString());
+            dataContainer.set(worldKey, PersistentDataType.BYTE_ARRAY, Utils.getArrayFromList(entry.getValue()));
+        }
+
+        item.setItemMeta(storageMeta);
     }
 }

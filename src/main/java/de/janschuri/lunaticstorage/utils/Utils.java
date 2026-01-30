@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.PaperUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
@@ -11,6 +12,9 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -18,6 +22,7 @@ import org.bukkit.persistence.PersistentDataType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,7 +68,7 @@ public class Utils extends PaperUtils {
         return jsonArray.toString().getBytes();
     }
 
-    public static List<String> getListFromArray(byte[] bytes) {
+    public static List<String> getListFromByteArray(byte[] bytes) {
         JSONArray jsonArray = new JSONArray(new String(bytes));
         List<String> list = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -92,18 +97,25 @@ public class Utils extends PaperUtils {
     public static String getMCLanguage(ItemStack itemStack, String locale) {
         String nameKey = ItemStackUtils.getKey(itemStack);
         JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
-        String name;
+        String name = itemStack.getType().toString();
 
-        if (itemStack.getItemMeta() != null && itemStack.getItemMeta().hasDisplayName()) {
-            name = PlainTextComponentSerializer.plainText().serialize(itemStack.getItemMeta().displayName());
-        } else {
-            if (language != null) {
-                name = language.getString(nameKey);
-            } else {
-                name = itemStack.getType().toString();
-            }
+        if (language != null && language.has(nameKey)) {
+            name = language.getString(nameKey);
         }
-        return name.toLowerCase();
+
+        return name;
+    }
+
+    @Nullable
+    public static String getMCLanguageByKey(String key, String locale) {
+        JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
+
+        if (language != null) {
+            Logger.info("Getting language for key: " + key + " in locale: " + locale);
+            return language.getString(key);
+        } else {
+            return null;
+        }
     }
 
     public static boolean isContainerBlock(Material material) {
@@ -187,6 +199,11 @@ public class Utils extends PaperUtils {
         return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
     }
 
+    public static boolean isAllowedInteract(Player player) {
+        Inventory inventory = Bukkit.createInventory(player, InventoryType.CHEST);
+        return EventUtils.isAllowedPutItem(player, inventory) && EventUtils.isAllowedTakeItem(player, inventory);
+    }
+
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
         Collection<StorageContainer> storageContainers = new ArrayList<>();
 
@@ -205,7 +222,7 @@ public class Utils extends PaperUtils {
                 for (UUID worldUUID : worlds) {
                     NamespacedKey worldKey = Key.getKey(worldUUID.toString());
                     byte[] chestsByte = container.get(worldKey, PersistentDataType.BYTE_ARRAY);
-                    List<String> chestsList = Utils.getListFromArray(chestsByte);
+                    List<String> chestsList = Utils.getListFromByteArray(chestsByte);
                     for (String chest : chestsList) {
                         storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chest));
                     }
@@ -214,6 +231,49 @@ public class Utils extends PaperUtils {
         }
 
         return storageContainers;
+    }
+
+    public static Collection<StorageContainer> getStorageChests(Map<UUID, List<String>> storageContainerCoords) {
+        Collection<StorageContainer> storageContainers = new ArrayList<>();
+
+        for (Map.Entry<UUID, List<String>> entry : storageContainerCoords.entrySet()) {
+            UUID worldUUID = entry.getKey();
+            List<String> chestCoords = entry.getValue();
+
+            for (String chestCoord : chestCoords) {
+                storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chestCoord));
+            }
+        }
+
+        return storageContainers;
+    }
+
+    public static Map<UUID, List<String>> getStorageContainerCoordsMap(ItemStack storageItem) {
+        Map<UUID, List<String>> storageContainerCoords = new HashMap<>();
+
+        if (storageItem != null) {
+            ItemMeta meta = storageItem.getItemMeta();
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+
+            String worldsString = container.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+            if (worldsString != null) {
+                List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+
+                if (worlds == null) {
+                    return storageContainerCoords;
+                }
+
+                for (UUID worldUUID : worlds) {
+                    NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+                    byte[] chestsByte = container.get(worldKey, PersistentDataType.BYTE_ARRAY);
+                    List<String> chestsList = Utils.getListFromByteArray(chestsByte);
+
+                    storageContainerCoords.put(worldUUID, chestsList);
+                }
+            }
+        }
+
+        return storageContainerCoords;
     }
 
     public static long getRangeFromItem(ItemStack item) {
@@ -333,7 +393,7 @@ public class Utils extends PaperUtils {
             if (chestsByte == null) {
                 return;
             }
-            List<String> chests = Utils.getListFromArray(chestsByte);
+            List<String> chests = Utils.getListFromByteArray(chestsByte);
 
             List<String> newChests = chests.stream()
                     .filter(chest -> !chest.equals(Utils.serializeCoords(container.getBlock().getLocation())))

@@ -5,22 +5,35 @@ import de.janschuri.lunaticlib.config.MessageKey;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.buttons.InventoryButton;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.buttons.PlayerInvButton;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.guis.ListGUI;
+import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.PaginatedList;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.SearchableList;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.SortedList;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
+import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import static de.janschuri.lunaticstorage.utils.Utils.isAllowedInteract;
 
 public class StorageGUI
         extends
@@ -76,6 +89,12 @@ public class StorageGUI
     private static final MessageKey RANGE_ITEM_SLOT_MK = new LunaticMessageKey("range_item_slot")
             .defaultMessage("en", "Range Item Slot")
             .defaultMessage("de", "Range-Upgrade Slot");
+    private static final MessageKey RESET_SEARCH_MK = new LunaticMessageKey("reset_search")
+            .defaultMessage("en", "Reset Search")
+            .defaultMessage("de", "Suche zurücksetzen");
+    private static final MessageKey CURRENT_SEARCH_MK = new LunaticMessageKey("current_search")
+            .defaultMessage("en", "Current Search: %search%")
+            .defaultMessage("de", "Aktuelle Suche: %search%");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -122,6 +141,10 @@ public class StorageGUI
         createRangeButton(storage.getRangeItem());
         addButton(createItemButton(storage));
         addButton(createStoragePlayerInvButton());
+
+        if (!getSearch().isEmpty()) {
+            addButton(1, resetSearchButton());
+        }
 
         super.init(player);
     }
@@ -243,6 +266,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor();
 
                     ItemStack newItem = getStorage().insertStorageItem(cursor, false);
@@ -268,6 +296,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor();
 
                     ItemStack newItem = getStorage().insertRangeItem(cursor, false);
@@ -286,6 +319,31 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
+                    if (event.isShiftClick() && event.isRightClick()) {
+                        Map<UUID, List<String>> containers = Utils.getStorageContainerCoordsMap(item);
+
+                        ContainerListGUI gui = ContainerListGUI.getContainerListGUI(containers, (int) getStorage().getRange(), getBlock().getLocation())
+                                .onClose(closeEvent -> {
+                                    Player p = (Player) closeEvent.getWhoClicked();
+                                    GUIManager.openGUI(StorageGUI.getStorageGUI(p, getBlock()), p);
+                                    reloadGui();
+                                })
+                                .onContainerChange((addEvent, newContainers) -> {
+
+                                        StorageContainer.setChestsToPersistentDataContainer(item, newContainers);
+
+                                        getStorage().setStorageItem(item);
+
+                                });
+                        GUIManager.openGUI(gui, player);
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     ItemStack newItem = getStorage().insertStorageItem(cursor, true);
@@ -305,6 +363,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     ItemStack newItem = getStorage().insertRangeItem(cursor, true);
@@ -387,6 +450,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCurrentItem();
 
                     ItemStack newItem = insertItem(storage, player, cursorItem);
@@ -413,6 +481,12 @@ public class StorageGUI
                         return false;
                     }
 
+                    Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return false;
+                    }
+
                     return Utils.isStorageItem(item) || Utils.isRangeItem(item);
                 })
                 .consumer(event -> {
@@ -420,7 +494,6 @@ public class StorageGUI
                         return;
                     }
 
-                    Player player = (Player) event.getWhoClicked();
 
                     ItemStack item = event.getCurrentItem();
 
@@ -454,8 +527,55 @@ public class StorageGUI
             if (search.isEmpty()) {
                 return true;
             }
-            String language = Utils.getMCLanguage(entry.getKey(), locale);
-            return language.toLowerCase().contains(search.toLowerCase());
+
+            ItemStack item = entry.getKey();
+
+            String language = Utils.getMCLanguage(item, locale);
+
+            Component displayNameComponent = item.displayName();
+
+            String name = displayNameComponent == null ? "" : PlainTextComponentSerializer.plainText().serialize(displayNameComponent);
+
+            String type = item.getType().name();
+
+            List<Component> lore = entry.getKey().getItemMeta() != null ? entry.getKey().getItemMeta().lore() : null;
+            String concanetedLore = "";
+            if (lore != null) {
+                for (Component line : lore) {
+                    if (line instanceof TextComponent textComponent) {
+                        concanetedLore = concanetedLore + textComponent.content() + " ";
+                    }
+                }
+            }
+
+            String concanetedEnchantLore = "";
+
+            ItemMeta meta = item.getItemMeta();
+
+            Set<Enchantment> enchants = item.getEnchantments().keySet();
+
+            if (meta instanceof EnchantmentStorageMeta bookMeta) {
+                Map<Enchantment, Integer> bookEnchants = bookMeta.getStoredEnchants();
+                enchants = bookEnchants.keySet();
+            }
+
+
+            for (Enchantment enchantment : enchants) {
+                String key = enchantment.getKey().getKey();
+                String enchantName = Utils.getMCLanguageByKey("enchantment.minecraft." + key, locale);
+
+                if (enchantName == null || enchantName.isEmpty()) {
+                    enchantName = key;
+                }
+
+                concanetedEnchantLore = concanetedEnchantLore + enchantName + " ";
+            }
+
+            return language.toLowerCase().contains(search.toLowerCase()) ||
+                    name.toLowerCase().contains(search.toLowerCase()) ||
+                    type.toLowerCase().contains(search.toLowerCase()) ||
+                    concanetedEnchantLore.toLowerCase().contains(search.toLowerCase()) ||
+                    concanetedLore.toLowerCase().contains(search.toLowerCase());
         };
     }
 
@@ -502,6 +622,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     if (event.isShiftClick()) {
@@ -605,6 +730,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     if (!cursorItem.getType().equals(Material.AIR)) {
@@ -624,8 +754,50 @@ public class StorageGUI
         ItemMeta meta = item.getItemMeta();
         assert meta != null;
         meta.setDisplayName(getString(SEARCH_ITEM_MK));
+
+        List<String> lore = new ArrayList<>();
+
+        if (!getSearch().isEmpty()) {
+            String currentSearch = getString(CURRENT_SEARCH_MK)
+                    .replace("%search%", getSearch());
+            lore.add("");
+            lore.add(currentSearch);
+        }
+
+        meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
+    }
+
+    private InventoryButton resetSearchButton() {
+        ItemStack item = new ItemStack(Material.BARRIER);
+        ItemMeta meta = item.getItemMeta();
+        assert meta != null;
+        meta.setDisplayName(getString(RESET_SEARCH_MK));
+
+        List<String> lore = new ArrayList<>();
+
+        if (!getSearch().isEmpty()) {
+            String currentSearch = getString(CURRENT_SEARCH_MK)
+                    .replace("%search%", getSearch());
+            lore.add("");
+            lore.add(currentSearch);
+        }
+
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+
+        return new InventoryButton()
+                .creator(player -> item)
+                .consumer(event -> {
+                    if (processingClickEvent()) {
+                        return;
+                    }
+
+                    setSearch("");
+
+                    reloadGui();
+                });
     }
 
     @Override

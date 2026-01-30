@@ -10,13 +10,16 @@ import de.janschuri.lunaticlib.sender.PlayerSender;
 import de.janschuri.lunaticlib.sender.Sender;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
+import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class StorageCheck extends StorageCommand implements HasParentCommand {
 
@@ -74,7 +77,16 @@ public class StorageCheck extends StorageCommand implements HasParentCommand {
         ItemStack item = player.getInventory().getItemInMainHand();
 
         if (Utils.isStorageItem(item)) {
-            GUIManager.openGUI(new ContainerListGUI(item), player);
+            Map<UUID, List<String>> containerMap = Utils.getStorageContainerCoordsMap(item);
+
+            ContainerListGUI gui = ContainerListGUI.getContainerListGUI(containerMap)
+                    .onContainerChange((event, updatedMap) -> {
+                        ItemStack itemNew = player.getInventory().getItemInMainHand();
+                        StorageContainer.setChestsToPersistentDataContainer(itemNew, updatedMap);
+                        player.getInventory().setItemInMainHand(itemNew);
+                    });
+
+            GUIManager.openGUI(gui, player);
 
             return true;
         }
