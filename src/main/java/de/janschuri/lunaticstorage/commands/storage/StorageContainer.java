@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import java.util.Map;
 
 import static de.janschuri.lunaticstorage.storage.StorageContainer.getStorageContainer;
+import static de.janschuri.lunaticstorage.utils.Utils.isAllowedInteract;
 
 public class StorageContainer extends StorageCommand implements HasParentCommand {
 
@@ -57,6 +58,12 @@ public class StorageContainer extends StorageCommand implements HasParentCommand
         }
 
         Player player = Bukkit.getPlayer(((PlayerSender) sender).getUniqueId());
+
+        if (!isAllowedInteract(player)) {
+            sender.sendMessage(getMessage(NO_PERMISSION_MK));
+            return true;
+        }
+
         Block block = player.getTargetBlockExact(5);
 
         if (block == null) {

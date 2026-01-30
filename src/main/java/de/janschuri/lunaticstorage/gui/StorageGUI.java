@@ -13,7 +13,6 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -24,6 +23,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import static de.janschuri.lunaticstorage.utils.Utils.isAllowedInteract;
 
 public class StorageGUI
         extends
@@ -246,6 +247,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor();
 
                     ItemStack newItem = getStorage().insertStorageItem(cursor, false);
@@ -271,6 +277,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor();
 
                     ItemStack newItem = getStorage().insertRangeItem(cursor, false);
@@ -289,6 +300,10 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
 
                     if (event.isShiftClick() && event.isRightClick()) {
                         Map<UUID, List<String>> containers = Utils.getStorageContainerCoordsMap(item);
@@ -329,6 +344,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     ItemStack newItem = getStorage().insertRangeItem(cursor, true);
@@ -411,6 +431,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCurrentItem();
 
                     ItemStack newItem = insertItem(storage, player, cursorItem);
@@ -437,12 +462,19 @@ public class StorageGUI
                         return false;
                     }
 
+                    Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return false;
+                    }
+
                     return Utils.isStorageItem(item) || Utils.isRangeItem(item);
                 })
                 .consumer(event -> {
                     if (processingClickEvent()) {
                         return;
                     }
+
 
                     ItemStack item = event.getCurrentItem();
 
@@ -524,6 +556,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     if (event.isShiftClick()) {
@@ -627,6 +664,11 @@ public class StorageGUI
                     }
 
                     Player player = (Player) event.getWhoClicked();
+
+                    if (!isAllowedInteract(player)) {
+                        return;
+                    }
+
                     ItemStack cursorItem = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     if (!cursorItem.getType().equals(Material.AIR)) {

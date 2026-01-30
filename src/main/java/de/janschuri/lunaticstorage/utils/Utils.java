@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.utils;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.PaperUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
@@ -11,6 +12,9 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -185,6 +189,11 @@ public class Utils extends PaperUtils {
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
 
         return dataContainer.has(Key.PANEL_BLOCK, PersistentDataType.INTEGER);
+    }
+
+    public static boolean isAllowedInteract(Player player) {
+        Inventory inventory = Bukkit.createInventory(player, InventoryType.CHEST);
+        return EventUtils.isAllowedPutItem(player, inventory) && EventUtils.isAllowedTakeItem(player, inventory);
     }
 
     public static Collection<StorageContainer> getStorageChests(ItemStack storageItem) {
