@@ -91,7 +91,6 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
             return true;
         }
 
-        assert player != null;
         ItemStack item = player.getInventory().getItemInMainHand();
 
         if (type.equalsIgnoreCase("storageitem")) {

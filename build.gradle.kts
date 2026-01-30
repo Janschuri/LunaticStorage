@@ -74,6 +74,12 @@ tasks.withType<Javadoc>() {
     options.encoding = "UTF-8"
 }
 
+tasks.processResources {
+    filesMatching("plugin.yml") {
+        expand("version" to project.version)
+    }
+}
+
 tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     relocate("org.bstats", "de.janschuri.lunaticstorage.libs.bstats")
     relocate("com.jeff_media.customblockdata", "de.janschuri.lunaticstorage.libs.customblockdata")
