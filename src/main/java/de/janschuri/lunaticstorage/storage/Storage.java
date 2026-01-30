@@ -50,7 +50,7 @@ public class Storage {
     private static ItemStack deserializeItemStack(byte[] data) {
         String hash = Arrays.toString(data);
         if (deserializedItemStackCache.containsKey(hash)) {
-            return deserializedItemStackCache.get(hash);
+            return deserializedItemStackCache.get(hash).clone();
         } else {
             ItemStack itemStack = ItemStackUtils.deserializeItemStack(data);
             deserializedItemStackCache.put(hash, itemStack);
