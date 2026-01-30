@@ -48,12 +48,10 @@ public class ChestClickListener implements Listener {
             return;
         }
 
-        if (clickedBlock.getState() instanceof Container && Utils.isStorageContainer(clickedBlock)) {
-            try {
-                LunaticStorage.getGlowingBlocks().unsetGlowing(clickedBlock, player);
-            } catch (Exception e) {
-                Logger.error("Error while unsetting glowing block");
-            }
+        try {
+            LunaticStorage.getGlowingBlocks().unsetGlowing(clickedBlock, player);
+        } catch (Exception e) {
+            Logger.error("Error while unsetting glowing block");
         }
 
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
@@ -64,9 +62,9 @@ public class ChestClickListener implements Listener {
 
         if (clickedBlock.getState() instanceof Container container && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             event.setCancelled(true);
-            boolean success = StorageContainer.handleContainerRightClick(player, itemInHand, container);
+            int success = StorageContainer.addContainersToStorageItem(itemInHand, player.getWorld(), container);
 
-            if (!success) {
+            if (success == 0) {
                 player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerAlreadyMarked));
             } else {
                 player.sendMessage(LunaticStorage.getLanguageConfig().getMessage(containerMarked));

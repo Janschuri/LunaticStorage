@@ -13,11 +13,10 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -25,8 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import static de.janschuri.lunaticstorage.LunaticStorage.getMessage;
 
 public class StorageGUI
         extends
@@ -82,10 +79,6 @@ public class StorageGUI
     private static final MessageKey RANGE_ITEM_SLOT_MK = new LunaticMessageKey("range_item_slot")
             .defaultMessage("en", "Range Item Slot")
             .defaultMessage("de", "Range-Upgrade Slot");
-
-    private final MessageKey containersAddedMK = new LunaticMessageKey("containers_added")
-            .defaultMessage("en", "&aSuccessfully added %count% containers to the storageitem.")
-            .defaultMessage("de", "&aErfolgreich %count% Container zum Storageitem hinzugefügt.");
 
     private final static Map<Integer, Integer> pageMap = new HashMap<>();
     private final static Map<Integer, String> searchMap = new HashMap<>();
@@ -297,35 +290,22 @@ public class StorageGUI
 
                     Player player = (Player) event.getWhoClicked();
 
-                    if (event.isShiftClick()) {
-                        ContainerListGUI gui = new ContainerListGUI(item)
+                    if (event.isShiftClick() && event.isRightClick()) {
+                        Map<UUID, List<String>> containers = Utils.getStorageContainerCoordsMap(item);
+
+                        ContainerListGUI gui = ContainerListGUI.getContainerListGUI(containers, (int) getStorage().getRange(), getBlock().getLocation())
                                 .onClose(closeEvent -> {
                                     Player p = (Player) closeEvent.getWhoClicked();
                                     GUIManager.openGUI(StorageGUI.getStorageGUI(p, getBlock()), p);
                                     reloadGui();
                                 })
-                                .onAddContainersInRange((addEvent, containersInRange) -> {
-                                        Player p = (Player) event.getWhoClicked();
-                                        int addedContainers = 0;
+                                .onContainerChange((addEvent, newContainers) -> {
 
-                                        for (Container container : containersInRange) {
-                                            boolean success = StorageContainer.handleContainerRightClick(player, item, container);
-                                            if (success) {
-                                                addedContainers++;
-                                            }
-                                        }
+                                        StorageContainer.setChestsToPersistentDataContainer(item, newContainers);
 
                                         getStorage().setStorageItem(item);
 
-                                        Component message = getMessage(
-                                                containersAddedMK,
-                                                placeholder("%count%", String.valueOf(addedContainers))
-                                        );
-
-                                        player.sendMessage(message);
-                                })
-                                .range((int) getStorage().getRange())
-                                .location(getBlock().getLocation());
+                                });
                         GUIManager.openGUI(gui, player);
                         return;
                     }
@@ -463,8 +443,6 @@ public class StorageGUI
                     if (processingClickEvent()) {
                         return;
                     }
-
-                    Player player = (Player) event.getWhoClicked();
 
                     ItemStack item = event.getCurrentItem();
 

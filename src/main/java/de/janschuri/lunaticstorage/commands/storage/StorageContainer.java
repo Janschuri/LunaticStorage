@@ -16,6 +16,8 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
+import static de.janschuri.lunaticstorage.storage.StorageContainer.getStorageContainer;
+
 public class StorageContainer extends StorageCommand implements HasParentCommand {
 
     private static final StorageContainer INSTANCE = new StorageContainer();
@@ -62,13 +64,12 @@ public class StorageContainer extends StorageCommand implements HasParentCommand
             return true;
         }
 
-        if (!Utils.isStorageContainer(block)) {
+        if (!Utils.isContainerBlock(block.getType())) {
             sender.sendMessage(getMessage(NOT_CONTAINER_MK));
             return true;
         }
 
-
-        de.janschuri.lunaticstorage.storage.StorageContainer container = de.janschuri.lunaticstorage.storage.StorageContainer.getStorageContainer(block);
+        de.janschuri.lunaticstorage.storage.StorageContainer container = getStorageContainer(block);
 
         GUIManager.openGUI(ContainerGUI.getContainerGUI(player, container), player);
         return true;

@@ -8,6 +8,7 @@ import de.janschuri.lunaticlib.utils.Placeholder;
 import de.janschuri.lunaticstorage.commands.storage.Storage;
 import de.janschuri.lunaticstorage.config.LanguageConfig;
 import de.janschuri.lunaticstorage.config.PluginConfig;
+import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.listener.*;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
@@ -69,7 +70,7 @@ public final class LunaticStorage extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        ContainerListGUI.destroyAll();
     }
 
     public static LunaticStorage getInstance() {

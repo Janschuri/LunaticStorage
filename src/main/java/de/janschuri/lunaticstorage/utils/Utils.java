@@ -63,7 +63,7 @@ public class Utils extends PaperUtils {
         return jsonArray.toString().getBytes();
     }
 
-    public static List<String> getListFromArray(byte[] bytes) {
+    public static List<String> getListFromByteArray(byte[] bytes) {
         JSONArray jsonArray = new JSONArray(new String(bytes));
         List<String> list = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -205,7 +205,7 @@ public class Utils extends PaperUtils {
                 for (UUID worldUUID : worlds) {
                     NamespacedKey worldKey = Key.getKey(worldUUID.toString());
                     byte[] chestsByte = container.get(worldKey, PersistentDataType.BYTE_ARRAY);
-                    List<String> chestsList = Utils.getListFromArray(chestsByte);
+                    List<String> chestsList = Utils.getListFromByteArray(chestsByte);
                     for (String chest : chestsList) {
                         storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chest));
                     }
@@ -214,6 +214,49 @@ public class Utils extends PaperUtils {
         }
 
         return storageContainers;
+    }
+
+    public static Collection<StorageContainer> getStorageChests(Map<UUID, List<String>> storageContainerCoords) {
+        Collection<StorageContainer> storageContainers = new ArrayList<>();
+
+        for (Map.Entry<UUID, List<String>> entry : storageContainerCoords.entrySet()) {
+            UUID worldUUID = entry.getKey();
+            List<String> chestCoords = entry.getValue();
+
+            for (String chestCoord : chestCoords) {
+                storageContainers.add(StorageContainer.getStorageContainer(worldUUID, chestCoord));
+            }
+        }
+
+        return storageContainers;
+    }
+
+    public static Map<UUID, List<String>> getStorageContainerCoordsMap(ItemStack storageItem) {
+        Map<UUID, List<String>> storageContainerCoords = new HashMap<>();
+
+        if (storageItem != null) {
+            ItemMeta meta = storageItem.getItemMeta();
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+
+            String worldsString = container.get(Key.STORAGE_ITEM_WORLDS, PersistentDataType.STRING);
+            if (worldsString != null) {
+                List<UUID> worlds = Utils.getUUIDListFromString(worldsString);
+
+                if (worlds == null) {
+                    return storageContainerCoords;
+                }
+
+                for (UUID worldUUID : worlds) {
+                    NamespacedKey worldKey = Key.getKey(worldUUID.toString());
+                    byte[] chestsByte = container.get(worldKey, PersistentDataType.BYTE_ARRAY);
+                    List<String> chestsList = Utils.getListFromByteArray(chestsByte);
+
+                    storageContainerCoords.put(worldUUID, chestsList);
+                }
+            }
+        }
+
+        return storageContainerCoords;
     }
 
     public static long getRangeFromItem(ItemStack item) {
@@ -333,7 +376,7 @@ public class Utils extends PaperUtils {
             if (chestsByte == null) {
                 return;
             }
-            List<String> chests = Utils.getListFromArray(chestsByte);
+            List<String> chests = Utils.getListFromByteArray(chestsByte);
 
             List<String> newChests = chests.stream()
                     .filter(chest -> !chest.equals(Utils.serializeCoords(container.getBlock().getLocation())))

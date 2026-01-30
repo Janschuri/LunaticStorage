@@ -3,9 +3,11 @@ package de.janschuri.lunaticstorage.listener;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -22,10 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BlockBreakListener implements Listener {
 
@@ -37,20 +36,14 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
-        if ((Utils.isPanel(block) || Utils.isStorageContainer(block)) && LunaticStorage.isDebug()) {
+        boolean isPanel = Utils.isPanel(block);
+        boolean isStorageContainer = Utils.isStorageContainer(block);
+
+        if (isPanel || isStorageContainer) {
             if (!player.isSneaking()) {
                 event.setCancelled(true);
-            }
-
-            if (Utils.isStorageContainer(block)) {
-                StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-
-                Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
-
-                storageContainer.clearWhitelist();
-                storageContainer.clearBlacklist();
-                storageContainer.updateStorages(difference);
-                storageContainer.unload();
+            } else {
+                ContainerListGUI.destroy(block.getLocation());
             }
         }
     }
@@ -137,6 +130,10 @@ public class BlockBreakListener implements Listener {
 
         if (Utils.isStorageContainer(block)) {
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+            StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+            Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
+            storageContainer.updateStorages(difference);
 
             dataContainer.remove(Key.STORAGE_CONTAINER);
             dataContainer.remove(Key.WHITELIST);
