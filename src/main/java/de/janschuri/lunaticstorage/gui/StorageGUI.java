@@ -23,6 +23,8 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.awt.*;
@@ -548,11 +550,18 @@ public class StorageGUI
 
             String concanetedEnchantLore = "";
 
-            Set<Enchantment> enchants = entry.getKey().getEnchantments().keySet();
+            ItemMeta meta = item.getItemMeta();
+
+            Set<Enchantment> enchants = item.getEnchantments().keySet();
+
+            if (meta instanceof EnchantmentStorageMeta bookMeta) {
+                Map<Enchantment, Integer> bookEnchants = bookMeta.getStoredEnchants();
+                enchants = bookEnchants.keySet();
+            }
+
 
             for (Enchantment enchantment : enchants) {
                 String key = enchantment.getKey().getKey();
-                Logger.info("Enchantment Key: " + key);
                 String enchantName = Utils.getMCLanguageByKey("enchantment.minecraft." + key, locale);
 
                 if (enchantName == null || enchantName.isEmpty()) {
@@ -561,14 +570,6 @@ public class StorageGUI
 
                 concanetedEnchantLore = concanetedEnchantLore + enchantName + " ";
             }
-
-
-            Logger.info("Search Filter Values:");
-            Logger.info("Language: " + language);
-            Logger.info("Name: " + name);
-            Logger.info("Type: " + type);
-            Logger.info("Enchantment Lore: " + concanetedEnchantLore);
-            Logger.info("Lore: " + concanetedLore);
 
             return language.toLowerCase().contains(search.toLowerCase()) ||
                     name.toLowerCase().contains(search.toLowerCase()) ||
