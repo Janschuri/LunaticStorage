@@ -149,7 +149,7 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
     }
 
     public static ContainerListGUI getContainerListGUI(Map<UUID, List<String>> containerCoords) {
-        return getContainerListGUI(containerCoords, -1, null);
+        return new ContainerListGUI(containerCoords, -1, null);
     }
 
     @Override
