@@ -1,6 +1,7 @@
 package de.janschuri.lunaticstorage.listener;
 
 import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -20,10 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+
 public class ContainerEditListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            return;
+        }
+
+
         if (EventUtils.isFakeEvent(event)) {
             return;
         }

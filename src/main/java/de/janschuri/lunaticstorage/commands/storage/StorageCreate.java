@@ -20,6 +20,8 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+
 public class StorageCreate extends StorageCommand implements HasParentCommand, HasParams {
 
     private static final StorageCreate INSTANCE = new StorageCreate();
@@ -58,6 +60,11 @@ public class StorageCreate extends StorageCommand implements HasParentCommand, H
 
         if (!sender.hasPermission(getPermission())) {
             sender.sendMessage(getMessage(NO_PERMISSION_MK));
+            return true;
+        }
+
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            sender.sendMessage(getShutdownMessage());
             return true;
         }
 

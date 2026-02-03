@@ -1,6 +1,8 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import de.janschuri.lunaticlib.config.LunaticMessageKey;
+import de.janschuri.lunaticlib.config.MessageKey;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
@@ -26,6 +28,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+
 public class BlockBreakListener implements Listener {
 
     private static final Map<Event, List<Item>> dropEvents = new HashMap<>();
@@ -40,6 +44,12 @@ public class BlockBreakListener implements Listener {
         boolean isStorageContainer = Utils.isStorageContainer(block);
 
         if (isPanel || isStorageContainer) {
+            if (LunaticStorage.getPluginConfig().isShutdown()) {
+                event.setCancelled(true);
+                player.sendMessage(getShutdownMessage());
+                return;
+            }
+
             if (!player.isSneaking()) {
                 event.setCancelled(true);
             } else {
@@ -73,6 +83,7 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
+
             Storage.removeStorage(block);
 
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());

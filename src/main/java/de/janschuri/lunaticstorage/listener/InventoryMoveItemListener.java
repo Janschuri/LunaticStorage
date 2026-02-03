@@ -1,5 +1,6 @@
 package de.janschuri.lunaticstorage.listener;
 
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
@@ -20,6 +21,10 @@ public class InventoryMoveItemListener implements Listener {
 
     @EventHandler
     public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            return;
+        }
+
         Inventory destination = event.getDestination();
         Inventory source = event.getSource();
 

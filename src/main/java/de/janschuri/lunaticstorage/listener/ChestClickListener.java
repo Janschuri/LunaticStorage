@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+
 public class ChestClickListener implements Listener {
 
     private static final MessageKey containerAlreadyMarked = new LunaticMessageKey("container_already_marked");
@@ -56,6 +58,12 @@ public class ChestClickListener implements Listener {
 
         ItemStack itemInHand = player.getInventory().getItemInMainHand();
         if (itemInHand.getType() == Material.AIR || !itemInHand.getItemMeta().getPersistentDataContainer().has(Key.STORAGE, PersistentDataType.INTEGER)) {
+            return;
+        }
+
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            event.setCancelled(true);
+            player.sendMessage(getShutdownMessage());
             return;
         }
 

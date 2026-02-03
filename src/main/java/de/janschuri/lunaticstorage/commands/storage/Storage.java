@@ -38,6 +38,7 @@ public class Storage extends StorageCommand implements HasSubcommands, HasHelpCo
             new StorageCreate(),
             new StorageContainer(),
             new StorageCheck(),
+            new StorageShutdown(),
             getHelpCommand()
         );
     }

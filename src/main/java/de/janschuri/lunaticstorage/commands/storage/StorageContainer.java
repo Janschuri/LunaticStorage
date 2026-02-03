@@ -7,6 +7,7 @@ import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticlib.sender.PlayerSender;
 import de.janschuri.lunaticlib.sender.Sender;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import de.janschuri.lunaticstorage.gui.ContainerGUI;
 import de.janschuri.lunaticstorage.utils.Utils;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
 import static de.janschuri.lunaticstorage.storage.StorageContainer.getStorageContainer;
 import static de.janschuri.lunaticstorage.utils.Utils.isAllowedInteract;
 
@@ -54,6 +56,11 @@ public class StorageContainer extends StorageCommand implements HasParentCommand
 
         if (!sender.hasPermission(getPermission())) {
             sender.sendMessage(getMessage(NO_PERMISSION_MK));
+            return true;
+        }
+
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            sender.sendMessage(getShutdownMessage());
             return true;
         }
 
