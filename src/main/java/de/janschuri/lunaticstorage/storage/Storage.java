@@ -1,7 +1,5 @@
 package de.janschuri.lunaticstorage.storage;
 
-import com.google.common.util.concurrent.SimpleTimeLimiter;
-import com.google.common.util.concurrent.TimeLimiter;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
@@ -48,7 +46,7 @@ public class Storage {
     private static ItemStack deserializeItemStack(byte[] data) {
         String hash = Arrays.toString(data);
         if (deserializedItemStackCache.containsKey(hash)) {
-            return deserializedItemStackCache.get(hash);
+            return deserializedItemStackCache.get(hash).clone();
         } else {
             ItemStack itemStack = ItemStackUtils.deserializeItemStack(data);
             deserializedItemStackCache.put(hash, itemStack);
@@ -71,6 +69,7 @@ public class Storage {
             storageContainerAmounts.computeIfAbsent(block, k -> 0);
             preferredContainersMap.computeIfAbsent(block, k -> new HashMap<>());
             preferredContainersMapByMaterial.computeIfAbsent(block, k -> new HashMap<>());
+            canLoadStorageMap.computeIfAbsent(block, k -> true);
 
 
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
@@ -292,6 +291,7 @@ public class Storage {
     }
 
     public void loadStorage() {
+        cancelLoadStorage();
         setCanLoadStorage(block, true);
 
         long start = System.currentTimeMillis();
@@ -317,6 +317,8 @@ public class Storage {
         long maxMillisPerTick = 50;
 
         Bukkit.getScheduler().runTaskTimer(LunaticStorage.getInstance(), task -> {
+            setLoadTask(task);
+
             if (System.currentTimeMillis() - start > maxTotalMillis || !canLoadStorage(block)) {
                 Logger.error("Loading storage for block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " timed out or was cancelled.");
                 task.cancel();
