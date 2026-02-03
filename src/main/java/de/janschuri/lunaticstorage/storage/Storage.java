@@ -1,12 +1,16 @@
 package de.janschuri.lunaticstorage.storage;
 
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.EventUtils;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.external.LogBlock;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -14,11 +18,15 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Storage {
 
+    private static final Map<Block, BukkitTask> storageLoadTasks = new HashMap<>();
+    private static final Map<Block, Boolean> canLoadStorageMap = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Integer>> storageMaps = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Map<Block, Boolean>>> itemsContainersMap = new HashMap<>();
     private static final Map<Block, Map<ItemStack, ArrayList<StorageContainer>>> preferredContainersMap = new HashMap<>();
@@ -113,6 +121,22 @@ public class Storage {
         return preferredContainersMapByMaterial.get(block);
     }
 
+    private Boolean canLoadStorage(Block block) {
+        return canLoadStorageMap.get(block);
+    }
+
+    private BukkitTask getLoadTask() {
+        return storageLoadTasks.get(block);
+    }
+
+    private void setLoadTask(BukkitTask task) {
+        storageLoadTasks.put(block, task);
+    }
+
+    private void setCanLoadStorage(Block block, Boolean canLoad) {
+        canLoadStorageMap.put(block, canLoad);
+    }
+
     public ItemStack getStorageItem() {
         return storageItems.get(block);
     }
@@ -141,27 +165,7 @@ public class Storage {
         return emptyContainersMap.get(block);
     }
 
-    public void setStorageItem(ItemStack item) {
-        boolean update = false;
-        ItemStack oldItem = getStorageItem();
-
-        if (item == null && oldItem == null) {
-            return;
-        }
-
-        if (oldItem == null || item == null || !oldItem.isSimilar(item)) {
-            update = true;
-        }
-
-        saveStorageItem(item);
-
-        if (update) {
-            loadStorage();
-        }
-        StorageGUI.updateStorageGUIs(block);
-    }
-
-    private void saveStorageItem(ItemStack item) {
+    public void saveStorageItem(ItemStack item) {
         storageItems.put(block, item);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
@@ -172,27 +176,7 @@ public class Storage {
         }
     }
 
-    public void setRangeItem(ItemStack item) {
-        boolean update = false;
-        ItemStack oldItem = getRangeItem();
-
-        if (item == null && oldItem == null) {
-            return;
-        }
-
-        if (oldItem == null || item == null || !oldItem.isSimilar(item)) {
-            update = true;
-        }
-
-        saveRangeItem(item);
-
-        if (update) {
-            loadStorage();
-        }
-        StorageGUI.updateStorageGUIs(block);
-    }
-
-    private void saveRangeItem(ItemStack item) {
+    public void saveRangeItem(ItemStack item) {
         rangeItems.put(block, item);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
@@ -299,45 +283,87 @@ public class Storage {
         return true;
     }
 
-    public void loadStorage () {
+    public void cancelLoadStorage() {
+        setCanLoadStorage(block, false);
+        BukkitTask loadTask = getLoadTask();
+        if (loadTask != null) {
+            loadTask.cancel();
+        }
+    }
+
+    public void loadStorage() {
+        setCanLoadStorage(block, true);
+
+        long start = System.currentTimeMillis();
+
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
+        Iterator<StorageContainer> it = chests.iterator();
+
         long itemRange = Utils.getRangeFromItem(getRangeItem());
         long panelRange = Utils.getRangeFromBlock(block);
         long range = Math.max(itemRange, panelRange);
+
         getStorageMap().clear();
         getItemsContainers().clear();
         getEmptyContainers().clear();
         getPreferredContainers().clear();
         getPreferredContainersByMaterial().clear();
 
-        int loadedContainers = 0;
-        int totalContainers = 0;
-
         List<StorageContainer> invalidContainers = new ArrayList<>();
+        final int[] loaded = {0};
+        final int[] total = {0};
 
-        for (StorageContainer container : chests) {
-            if (!container.isValid()) {
-                invalidContainers.add(container);
-                continue;
+        long maxTotalMillis = 5000;
+        long maxMillisPerTick = 50;
+
+        Bukkit.getScheduler().runTaskTimer(LunaticStorage.getInstance(), task -> {
+            if (System.currentTimeMillis() - start > maxTotalMillis || !canLoadStorage(block)) {
+                Logger.error("Loading storage for block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " timed out or was cancelled.");
+                task.cancel();
+                // optional: cleanup / final counters
+                removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+                setStorageLoadedContainerAmounts(loaded[0]);
+                setStorageContainerAmounts(total[0]);
+                return;
             }
-            totalContainers++;
 
-            if (Utils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
-                loadedContainers++;
-                container.addStorageId(block);
-                Inventory chestInv = container.getInventory();
+            long tickStart = System.currentTimeMillis();
 
-                addContainerWhitelist(container);
+            while (it.hasNext() && (System.currentTimeMillis() - tickStart) < maxMillisPerTick) {
+                StorageContainer container = it.next();
 
-                addInventoryToMap(chestInv, container);
-            } else {
-                container.removeStorageId(container.getBlock());
+                if (!container.isValid()) {
+                    invalidContainers.add(container);
+                    continue;
+                }
+
+                total[0]++;
+
+                if (Utils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
+                    loaded[0]++;
+                    container.addStorageId(block);
+
+                    Inventory chestInv = container.getInventory();
+                    addContainerWhitelist(container);
+                    addInventoryToMap(chestInv, container);
+                } else {
+                    container.removeStorageId(container.getBlock());
+                }
             }
-        }
 
-        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        setStorageLoadedContainerAmounts(loadedContainers);
-        setStorageContainerAmounts(totalContainers);
+            if (!it.hasNext()) {
+                task.cancel();
+
+                long timeTaken = System.currentTimeMillis() - start;
+                Logger.info("Loaded storage for block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " with " + loaded[0] + " / " + total[0] + " containers in " + timeTaken + " ms.");
+                removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+                setStorageLoadedContainerAmounts(loaded[0]);
+                setStorageContainerAmounts(total[0]);
+            }
+
+            StorageGUI.updateStorageGUIs(block);
+
+        }, 0L, 1L);
     }
 
     public void updateStorage(Map<ItemStack, Integer> difference) {
@@ -714,9 +740,9 @@ public class Storage {
         }
 
         if (!storageItem.getType().isAir()) {
-            setStorageItem(storageItem);
+            saveStorageItem(storageItem);
         } else {
-            setStorageItem(null);
+            saveStorageItem(null);
         }
 
         return result;
@@ -764,9 +790,9 @@ public class Storage {
         }
 
         if (rangeItem.getType() != Material.AIR) {
-            setRangeItem(rangeItem);
+            saveStorageItem(rangeItem);
         } else {
-            setRangeItem(null);
+            saveStorageItem(null);
         }
 
         return result;

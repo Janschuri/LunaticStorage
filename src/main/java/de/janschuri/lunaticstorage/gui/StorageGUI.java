@@ -13,7 +13,6 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -23,7 +22,6 @@ import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -276,7 +274,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertStorageItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    getStorage().loadStorage();
                 });
     }
 
@@ -306,7 +304,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertRangeItem(cursor, false);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    getStorage().loadStorage();
                 });
     }
 
@@ -331,14 +329,12 @@ public class StorageGUI
                                 .onClose(closeEvent -> {
                                     Player p = (Player) closeEvent.getWhoClicked();
                                     GUIManager.openGUI(StorageGUI.getStorageGUI(p, getBlock()), p);
-                                    reloadGui();
                                 })
                                 .onContainerChange((addEvent, newContainers) -> {
-
                                         StorageContainer.setChestsToPersistentDataContainer(item, newContainers);
 
-                                        getStorage().setStorageItem(item);
-
+                                        getStorage().saveStorageItem(item);
+                                        StorageGUI.updateStorageGUIs(getBlock());
                                 });
                         GUIManager.openGUI(gui, player);
                         return;
@@ -347,10 +343,9 @@ public class StorageGUI
                     ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor().clone();
 
                     ItemStack newItem = getStorage().insertStorageItem(cursor, true);
-
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    getStorage().loadStorage();
                 });
     }
 
@@ -373,7 +368,7 @@ public class StorageGUI
                     ItemStack newItem = getStorage().insertRangeItem(cursor, true);
                     player.setItemOnCursor(newItem);
 
-                    reloadGui();
+                    getStorage().loadStorage();
                 });
     }
 
@@ -460,7 +455,7 @@ public class StorageGUI
                     ItemStack newItem = insertItem(storage, player, cursorItem);
                     event.setCurrentItem(newItem);
 
-                    reloadGui();
+                    StorageGUI.updateStorageGUIs(getBlock());
                 });
     }
 
@@ -506,10 +501,9 @@ public class StorageGUI
                     if (Utils.isRangeItem(item)) {
                         newItem = getStorage().insertRangeItem(item, false);
                     }
-
                     event.setCurrentItem(newItem);
 
-                    reloadGui();
+                    getStorage().loadStorage();
                 });
     }
 
@@ -689,7 +683,7 @@ public class StorageGUI
                         player.setItemOnCursor(newItem);
                     }
 
-                    reloadGui();
+                    StorageGUI.updateStorageGUIs(getBlock());
                 });
     }
 
@@ -744,7 +738,7 @@ public class StorageGUI
                         player.setItemOnCursor(newItem);
                     }
 
-                    reloadGui();
+                    StorageGUI.updateStorageGUIs(getBlock());
                 });
     }
 
