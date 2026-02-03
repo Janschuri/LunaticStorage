@@ -42,7 +42,7 @@ dependencies {
 }
 
 group = "de.janschuri"
-version = "1.1.8-SNAPSHOT"
+version = "1.1.9-SNAPSHOT"
 description = "LunaticStorage"
 java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
