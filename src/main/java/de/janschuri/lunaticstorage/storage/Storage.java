@@ -790,9 +790,9 @@ public class Storage {
         }
 
         if (rangeItem.getType() != Material.AIR) {
-            saveStorageItem(rangeItem);
+            saveRangeItem(rangeItem);
         } else {
-            saveStorageItem(null);
+            saveRangeItem(null);
         }
 
         return result;
