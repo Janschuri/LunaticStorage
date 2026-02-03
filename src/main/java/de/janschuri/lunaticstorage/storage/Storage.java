@@ -35,15 +35,6 @@ public class Storage {
 
     private Storage (Block block) {
         this.block = block;
-        storageMaps.computeIfAbsent(this.block, k -> new HashMap<>());
-        itemsContainersMap.computeIfAbsent(this.block, k -> new HashMap<>());
-        emptyContainersMap.computeIfAbsent(this.block, k -> new ArrayList<>());
-        storageItems.computeIfAbsent(this.block, k -> null);
-        rangeItems.computeIfAbsent(this.block, k -> null);
-        storageLoadedContainerAmounts.computeIfAbsent(this.block, k -> 0);
-        storageContainerAmounts.computeIfAbsent(this.block, k -> 0);
-        preferredContainersMap.computeIfAbsent(this.block, k -> new HashMap<>());
-        preferredContainersMapByMaterial.computeIfAbsent(this.block, k -> new HashMap<>());
     }
 
     private static ItemStack deserializeItemStack(byte[] data) {
@@ -63,6 +54,17 @@ public class Storage {
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
 
         if (!storageMaps.keySet().contains(block)) {
+            storageMaps.computeIfAbsent(block, k -> new HashMap<>());
+            itemsContainersMap.computeIfAbsent(block, k -> new HashMap<>());
+            emptyContainersMap.computeIfAbsent(block, k -> new ArrayList<>());
+            storageItems.computeIfAbsent(block, k -> null);
+            rangeItems.computeIfAbsent(block, k -> null);
+            storageLoadedContainerAmounts.computeIfAbsent(block, k -> 0);
+            storageContainerAmounts.computeIfAbsent(block, k -> 0);
+            preferredContainersMap.computeIfAbsent(block, k -> new HashMap<>());
+            preferredContainersMapByMaterial.computeIfAbsent(block, k -> new HashMap<>());
+
+
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
                 ItemStack storageItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
                 storage.storageItems.put(block, storageItem);
