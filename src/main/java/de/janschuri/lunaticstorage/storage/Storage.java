@@ -8,6 +8,7 @@ import de.janschuri.lunaticstorage.external.LogBlock;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -15,11 +16,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
 public class Storage {
 
+    private static final Map<Block, BukkitTask> storageLoadTasks = new HashMap<>();
+    private static final Map<Block, Boolean> canLoadStorageMap = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Integer>> storageMaps = new HashMap<>();
     private static final Map<Block, Map<ItemStack, Map<Block, Boolean>>> itemsContainersMap = new HashMap<>();
     private static final Map<Block, Map<ItemStack, ArrayList<StorageContainer>>> preferredContainersMap = new HashMap<>();
@@ -36,15 +40,6 @@ public class Storage {
 
     private Storage (Block block) {
         this.block = block;
-        storageMaps.computeIfAbsent(this.block, k -> new HashMap<>());
-        itemsContainersMap.computeIfAbsent(this.block, k -> new HashMap<>());
-        emptyContainersMap.computeIfAbsent(this.block, k -> new ArrayList<>());
-        storageItems.computeIfAbsent(this.block, k -> null);
-        rangeItems.computeIfAbsent(this.block, k -> null);
-        storageLoadedContainerAmounts.computeIfAbsent(this.block, k -> 0);
-        storageContainerAmounts.computeIfAbsent(this.block, k -> 0);
-        preferredContainersMap.computeIfAbsent(this.block, k -> new HashMap<>());
-        preferredContainersMapByMaterial.computeIfAbsent(this.block, k -> new HashMap<>());
     }
 
     private static ItemStack deserializeItemStack(byte[] data) {
@@ -59,55 +54,38 @@ public class Storage {
     }
 
     public static Storage getStorage(Block block) {
-
         Storage storage = new Storage(block);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-            ItemStack newStorageItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
 
-            boolean update = false;
+        if (!storageMaps.keySet().contains(block)) {
+            storageMaps.computeIfAbsent(block, k -> new HashMap<>());
+            itemsContainersMap.computeIfAbsent(block, k -> new HashMap<>());
+            emptyContainersMap.computeIfAbsent(block, k -> new ArrayList<>());
+            storageItems.computeIfAbsent(block, k -> null);
+            rangeItems.computeIfAbsent(block, k -> null);
+            storageLoadedContainerAmounts.computeIfAbsent(block, k -> 0);
+            storageContainerAmounts.computeIfAbsent(block, k -> 0);
+            preferredContainersMap.computeIfAbsent(block, k -> new HashMap<>());
+            preferredContainersMapByMaterial.computeIfAbsent(block, k -> new HashMap<>());
+            canLoadStorageMap.computeIfAbsent(block, k -> true);
 
-            if (storage.getStorageItem() == null) {
-                if (newStorageItem != null) {
-                    update = true;
-                }
+
+            if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
+                ItemStack storageItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
+                storage.storageItems.put(block, storageItem);
             } else {
-                if (newStorageItem == null) {
-                    update = true;
-                } else {
-                    if (!storage.getStorageItem().isSimilar(newStorageItem)) {
-                        update = true;
-                    }
-                }
+                storage.storageItems.put(block, null);
             }
 
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack newRangeItem = deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
-
-                if (storage.getRangeItem() == null) {
-                    if (newRangeItem != null) {
-                        update = true;
-                    }
-                } else {
-                    if (newRangeItem == null) {
-                        update = true;
-                    } else {
-                        if (!storage.getRangeItem().isSimilar(newRangeItem)) {
-                            update = true;
-                        }
-                    }
-                }
-
-                if (update) {
-                    rangeItems.put(block, newRangeItem);
-                }
+                ItemStack rangeItem = deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
+                storage.rangeItems.put(block, rangeItem);
+            } else {
+                storage.rangeItems.put(block, null);
             }
 
-            if (update) {
-                storageItems.put(block, newStorageItem);
-                storage.loadStorage();
-            }
+            storage.loadStorage();
         }
 
         return storage;
@@ -141,6 +119,22 @@ public class Storage {
         return preferredContainersMapByMaterial.get(block);
     }
 
+    private Boolean canLoadStorage(Block block) {
+        return canLoadStorageMap.get(block);
+    }
+
+    private BukkitTask getLoadTask() {
+        return storageLoadTasks.get(block);
+    }
+
+    private void setLoadTask(BukkitTask task) {
+        storageLoadTasks.put(block, task);
+    }
+
+    private void setCanLoadStorage(Block block, Boolean canLoad) {
+        canLoadStorageMap.put(block, canLoad);
+    }
+
     public ItemStack getStorageItem() {
         return storageItems.get(block);
     }
@@ -169,34 +163,7 @@ public class Storage {
         return emptyContainersMap.get(block);
     }
 
-    public void setStorageItem(ItemStack item) {
-        boolean update = false;
-
-        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        if (item == null) {
-            if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                update = true;
-            }
-        } else {
-            if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack oldItem = deserializeItemStack(dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY));
-                if (!oldItem.isSimilar(item)) {
-                    update = true;
-                }
-            } else {
-                update = true;
-            }
-        }
-
-        saveStorageItem(item);
-
-        if (update) {
-            loadStorage();
-        }
-        StorageGUI.updateStorageGUIs(block);
-    }
-
-    private void saveStorageItem(ItemStack item) {
+    public void saveStorageItem(ItemStack item) {
         storageItems.put(block, item);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
@@ -207,35 +174,7 @@ public class Storage {
         }
     }
 
-    public void setRangeItem(ItemStack item) {
-        boolean update = false;
-
-        PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        if (item == null) {
-            if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                update = true;
-            }
-            dataContainer.remove(Key.RANGE_ITEM);
-        } else {
-            if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                ItemStack oldItem = deserializeItemStack(dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY));
-                if (!oldItem.isSimilar(item)) {
-                    update = true;
-                }
-            } else {
-                update = true;
-            }
-        }
-
-        saveRangeItem(item);
-
-        if (update) {
-            loadStorage();
-        }
-        StorageGUI.updateStorageGUIs(block);
-    }
-
-    private void saveRangeItem(ItemStack item) {
+    public void saveRangeItem(ItemStack item) {
         rangeItems.put(block, item);
 
         PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
@@ -342,45 +281,90 @@ public class Storage {
         return true;
     }
 
-    public void loadStorage () {
+    public void cancelLoadStorage() {
+        setCanLoadStorage(block, false);
+        BukkitTask loadTask = getLoadTask();
+        if (loadTask != null) {
+            loadTask.cancel();
+        }
+    }
+
+    public void loadStorage() {
+        cancelLoadStorage();
+        setCanLoadStorage(block, true);
+
+        long start = System.currentTimeMillis();
+
         Collection<StorageContainer> chests = Utils.getStorageChests(getStorageItem());
+        Iterator<StorageContainer> it = chests.iterator();
+
         long itemRange = Utils.getRangeFromItem(getRangeItem());
         long panelRange = Utils.getRangeFromBlock(block);
         long range = Math.max(itemRange, panelRange);
+
         getStorageMap().clear();
         getItemsContainers().clear();
         getEmptyContainers().clear();
         getPreferredContainers().clear();
         getPreferredContainersByMaterial().clear();
 
-        int loadedContainers = 0;
-        int totalContainers = 0;
-
         List<StorageContainer> invalidContainers = new ArrayList<>();
+        final int[] loaded = {0};
+        final int[] total = {0};
 
-        for (StorageContainer container : chests) {
-            if (!container.isValid()) {
-                invalidContainers.add(container);
-                continue;
+        long maxTotalMillis = 5000;
+        long maxMillisPerTick = 50;
+
+        Bukkit.getScheduler().runTaskTimer(LunaticStorage.getInstance(), task -> {
+            setLoadTask(task);
+
+            if (System.currentTimeMillis() - start > maxTotalMillis || !canLoadStorage(block)) {
+                Logger.error("Loading storage for block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " timed out or was cancelled.");
+                task.cancel();
+                // optional: cleanup / final counters
+                removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+                setStorageLoadedContainerAmounts(loaded[0]);
+                setStorageContainerAmounts(total[0]);
+                return;
             }
-            totalContainers++;
 
-            if (Utils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
-                loadedContainers++;
-                container.addStorageId(block);
-                Inventory chestInv = container.getInventory();
+            long tickStart = System.currentTimeMillis();
 
-                addContainerWhitelist(container);
+            while (it.hasNext() && (System.currentTimeMillis() - tickStart) < maxMillisPerTick) {
+                StorageContainer container = it.next();
 
-                addInventoryToMap(chestInv, container);
-            } else {
-                container.removeStorageId(container.getBlock());
+                if (!container.isValid()) {
+                    invalidContainers.add(container);
+                    continue;
+                }
+
+                total[0]++;
+
+                if (Utils.isInRange(block.getLocation(), container.getBlock().getLocation(), range) || range == -1) {
+                    loaded[0]++;
+                    container.addStorageId(block);
+
+                    Inventory chestInv = container.getInventory();
+                    addContainerWhitelist(container);
+                    addInventoryToMap(chestInv, container);
+                } else {
+                    container.removeStorageId(container.getBlock());
+                }
             }
-        }
 
-        removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        setStorageLoadedContainerAmounts(loadedContainers);
-        setStorageContainerAmounts(totalContainers);
+            if (!it.hasNext()) {
+                task.cancel();
+
+                long timeTaken = System.currentTimeMillis() - start;
+                Logger.info("Loaded storage for block at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " with " + loaded[0] + " / " + total[0] + " containers in " + timeTaken + " ms.");
+                removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
+                setStorageLoadedContainerAmounts(loaded[0]);
+                setStorageContainerAmounts(total[0]);
+            }
+
+            StorageGUI.updateStorageGUIs(block);
+
+        }, 0L, 1L);
     }
 
     public void updateStorage(Map<ItemStack, Integer> difference) {
@@ -757,9 +741,9 @@ public class Storage {
         }
 
         if (!storageItem.getType().isAir()) {
-            setStorageItem(storageItem);
+            saveStorageItem(storageItem);
         } else {
-            setStorageItem(null);
+            saveStorageItem(null);
         }
 
         return result;
@@ -807,9 +791,9 @@ public class Storage {
         }
 
         if (rangeItem.getType() != Material.AIR) {
-            setRangeItem(rangeItem);
+            saveRangeItem(rangeItem);
         } else {
-            setRangeItem(null);
+            saveRangeItem(null);
         }
 
         return result;

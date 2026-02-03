@@ -57,13 +57,14 @@ public class StorageContainer {
             return;
         }
 
+        PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+        blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
+
         StorageContainer storageContainer = new StorageContainer(block);
         if (!storageContainer.getInventory().isEmpty()) {
             storageContainer.addInvToWhitelist();
             storageContainer.setWhitelistEnabled(true);
         }
-        PersistentDataContainer blockDataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-        blockDataContainer.set(Key.STORAGE_CONTAINER, PersistentDataType.INTEGER, 1);
     }
 
     public List<Block> getStorageIds() {
