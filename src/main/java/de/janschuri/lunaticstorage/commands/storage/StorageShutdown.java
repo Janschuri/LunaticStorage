@@ -119,8 +119,10 @@ public class StorageShutdown extends StorageCommand implements HasParentCommand,
     @Override
     public List<Map<String, String>> getParams() {
         return List.of(
-                Map.of("option", "lunaticstorage.admin.shutdown.enable"),
-                Map.of("option", "lunaticstorage.admin.shutdown.disable")
+                Map.of(
+                        "enable", "lunaticstorage.admin.shutdown.enable",
+                        "disable", "lunaticstorage.admin.shutdown.disable"
+                )
         );
     }
 }
