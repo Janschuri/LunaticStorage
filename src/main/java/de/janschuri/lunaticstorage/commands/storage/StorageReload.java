@@ -41,9 +41,8 @@ public class StorageReload extends StorageCommand implements HasParentCommand {
             return true;
         }
 
-
-            LunaticStorage.loadConfig();
-            sender.sendMessage(getMessage(reloadedMK));
+        LunaticStorage.loadConfig();
+        sender.sendMessage(getMessage(reloadedMK));
 
         return true;
     }

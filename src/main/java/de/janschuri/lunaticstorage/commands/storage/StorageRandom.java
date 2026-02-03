@@ -6,6 +6,7 @@ import de.janschuri.lunaticlib.config.CommandMessageKey;
 import de.janschuri.lunaticlib.config.LunaticCommandMessageKey;
 import de.janschuri.lunaticlib.sender.PlayerSender;
 import de.janschuri.lunaticlib.sender.Sender;
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.commands.StorageCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -16,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
 
 public class StorageRandom extends StorageCommand implements HasParentCommand {
 
@@ -48,6 +51,11 @@ public class StorageRandom extends StorageCommand implements HasParentCommand {
 
         if (!sender.hasPermission(getPermission())) {
             sender.sendMessage(getMessage(NO_PERMISSION_MK));
+            return true;
+        }
+
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            sender.sendMessage(getShutdownMessage());
             return true;
         }
 

@@ -20,6 +20,8 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
+import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+
 public class StorageGet extends StorageCommand implements HasParentCommand, HasParams {
 
     private static final StorageGet INSTANCE = new StorageGet();
@@ -59,6 +61,11 @@ public class StorageGet extends StorageCommand implements HasParentCommand, HasP
             return true;
         }
 
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            sender.sendMessage(getShutdownMessage());
+            return true;
+        }
+
         String type = args[0];
         long range = -1;
 
@@ -95,12 +102,11 @@ public class StorageGet extends StorageCommand implements HasParentCommand, HasP
             return true;
         }
 
-            PlayerSender player = (PlayerSender) sender;
+        PlayerSender player = (PlayerSender) sender;
 
-
-            Player p = Bukkit.getPlayer(player.getUniqueId());
-            p.getInventory().addItem(item);
-            return true;
+        Player p = Bukkit.getPlayer(player.getUniqueId());
+        p.getInventory().addItem(item);
+        return true;
     }
 
     @Override

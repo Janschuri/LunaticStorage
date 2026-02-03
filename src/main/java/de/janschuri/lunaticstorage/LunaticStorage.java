@@ -82,6 +82,10 @@ public final class LunaticStorage extends JavaPlugin {
         pluginConfig = new PluginConfig(dataDirectory);
         pluginConfig.load();
 
+        if (pluginConfig.isShutdown()) {
+            Logger.warn("LunaticStorage plugin has been in shutdown mode.");
+        }
+
         debug = pluginConfig.isDebug();
 
         if (pluginConfig.isDebug()) {

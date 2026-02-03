@@ -1,5 +1,6 @@
 package de.janschuri.lunaticstorage.listener;
 
+import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
@@ -17,6 +18,10 @@ public class InventoryChangeListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryChangeMonitor(InventoryChangeEvent event) {
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            return;
+        }
+
         if (event.isCancelled()) {
             event.getSourceEvent().setCancelled(true);
         }
@@ -24,6 +29,10 @@ public class InventoryChangeListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryChange(InventoryChangeEvent event) {
+        if (LunaticStorage.getPluginConfig().isShutdown()) {
+            return;
+        }
+
         Map<ItemStack, Integer> changes = event.getChanges();
 
         Inventory inventory = event.getInventory();
