@@ -110,8 +110,7 @@ public class Utils extends PaperUtils {
     public static String getMCLanguageByKey(String key, String locale) {
         JSONObject language = LunaticStorage.getLanguagesMap().get(locale + ".json");
 
-        if (language != null) {
-            Logger.info("Getting language for key: " + key + " in locale: " + locale);
+        if (language != null && language.has(key)) {
             return language.getString(key);
         } else {
             return null;
