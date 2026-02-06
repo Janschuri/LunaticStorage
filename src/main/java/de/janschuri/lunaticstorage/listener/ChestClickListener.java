@@ -42,6 +42,9 @@ public class ChestClickListener implements Listener {
             return;
         }
 
+        if (event.isCancelled()) {
+            return;
+        }
 
         Player player = event.getPlayer();
         Block clickedBlock = event.getClickedBlock();
