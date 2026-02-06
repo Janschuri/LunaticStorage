@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class PanelClickListener implements Listener {
 

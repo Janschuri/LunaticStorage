@@ -20,7 +20,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Map;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class StorageCreate extends StorageCommand implements HasParentCommand, HasParams {
 

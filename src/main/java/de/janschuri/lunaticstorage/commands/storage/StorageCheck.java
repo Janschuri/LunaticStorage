@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class StorageCheck extends StorageCommand implements HasParentCommand {
 

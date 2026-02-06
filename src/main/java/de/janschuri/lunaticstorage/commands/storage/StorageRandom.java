@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class StorageRandom extends StorageCommand implements HasParentCommand {
 

@@ -1,15 +1,12 @@
 package de.janschuri.lunaticstorage.listener;
 
 import com.jeff_media.customblockdata.CustomBlockData;
-import de.janschuri.lunaticlib.config.LunaticMessageKey;
-import de.janschuri.lunaticlib.config.MessageKey;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -28,7 +25,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class BlockBreakListener implements Listener {
 

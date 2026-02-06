@@ -15,6 +15,7 @@ import de.janschuri.lunaticstorage.utils.Utils;
 import fr.skytasul.glowingentities.GlowingBlocks;
 import net.kyori.adventure.text.Component;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONObject;
 
@@ -44,6 +45,8 @@ public final class LunaticStorage extends JavaPlugin {
         glowingBlocks = new GlowingBlocks(this);
 
         loadConfig();
+        fetchLocales();
+        loadLocales();
 
         int pluginId = 24545;
         Metrics metrics = new Metrics(this, pluginId);
@@ -103,24 +106,6 @@ public final class LunaticStorage extends JavaPlugin {
             getInstance().saveResource("mclang/de_de.json", false);
         }
 
-        try {
-            File directory = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang");
-            File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
-
-            if (files != null) {
-                for (File file : files) {
-                    String fileName = file.getName();
-                    String jsonString = new String(Files.readAllBytes(file.toPath()));
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    languagesMap.put(fileName, jsonObject);
-                }
-            } else {
-                System.out.println("No files found in the directory.");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         return true;
     }
 
@@ -154,5 +139,54 @@ public final class LunaticStorage extends JavaPlugin {
 
     public static boolean isInstalledLogBlock() {
         return installedLogBlock;
+    }
+
+    private void loadLocales() {
+        try {
+            File directory = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang");
+            File[] files = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+
+            if (files != null) {
+                for (File file : files) {
+                    String fileName = file.getName();
+                    String jsonString = new String(Files.readAllBytes(file.toPath()));
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    languagesMap.put(fileName, jsonObject);
+                }
+            } else {
+                System.out.println("No files found in the directory.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void fetchLocales() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            String baseURl = "https://assets.mcasset.cloud/${Version}/assets/minecraft/lang/${Locale}.json";
+
+            String version = Bukkit.getBukkitVersion().split("-")[0];
+
+            List<String> locales = getPluginConfig().getLocales();
+
+            for (String locale : locales) {
+                try {
+                    String url = baseURl.replace("${Version}", version).replace("${Locale}", locale);
+
+                    Logger.info("Fetching locale " + locale + " from " + url);
+                    JSONObject json = Utils.readJsonFromUrl(url);
+
+                    // save json under dataDirectory/mclang/locale.json
+                    File file = new File(getInstance().getDataFolder().getAbsolutePath() + "/mclang/" + locale + ".json");
+                    file.getParentFile().mkdirs();
+                    Files.write(file.toPath(), json.toString(4).getBytes());
+
+                    Logger.info("Successfully fetched locale " + locale);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Logger.error("Could not load locales from mcasset.cloud");
+                }
+            }
+        });
     }
 }

@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
-
 public class ContainerEditListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

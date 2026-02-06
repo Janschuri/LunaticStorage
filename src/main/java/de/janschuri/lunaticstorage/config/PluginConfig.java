@@ -8,17 +8,14 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import static de.janschuri.lunaticstorage.LunaticStorage.getMessage;
 
-public class PluginConfig extends LunaticConfig implements HasMessageKeys {
+public class PluginConfig extends LunaticConfig {
 
     private static final String CONFIG_FILE = "config.yml";
     private String languageKey;
-    public static final MessageKey SHUTDOWN_MK = new LunaticMessageKey("plugin_shutdown")
-            .defaultMessage("en", "The plugin is currently in shutdown mode. Please try again later.")
-            .defaultMessage("de", "Das Plugin befindet sich derzeit im Shutdown-Modus. Bitte versuchen es später erneut.");
-
 
     public PluginConfig(Path dataDirectory) {
         super(dataDirectory, CONFIG_FILE);
@@ -55,10 +52,6 @@ public class PluginConfig extends LunaticConfig implements HasMessageKeys {
         return getBoolean("shutdown", false);
     }
 
-    public static Component getShutdownMessage() {
-        return getMessage(SHUTDOWN_MK);
-    }
-
     public boolean isDebug() {
         return getBoolean("debug", false);
     }
@@ -69,5 +62,9 @@ public class PluginConfig extends LunaticConfig implements HasMessageKeys {
 
     public int getDefaultRangePanel() {
         return getInt("default_range", 5);
+    }
+
+    public List<String> getLocales() {
+        return getStringList("locales");
     }
 }

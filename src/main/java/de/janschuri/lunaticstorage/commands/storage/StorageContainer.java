@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 
 import java.util.Map;
 
-import static de.janschuri.lunaticstorage.config.PluginConfig.getShutdownMessage;
+import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 import static de.janschuri.lunaticstorage.storage.StorageContainer.getStorageContainer;
 import static de.janschuri.lunaticstorage.utils.Utils.isAllowedInteract;
 
