@@ -25,6 +25,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
+import static de.janschuri.lunaticstorage.LunaticStorage.sendDebugMessage;
 import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class BlockBreakListener implements Listener {
@@ -137,10 +138,12 @@ public class BlockBreakListener implements Listener {
         }
 
         if (Utils.isStorageContainer(block)) {
+            sendDebugMessage(block.getLocation(), "Storage container broken at " + block.getLocation().getX() + " " + block.getLocation().getY() + " " + block.getLocation().getZ());
             PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
 
             StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-            Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
+            ItemStack[] contents = event.getItems().stream().map(Item::getItemStack).toArray(ItemStack[]::new);
+            Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(contents, true);
             storageContainer.updateStorages(difference);
 
             dataContainer.remove(Key.STORAGE_CONTAINER);
