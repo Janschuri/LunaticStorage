@@ -35,7 +35,7 @@ public class BlockBreakListener implements Listener {
 
     private static final Map<Event, List<Item>> dropEvents = new HashMap<>();
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
 
         Player player = event.getPlayer();

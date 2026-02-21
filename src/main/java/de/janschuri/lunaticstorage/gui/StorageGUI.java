@@ -735,13 +735,7 @@ public class StorageGUI
     public static void closeStorageGUIs(Block block) {
         if (playerStorageGUI.containsKey(block)) {
             for (int id : playerStorageGUI.get(block).values()) {
-                List<HumanEntity> viewers = getGUI(id).getInventory().getViewers();
-
-                for (HumanEntity viewer : viewers) {
-                    if (viewer instanceof Player player) {
-                        player.closeInventory();
-                    }
-                }
+                getGUI(id).closeForAllViewers();
             }
         }
     }
