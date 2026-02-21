@@ -669,7 +669,13 @@ public class Storage {
         Location loc = container.getBlock().getLocation();
 
         sendDebugMessage(loc, "Updating container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " for items: " + Arrays.toString(itemKeys));
-        sendDebugMessage(loc, "Container inventory contents:" + Arrays.toString(containerInv.getContents()));
+
+        if (containerInv != null) {
+            sendDebugMessage(loc, "Container inventory contents:" + Arrays.toString(containerInv.getContents()));
+        } else {
+            sendDebugMessage(loc, "Container inventory is null.");
+        }
+
 
         for (ItemStack itemKeysSrc : itemKeys) {
             ItemStack itemKey = itemKeysSrc.clone();
