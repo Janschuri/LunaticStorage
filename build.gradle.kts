@@ -24,7 +24,6 @@ group = "de.janschuri"
 version = scmVersion.version
 
 repositories {
-    mavenLocal()
     maven {
         url = uri("https://repo.codemc.org/repository/maven-public/")
     }

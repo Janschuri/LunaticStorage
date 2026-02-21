@@ -20,6 +20,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
       - name: Cache Gradle build output
+        if: "!contains(github.event.head_commit.message, '[nocache]')"
         uses: actions/cache@v4
         with:
           path: |
