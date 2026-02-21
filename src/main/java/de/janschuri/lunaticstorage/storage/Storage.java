@@ -596,6 +596,7 @@ public class Storage {
                 continue;
             }
 
+            ItemStack logItemStack = remainingItems.clone();
             int oldAmount = remainingItems.getAmount();
 
             remainingItems = chestInv.addItem(remainingItems).get(0);
@@ -604,11 +605,10 @@ public class Storage {
                 remainingItems = new ItemStack(Material.AIR);
             }
 
-            int newAmount = oldAmount - remainingItems.getAmount();
-            ItemStack itemStack = remainingItems.clone();
-            itemStack.setAmount(newAmount);
+            int logAmount = oldAmount - remainingItems.getAmount();
+            logItemStack.setAmount(logAmount);
 
-            LogBlock.logChestInsert(player, block, itemStack);
+            LogBlock.logChestInsert(player, block, logItemStack);
 
             updateContainer(container, itemKey);
         }
