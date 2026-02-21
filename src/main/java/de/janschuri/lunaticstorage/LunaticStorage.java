@@ -16,7 +16,10 @@ import fr.skytasul.glowingentities.GlowingBlocks;
 import net.kyori.adventure.text.Component;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -188,5 +191,30 @@ public final class LunaticStorage extends JavaPlugin {
                 }
             }
         });
+    }
+
+    public static void sendDebugMessage(Location loc, String message) {
+        if (!isDebug()) {
+            return;
+        }
+
+        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        onlinePlayers.removeIf(p ->
+                !Utils.isInRange(p.getLocation(), loc, 10)
+        );
+
+        for (Player player : onlinePlayers) {
+            sendDebugMessage(player, message);
+        }
+    }
+
+    public static void sendDebugMessage(@NotNull Player player, String message) {
+        if (!isDebug()) {
+            return;
+        }
+
+        if (player.isOnline() && (player.hasPermission("lunaticstorage.admin.debug") || player.isOp())) {
+            player.sendMessage(Component.text("[LunaticStorage DEBUG] " + message));
+        }
     }
 }
