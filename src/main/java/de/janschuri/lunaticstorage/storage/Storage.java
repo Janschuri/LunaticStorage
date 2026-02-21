@@ -226,7 +226,13 @@ public class Storage {
         if(oldAmount+difference == 0) {
             getStorageMap().remove(clone);
         } else {
-            getStorageMap().put(clone, oldAmount + difference);
+            int newAmount = (oldAmount + difference);
+
+            if (newAmount < 0) {
+                newAmount = 0;
+            }
+
+            getStorageMap().put(clone, newAmount);
         }
 
         StorageGUI.updateStorageGUIs(block);
