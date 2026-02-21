@@ -22,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
@@ -727,6 +728,20 @@ public class StorageGUI
         if (playerStorageGUI.containsKey(block)) {
             for (int id : playerStorageGUI.get(block).values()) {
                 getGUI(id).reloadGui();
+            }
+        }
+    }
+
+    public static void closeStorageGUIs(Block block) {
+        if (playerStorageGUI.containsKey(block)) {
+            for (int id : playerStorageGUI.get(block).values()) {
+                List<HumanEntity> viewers = getGUI(id).getInventory().getViewers();
+
+                for (HumanEntity viewer : viewers) {
+                    if (viewer instanceof Player player) {
+                        player.closeInventory();
+                    }
+                }
             }
         }
     }

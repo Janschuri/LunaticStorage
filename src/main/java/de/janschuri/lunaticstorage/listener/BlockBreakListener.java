@@ -4,9 +4,11 @@ import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
+import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -18,6 +20,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -25,6 +28,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
+import static de.janschuri.lunaticstorage.LunaticStorage.sendDebugMessage;
 import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class BlockBreakListener implements Listener {
@@ -51,6 +55,28 @@ public class BlockBreakListener implements Listener {
                 event.setCancelled(true);
             } else {
                 ContainerListGUI.destroy(block.getLocation());
+                StorageGUI.closeStorageGUIs(block);
+
+                if (isStorageContainer) {
+                    StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+                    Inventory inventory = storageContainer.getInventory();
+
+                    PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+                    dataContainer.remove(Key.STORAGE_CONTAINER);
+                    dataContainer.remove(Key.WHITELIST);
+                    dataContainer.remove(Key.BLACKLIST);
+                    dataContainer.remove(Key.WHITELIST_ENABLED);
+                    dataContainer.remove(Key.BLACKLIST_ENABLED);
+
+                    if (inventory == null) {
+                        Logger.error("Inventory is null");
+                        return;
+                    }
+
+                    Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
+                    storageContainer.updateStorages(difference);
+                }
             }
         }
     }
@@ -134,20 +160,6 @@ public class BlockBreakListener implements Listener {
             event.getItems().addAll(newItems);
 
             dropEvents.put(event, newItems);
-        }
-
-        if (Utils.isStorageContainer(block)) {
-            PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-
-            StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-            Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(storageContainer.getInventory().getContents(), true);
-            storageContainer.updateStorages(difference);
-
-            dataContainer.remove(Key.STORAGE_CONTAINER);
-            dataContainer.remove(Key.WHITELIST);
-            dataContainer.remove(Key.BLACKLIST);
-            dataContainer.remove(Key.WHITELIST_ENABLED);
-            dataContainer.remove(Key.BLACKLIST_ENABLED);
         }
     }
 }
