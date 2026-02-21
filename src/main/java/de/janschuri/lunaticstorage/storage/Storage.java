@@ -238,64 +238,10 @@ public class Storage {
         StorageGUI.updateStorageGUIs(block);
     }
 
-    public boolean addInventoryToMap(Inventory inventory, StorageContainer container) {
-        boolean empty = false;
-        Block block = container.getBlock();
-
-        for (ItemStack item : inventory.getContents()) {
-            if (item != null) {
-                ItemStack clone = item.clone();
-                clone.setAmount(1);
-
-                boolean found = false;
-                for (Map.Entry<ItemStack, Integer> entry : getStorageMap().entrySet()) {
-                    ItemStack existingItem = entry.getKey();
-                    if (existingItem.isSimilar(clone)) {
-                        int amount = entry.getValue();
-                        getStorageMap().put(existingItem, amount + item.getAmount());
-                            Map<Block, Boolean> itemsChests = getItemsContainers().get(existingItem);
-
-                            if (itemsChests.containsKey(block)) {
-                                if (item.getAmount() != item.getMaxStackSize()) {
-                                    itemsChests.put(block, false);
-                                }
-                            } else {
-                                if (item.getAmount() != item.getMaxStackSize()) {
-                                    itemsChests.put(block, false);
-                                } else {
-                                    itemsChests.put(block, true);
-                                }
-                            }
-
-                            getItemsContainers().put(existingItem, itemsChests);
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    getStorageMap().put(clone, item.getAmount());
-
-                    Map<Block, Boolean> itemsChests = new HashMap<>();
-                    if(item.getAmount() == item.getMaxStackSize()) {
-                        itemsChests.put(block, true);
-                    } else {
-                        itemsChests.put(block, false);
-                    }
-                    getItemsContainers().put(clone, itemsChests);
-                }
-
-
-            } else {
-                empty = true;
-            }
+    public void updateStorageMap(Map<ItemStack, Integer> difference) {
+        for (Map.Entry<ItemStack, Integer> entry : difference.entrySet()) {
+            updateStorageMap(entry.getKey(), entry.getValue());
         }
-
-        if (empty) {
-            getEmptyContainers().add(block);
-        }
-
-        return true;
     }
 
     public void cancelLoadStorage() {
@@ -361,9 +307,8 @@ public class Storage {
                     loaded[0]++;
                     container.addStorageId(block);
 
-                    Inventory chestInv = container.getInventory();
-                    addContainerWhitelist(container);
-                    addInventoryToMap(chestInv, container);
+                    updateStorageMap(container.getContainerMap());
+                    updateContainer(container, container.getContainerMap().keySet().toArray(new ItemStack[0]));
                 } else {
                     container.removeStorageId(container.getBlock());
                 }
@@ -384,11 +329,6 @@ public class Storage {
         }, 0L, 1L);
     }
 
-    public void updateStorage(Map<ItemStack, Integer> difference) {
-            for (Map.Entry<ItemStack, Integer> entry : difference.entrySet()) {
-                updateStorageMap(entry.getKey(), entry.getValue());
-            }
-    }
     private void removeContainerFromStorageItem(StorageContainer... containers) {
         if (containers.length == 0) {
             return;
@@ -440,7 +380,6 @@ public class Storage {
         }
 
         removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        updateStorageMap(searchedItem, -(foundItems));
 
         searchedItem.setAmount(foundItems);
 
@@ -508,6 +447,7 @@ public class Storage {
                     ItemStack itemStack = i.clone();
                     itemStack.setAmount(amountNeeded);
 
+                    container.updateContainerMap(searchedItem, -amount);
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else if (amountNeeded == amount) {
@@ -519,6 +459,7 @@ public class Storage {
                     ItemStack itemStack = i.clone();
                     itemStack.setAmount(amountNeeded);
 
+                    container.updateContainerMap(searchedItem, -amountNeeded);
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else {
@@ -530,6 +471,7 @@ public class Storage {
                     ItemStack itemStack = i.clone();
                     itemStack.setAmount(amount);
 
+                    container.updateContainerMap(searchedItem, -amount);
                     LogBlock.logChestRemove(player, block, itemStack);
                 }
             }
@@ -609,7 +551,6 @@ public class Storage {
         }
 
         removeContainerFromStorageItem(invalidContainers.toArray(new StorageContainer[0]));
-        updateStorageMap(item, amount);
 
         return remainingItems;
     }
@@ -659,6 +600,7 @@ public class Storage {
             int logAmount = oldAmount - remainingItems.getAmount();
             logItemStack.setAmount(logAmount);
 
+            container.updateContainerMap(itemKey, logAmount);
             LogBlock.logChestInsert(player, block, logItemStack);
 
             updateContainer(container, itemKey);

@@ -25,6 +25,7 @@ import java.util.*;
 
 public class StorageContainer {
     private static final Map<Block, List<Block>> containerStorageIds = new HashMap<>();
+    private static final Map<Block, Map<ItemStack, Integer>> containerMaps = new HashMap<>();
 
     private final Block block;
 
@@ -110,54 +111,60 @@ public class StorageContainer {
         containerStorageIds.remove(block);
     }
 
-    public void updateStorages(Map<ItemStack, Integer> difference) {
+    public void updateContainerMap(Map<ItemStack, Integer> difference) {
+        Map<ItemStack, Integer> containerMap = getContainerMap();
+
+        for (Map.Entry<ItemStack, Integer> entry : difference.entrySet()) {
+            ItemStack item = entry.getKey();
+            int amountChange = entry.getValue();
+            updateContainerMap(item, amountChange);
+        }
+    }
+
+    public void updateContainerMap(ItemStack item, int difference) {
+        Map<ItemStack, Integer> containerMap = getContainerMap();
+
+        for (ItemStack key : containerMap.keySet()) {
+            if (key.isSimilar(item)) {
+                int newAmount = containerMap.get(key) + difference;
+                if (newAmount <= 0) {
+                    containerMap.remove(key);
+                } else {
+                    containerMap.put(key, newAmount);
+                }
+                break;
+            }
+        }
+
         Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
             for (Block block : getStorageIds()) {
                 Storage storage = Storage.getStorage(block);
-                storage.updateStorage(difference);
-                storage.updateContainer(this, difference.keySet().toArray(new ItemStack[0]));
+                storage.updateStorageMap(item, difference);
+                storage.updateContainer(this, item);
                 StorageGUI.updateStorageGUIs(block);
             }
         }, 1L);
     }
 
-    public static boolean isLoaded(Block block) {
-        return containerStorageIds.containsKey(block);
+    public Map<ItemStack, Integer> getContainerMap() {
+        Map<ItemStack, Integer> containerMap = containerMaps.get(block);
+
+        if (containerMap == null) {
+            Inventory inventory = getInventory();
+
+            if (inventory == null) {
+                return new HashMap<>();
+            }
+
+            containerMap = Utils.itemStackArrayToMap(inventory.getContents(), true);
+            containerMaps.put(block, containerMap);
+        }
+
+        return containerMap;
     }
 
-    public Map<ItemStack, Integer> getDifference(Map<ItemStack, Integer> oldItems, Map<ItemStack, Integer>  newItems) {
-        Map<ItemStack, Integer> difference = new HashMap<>();
-
-        if (oldItems == null) {
-            oldItems = new HashMap<>();
-        }
-
-        Map<ItemStack, Integer> oldItemsCopy = new HashMap<>(oldItems);
-        Map<ItemStack, Integer> newItemsCopy = new HashMap<>(newItems);
-
-        for (ItemStack oldItem : oldItems.keySet()) {
-            for (ItemStack newItem : newItems.keySet()) {
-                if (oldItem.isSimilar(newItem)) {
-
-                    if (oldItems.get(oldItem) != newItems.get(newItem)) {
-                        difference.put(newItem.clone(), newItems.get(newItem) - oldItems.get(oldItem));
-                    }
-
-                    oldItemsCopy.remove(oldItem);
-                    newItemsCopy.remove(newItem);
-                }
-            }
-        }
-
-        for (ItemStack oldItem : oldItemsCopy.keySet()) {
-            difference.put(oldItem.clone(), -oldItems.get(oldItem));
-        }
-
-        for (ItemStack newItem : newItemsCopy.keySet()) {
-            difference.put(newItem.clone(), newItems.get(newItem));
-        }
-
-        return difference;
+    public static boolean isLoaded(Block block) {
+        return containerStorageIds.containsKey(block);
     }
 
     public boolean isValid() {

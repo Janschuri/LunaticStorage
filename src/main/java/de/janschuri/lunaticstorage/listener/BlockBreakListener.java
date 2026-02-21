@@ -75,7 +75,7 @@ public class BlockBreakListener implements Listener {
                     }
 
                     Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
-                    storageContainer.updateStorages(difference);
+                    storageContainer.updateContainerMap(difference);
                 }
             }
         }

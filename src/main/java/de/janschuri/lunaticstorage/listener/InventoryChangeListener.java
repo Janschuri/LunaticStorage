@@ -47,7 +47,7 @@ public class InventoryChangeListener implements Listener {
             if (Utils.isStorageContainer(block)) {
                 if (StorageContainer.isLoaded(block)) {
                     StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-                    storageContainer.updateStorages(changes);
+                    storageContainer.updateContainerMap(changes);
                 }
             }
         }
