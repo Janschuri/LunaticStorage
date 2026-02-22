@@ -8,7 +8,6 @@ import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -20,7 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -28,12 +26,12 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 
-import static de.janschuri.lunaticstorage.LunaticStorage.sendDebugMessage;
 import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessage;
 
 public class BlockBreakListener implements Listener {
 
     private static final Map<Event, List<Item>> dropEvents = new HashMap<>();
+    private static final Map<Block, Map<ItemStack, Integer>> dropDiffs = new HashMap<>();
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -53,36 +51,30 @@ public class BlockBreakListener implements Listener {
 
             if (!player.isSneaking()) {
                 event.setCancelled(true);
-            } else {
-                ContainerListGUI.destroy(block.getLocation());
-                StorageGUI.closeStorageGUIs(block);
-
-                if (isStorageContainer) {
-                    StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
-                    Inventory inventory = storageContainer.getInventory();
-
-                    PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
-
-                    dataContainer.remove(Key.STORAGE_CONTAINER);
-                    dataContainer.remove(Key.WHITELIST);
-                    dataContainer.remove(Key.BLACKLIST);
-                    dataContainer.remove(Key.WHITELIST_ENABLED);
-                    dataContainer.remove(Key.BLACKLIST_ENABLED);
-
-                    if (inventory == null) {
-                        Logger.error("Inventory is null");
-                        return;
-                    }
-
-                    Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
-                    storageContainer.updateStorages(difference);
-                }
             }
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onBlockDropMonitor(BlockDropItemEvent event) {
+    public void onBlockDrop(BlockDropItemEvent event) {
+        Block block = event.getBlock();
+        boolean isPanel = Utils.isPanel(block);
+        boolean isStorageContainer = Utils.isStorageContainer(block);
+        if (isPanel || isStorageContainer) {
+            PersistentDataContainer dataContainer = new CustomBlockData(block, LunaticStorage.getInstance());
+
+            dataContainer.remove(Key.STORAGE_ITEM);
+            dataContainer.remove(Key.PANEL_BLOCK);
+            dataContainer.remove(Key.PANEL_RANGE);
+            dataContainer.remove(Key.RANGE_ITEM);
+
+            dataContainer.remove(Key.STORAGE_CONTAINER);
+            dataContainer.remove(Key.WHITELIST);
+            dataContainer.remove(Key.BLACKLIST);
+            dataContainer.remove(Key.WHITELIST_ENABLED);
+            dataContainer.remove(Key.BLACKLIST_ENABLED);
+        }
+
         if (dropEvents.containsKey(event)) {
 
             List<Item> oldItems = dropEvents.get(event);
@@ -95,17 +87,17 @@ public class BlockBreakListener implements Listener {
             }
 
             dropEvents.remove(event);
-            return;
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onBlockDrop(BlockDropItemEvent event) {
+    public void onPanelBlockDrop(BlockDropItemEvent event) {
 
         Player player = event.getPlayer();
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
+            StorageGUI.closeStorageGUIs(block);
 
             Storage.removeStorage(block);
 
@@ -152,14 +144,24 @@ public class BlockBreakListener implements Listener {
                     newItems.add(item);
             }
 
-            dataContainer.remove(Key.STORAGE_ITEM);
-            dataContainer.remove(Key.PANEL_BLOCK);
-            dataContainer.remove(Key.PANEL_RANGE);
-            dataContainer.remove(Key.RANGE_ITEM);
+
 
             event.getItems().addAll(newItems);
 
             dropEvents.put(event, newItems);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onStorageContainerBlockDrop(BlockDropItemEvent event) {
+        Block block = event.getBlock();
+        boolean isStorageContainer = Utils.isStorageContainer(block);
+        if (isStorageContainer) {
+            ContainerListGUI.destroy(block.getLocation());
+            StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+
+            Map<ItemStack, Integer> diff = dropDiffs.getOrDefault(block, new HashMap<>());
+            storageContainer.updateStorages(diff);
         }
     }
 }
