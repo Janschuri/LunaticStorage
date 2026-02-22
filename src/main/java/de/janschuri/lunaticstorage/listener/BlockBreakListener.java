@@ -8,7 +8,9 @@ import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.storage.Key;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
+import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -19,6 +21,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -51,6 +54,18 @@ public class BlockBreakListener implements Listener {
 
             if (!player.isSneaking()) {
                 event.setCancelled(true);
+            } else if (isStorageContainer) {
+                StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
+                Inventory inventory = storageContainer.getInventory();
+
+                if (inventory == null) {
+                    Logger.error("Inventory is null");
+                    return;
+                }
+
+                Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
+                dropDiffs.put(block, difference);
+                Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> dropDiffs.remove(block), 2L);
             }
         }
     }
