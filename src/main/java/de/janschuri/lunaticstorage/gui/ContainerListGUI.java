@@ -230,11 +230,14 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
     public static void closeContainerListGUIs(Location loc) {
         if (guiCache.containsKey(loc)) {
             ContainerListGUI gui = guiCache.get(loc);
-            gui.closeForAllViewers();
+            if (gui != null) {
+                gui.closeForAllViewers();
+            }
         }
     }
 
     public static void destroy(Location loc) {
+        closeContainerListGUIs(loc);
         ContainerListGUI gui = guiCache.remove(loc);
         if (gui != null && gui.task != null) {
             gui.task.cancel();

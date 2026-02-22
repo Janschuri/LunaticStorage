@@ -114,7 +114,6 @@ public class BlockBreakListener implements Listener {
         if (Utils.isPanel(block)) {
             StorageGUI.closeStorageGUIs(block);
             ContainerListGUI.destroy(block.getLocation());
-            ContainerListGUI.closeContainerListGUIs(block.getLocation());
 
             Storage.removeStorage(block);
 
@@ -174,10 +173,9 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
         boolean isStorageContainer = Utils.isStorageContainer(block);
         if (isStorageContainer) {
-            ContainerListGUI.destroy(block.getLocation());
             StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
 
-            Map<ItemStack, Integer> diff = dropDiffs.getOrDefault(block, new HashMap<>());
+            Map<ItemStack, Integer> diff = dropDiffs.getOrDefault(block, Collections.emptyMap());
             storageContainer.updateStorages(diff);
         }
     }
