@@ -178,10 +178,6 @@ public class StorageContainer {
     }
 
     public boolean isAllowedPutItem(Player player, ItemStack item) {
-        if (!EventUtils.isAllowedInteract(player, block)) {
-            return false;
-        }
-
         if (!EventUtils.isAllowedPutItem(player, getInventory())) {
             return false;
         }
@@ -198,10 +194,6 @@ public class StorageContainer {
     }
 
     public boolean isAllowedTakeItem(Player player) {
-        if (!EventUtils.isAllowedInteract(player, block)) {
-            return false;
-        }
-
         if (!EventUtils.isAllowedTakeItem(player, getInventory())) {
             return false;
         }
