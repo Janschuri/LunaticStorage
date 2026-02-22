@@ -9,7 +9,6 @@ import de.janschuri.lunaticlib.platform.paper.inventorygui.handler.GUIManager;
 import de.janschuri.lunaticlib.platform.paper.inventorygui.interfaces.list.PaginatedList;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -226,6 +225,13 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
         });
 
         return;
+    }
+
+    public static void closeContainerListGUIs(Location loc) {
+        if (guiCache.containsKey(loc)) {
+            ContainerListGUI gui = guiCache.get(loc);
+            gui.closeForAllViewers();
+        }
     }
 
     public static void destroy(Location loc) {

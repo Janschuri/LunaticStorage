@@ -113,6 +113,8 @@ public class BlockBreakListener implements Listener {
 
         if (Utils.isPanel(block)) {
             StorageGUI.closeStorageGUIs(block);
+            ContainerListGUI.destroy(block.getLocation());
+            ContainerListGUI.closeContainerListGUIs(block.getLocation());
 
             Storage.removeStorage(block);
 
