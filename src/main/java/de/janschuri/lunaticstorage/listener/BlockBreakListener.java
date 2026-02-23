@@ -3,6 +3,7 @@ package de.janschuri.lunaticstorage.listener;
 import com.jeff_media.customblockdata.CustomBlockData;
 import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
+import de.janschuri.lunaticstorage.gui.ContainerGUI;
 import de.janschuri.lunaticstorage.gui.ContainerListGUI;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.storage.Key;
@@ -10,7 +11,6 @@ import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -46,6 +46,10 @@ public class BlockBreakListener implements Listener {
         boolean isStorageContainer = Utils.isStorageContainer(block);
 
         if (isPanel || isStorageContainer) {
+            StorageGUI.closeAllAtBlock(block);
+            ContainerListGUI.destroyAllAtLocation(block.getLocation());
+            ContainerGUI.closeAllAtBlock(block);
+
             if (LunaticStorage.getPluginConfig().isShutdown()) {
                 event.setCancelled(true);
                 player.sendMessage(getShutdownMessage());
@@ -65,7 +69,6 @@ public class BlockBreakListener implements Listener {
 
                 Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
                 dropDiffs.put(block, difference);
-                Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> dropDiffs.remove(block), 2L);
             }
         }
     }
@@ -112,8 +115,6 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
-            StorageGUI.closeStorageGUIs(block);
-            ContainerListGUI.destroy(block.getLocation());
 
             Storage.removeStorage(block);
 
@@ -178,6 +179,7 @@ public class BlockBreakListener implements Listener {
             Map<ItemStack, Integer> diff = dropDiffs.getOrDefault(block, Collections.emptyMap());
             storageContainer.updateStorages(diff);
         }
+        dropDiffs.remove(block);
     }
 }
 

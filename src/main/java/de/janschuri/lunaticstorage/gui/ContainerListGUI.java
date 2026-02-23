@@ -227,7 +227,7 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
         return;
     }
 
-    public static void closeContainerListGUIs(Location loc) {
+    public static void closeAllAtLocation(Location loc) {
         if (guiCache.containsKey(loc)) {
             ContainerListGUI gui = guiCache.get(loc);
             if (gui != null) {
@@ -236,8 +236,8 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
         }
     }
 
-    public static void destroy(Location loc) {
-        closeContainerListGUIs(loc);
+    public static void destroyAllAtLocation(Location loc) {
+        closeAllAtLocation(loc);
         ContainerListGUI gui = guiCache.remove(loc);
         if (gui != null && gui.task != null) {
             gui.task.cancel();
@@ -246,7 +246,7 @@ public class ContainerListGUI extends ListGUI<StorageContainer> implements Pagin
 
     public static void destroyAll() {
         for (Location loc : guiCache.keySet()) {
-            destroy(loc);
+            destroyAllAtLocation(loc);
         }
         guiCache.clear();
     }
