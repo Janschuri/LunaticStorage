@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 
@@ -33,8 +34,9 @@ import static de.janschuri.lunaticstorage.config.LanguageConfig.getShutdownMessa
 
 public class BlockBreakListener implements Listener {
 
+    private static final long DROP_DIFF_TTL_TICKS = 20L * 60L;
     private static final Map<Event, List<Item>> dropEvents = new HashMap<>();
-    private static final Map<Block, Map<ItemStack, Integer>> dropDiffs = new HashMap<>();
+    private static final Map<Block, PendingDropDiff> dropDiffs = new HashMap<>();
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -68,7 +70,7 @@ public class BlockBreakListener implements Listener {
                 }
 
                 Map<ItemStack, Integer> difference = Utils.itemStackArrayToMap(inventory.getContents(), true);
-                dropDiffs.put(block, difference);
+                cacheDropDiff(block, difference);
             }
         }
     }
@@ -172,14 +174,50 @@ public class BlockBreakListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onStorageContainerBlockDrop(BlockDropItemEvent event) {
         Block block = event.getBlock();
+        PendingDropDiff pendingDropDiff = removeDropDiff(block);
         boolean isStorageContainer = Utils.isStorageContainer(block);
         if (isStorageContainer) {
             StorageContainer storageContainer = StorageContainer.getStorageContainer(block);
 
-            Map<ItemStack, Integer> diff = dropDiffs.getOrDefault(block, Collections.emptyMap());
+            Map<ItemStack, Integer> diff = pendingDropDiff != null ? pendingDropDiff.difference() : Collections.emptyMap();
             storageContainer.updateStorages(diff);
         }
-        dropDiffs.remove(block);
+    }
+
+    public static void clearDropDiffs() {
+        for (PendingDropDiff pendingDropDiff : dropDiffs.values()) {
+            pendingDropDiff.cleanupTask().cancel();
+        }
+
+        dropDiffs.clear();
+    }
+
+    private static void cacheDropDiff(Block block, Map<ItemStack, Integer> difference) {
+        removeDropDiff(block);
+        PendingDropDiff[] pendingHolder = new PendingDropDiff[1];
+        BukkitTask cleanupTask = LunaticStorage.getInstance().getServer().getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+            PendingDropDiff currentDropDiff = dropDiffs.get(block);
+            if (currentDropDiff == pendingHolder[0]) {
+                dropDiffs.remove(block);
+                long ageSeconds = (System.currentTimeMillis() - currentDropDiff.createdAt()) / 1000L;
+                Logger.warn("Cleaned up stale drop diff for storage container at " + block.getLocation() + " after " + ageSeconds + " seconds.");
+            }
+        }, DROP_DIFF_TTL_TICKS);
+
+        PendingDropDiff pendingDropDiff = new PendingDropDiff(difference, cleanupTask, System.currentTimeMillis());
+        pendingHolder[0] = pendingDropDiff;
+        dropDiffs.put(block, pendingDropDiff);
+    }
+
+    private static PendingDropDiff removeDropDiff(Block block) {
+        PendingDropDiff pendingDropDiff = dropDiffs.remove(block);
+        if (pendingDropDiff != null) {
+            pendingDropDiff.cleanupTask().cancel();
+        }
+
+        return pendingDropDiff;
+    }
+
+    private record PendingDropDiff(Map<ItemStack, Integer> difference, BukkitTask cleanupTask, long createdAt) {
     }
 }
-
