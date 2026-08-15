@@ -6,6 +6,7 @@ import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -110,13 +111,14 @@ public class StorageContainer {
     }
 
     public void updateStorages(Map<ItemStack, Integer> difference) {
-
-        for (Block block : getStorageIds()) {
-            Storage storage = Storage.getStorage(block);
-            storage.updateStorage(difference);
-            storage.updateContainer(this, difference.keySet().toArray(new ItemStack[0]));
-            StorageGUI.updateStorageGUIs(block);
-        }
+        Bukkit.getScheduler().runTaskLater(LunaticStorage.getInstance(), () -> {
+            for (Block block : getStorageIds()) {
+                Storage storage = Storage.getStorage(block);
+                storage.updateStorage(difference);
+                storage.updateContainer(this, difference.keySet().toArray(new ItemStack[0]));
+                StorageGUI.updateStorageGUIs(block);
+            }
+        }, 1L);
     }
 
     public static boolean isLoaded(Block block) {
@@ -176,10 +178,6 @@ public class StorageContainer {
     }
 
     public boolean isAllowedPutItem(Player player, ItemStack item) {
-        if (!EventUtils.isAllowedInteract(player, block)) {
-            return false;
-        }
-
         if (!EventUtils.isAllowedPutItem(player, getInventory())) {
             return false;
         }
@@ -196,10 +194,6 @@ public class StorageContainer {
     }
 
     public boolean isAllowedTakeItem(Player player) {
-        if (!EventUtils.isAllowedInteract(player, block)) {
-            return false;
-        }
-
         if (!EventUtils.isAllowedTakeItem(player, getInventory())) {
             return false;
         }

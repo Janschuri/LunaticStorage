@@ -157,6 +157,14 @@ public class ContainerGUI extends ListGUI<Map.Entry<ItemStack, Boolean>> impleme
         super.init(player);
     }
 
+    public static void closeAllAtBlock(Block block) {
+        if (playerContainerGUIs.containsKey(block)) {
+            for (int id : playerContainerGUIs.get(block).values()) {
+                getGUI(id).closeForAllViewers();
+            }
+        }
+    }
+
     @Override
     public List<Map.Entry<ItemStack, Boolean>> getItems() {
         Map<ItemStack, Boolean> items = isWhitelist() ? getStorageContainer().getWhitelist() : getStorageContainer().getBlacklist();

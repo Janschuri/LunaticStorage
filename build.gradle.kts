@@ -6,10 +6,24 @@ plugins {
     `java-library`
     `maven-publish`
     id("io.github.goooler.shadow") version "8.1.8"
+    id("pl.allegro.tech.build.axion-release") version "1.21.1"
 }
 
+scmVersion {
+    tag {
+        tag {
+            prefix.set("v")
+        }
+        initialVersion({config, position -> "1.1.11"})
+    }
+
+    branchVersionCreator.putAll(mapOf("develop" to "simple"))
+}
+
+group = "de.janschuri"
+version = scmVersion.version
+
 repositories {
-    mavenLocal()
     maven {
         url = uri("https://repo.codemc.org/repository/maven-public/")
     }
@@ -24,6 +38,15 @@ repositories {
 
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
+    }
+    maven {
+        url = uri("https://maven.pkg.github.com/janschuri/lunaticlib")
+        credentials {
+            username = providers.gradleProperty("gpr.user").orNull
+                ?: System.getenv("GITHUB_ACTOR")
+            password = providers.gradleProperty("gpr.key").orNull
+                ?: System.getenv("GITHUB_TOKEN")
+        }
     }
 }
 
@@ -41,9 +64,7 @@ dependencies {
     compileOnly(libs.de.diddiz.logblock)
 }
 
-group = "de.janschuri"
-version = "1.1.10-SNAPSHOT"
-description = "LunaticStorage"
+
 java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
 

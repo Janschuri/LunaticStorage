@@ -9,6 +9,7 @@ import de.janschuri.lunaticstorage.gui.StorageGUI;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -19,6 +20,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+
+import static de.janschuri.lunaticstorage.LunaticStorage.sendDebugMessage;
 
 public class Storage {
 
@@ -157,6 +160,14 @@ public class Storage {
 
     public Map<ItemStack, Map<Block, Boolean>> getItemsContainers() {
         return itemsContainersMap.get(block);
+    }
+
+    public ArrayList<StorageContainer> getPreferredContainersByMaterial(Material material) {
+        return preferredContainersMapByMaterial.get(block).getOrDefault(material, new ArrayList<>());
+    }
+
+    public ArrayList<StorageContainer> getPreferredContainersForItem(ItemStack item) {
+        return preferredContainersMap.get(block).getOrDefault(item, new ArrayList<>());
     }
 
     public List<Block> getEmptyContainers() {
@@ -404,6 +415,7 @@ public class Storage {
 
         List<StorageContainer> invalidContainers = new ArrayList<>();
 
+        sendDebugMessage(player, "Searching for item " + searchedItem.getType() + " in non-fullstack containers: " + nonFullstackContainers.size() + " containers found.");
         foundItems = getFoundItems(player, searchedItem, stackSize, foundItems, invalidContainers, nonFullstackContainers);
 
         if (foundItems != stackSize) {
@@ -417,6 +429,7 @@ public class Storage {
                         .toList();
             }
 
+            sendDebugMessage(player, "Searching for item " + searchedItem.getType() + " in fullstack containers: " + fullstackContainers.size() + " containers found.");
             foundItems = getFoundItems(player, searchedItem, stackSize, foundItems, invalidContainers, fullstackContainers);
         }
 
@@ -428,12 +441,20 @@ public class Storage {
         return searchedItem;
     }
 
-    private int getFoundItems(Player player, ItemStack searchedItem, int stackSize, int foundItems, List<StorageContainer> invalidContainers, List<StorageContainer> fullstackContainers) {
-        for (StorageContainer container : fullstackContainers) {
+    private int getFoundItems(Player player, ItemStack searchedItem, int stackSize, int foundItems, List<StorageContainer> invalidContainers, List<StorageContainer> containers) {
+        if (containers.isEmpty()) {
+            sendDebugMessage(player, "No containers with item " + searchedItem.getType() + " found. Stopping.");
+            return foundItems;
+        }
+
+        for (StorageContainer container : containers) {
+            sendDebugMessage(player, "Checking container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ());
             if (foundItems == stackSize) {
+                sendDebugMessage(player, "Found " + foundItems + " items, which is enough for the stack size of " + stackSize + ". Stopping search.");
                 break;
             }
             if (!container.isValid()) {
+                sendDebugMessage(player, "Container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ() + " is not valid. Skipping.");
                 invalidContainers.add(container);
                 continue;
             }
@@ -443,22 +464,27 @@ public class Storage {
             Inventory chestInv = container.getInventory();
 
             if (chestInv == null) {
+                sendDebugMessage(player, "Inventory is null. Skipping.");
                 continue;
             }
 
             if (!container.isAllowedTakeItem(player)) {
+                sendDebugMessage(player, "Player is not allowed to take items from container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ() + ". Skipping.");
                 continue;
             }
 
             for (ItemStack i : chestInv.getContents()) {
                 if (foundItems == stackSize) {
+                    sendDebugMessage(player, "Found " + foundItems + " items, which is enough for the stack size of " + stackSize + ". Stopping search.");
                     updateContainer(container, searchedItem);
                     break;
                 }
                 if (i == null) {
+                    sendDebugMessage(player, "ItemStack is null. Skipping.");
                     continue;
                 }
                 if (!i.isSimilar(searchedItem)) {
+                    sendDebugMessage(player, "ItemStack " + i.getType() + " is not similar to searched item " + searchedItem.getType() + ". Skipping.");
                     continue;
                 }
 
@@ -466,6 +492,7 @@ public class Storage {
                 int amountNeeded = stackSize - foundItems;
 
                 if (amountNeeded < amount) {
+                    sendDebugMessage(player, "ItemStack has " + amount + " items, but only " + amountNeeded + " are needed to reach the stack size of " + stackSize + ". Taking " + amountNeeded + " items.");
                     container.getInventory().removeItem(i);
                     i.setAmount(i.getAmount() - amountNeeded);
                     container.getInventory().addItem(i);
@@ -478,6 +505,7 @@ public class Storage {
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else if (amountNeeded == amount) {
+                    sendDebugMessage(player, "ItemStack has exactly " + amount + " items, which is exactly the amount needed to reach the stack size of " + stackSize + ". Taking all " + amountNeeded + " items.");
                     container.getInventory().removeItem(i);
                     container.update();
                     foundItems = foundItems + amount;
@@ -488,6 +516,7 @@ public class Storage {
                     LogBlock.logChestRemove(player, block, itemStack);
 
                 } else {
+                    sendDebugMessage(player, "ItemStack has " + amount + " items, which is less than the amount needed to reach the stack size of " + stackSize + ". Taking all " + amount + " items.");
                     container.getInventory().removeItem(i);
                     container.update();
                     foundItems = foundItems + amount;
@@ -500,6 +529,7 @@ public class Storage {
             }
             updateContainer(container, searchedItem);
         }
+        sendDebugMessage(player, "Found " + foundItems + " items so far.");
         return foundItems;
     }
 
@@ -523,6 +553,7 @@ public class Storage {
         }
 
 
+        sendDebugMessage(player, "Inseting into preferred containers for item " + itemKey.getType() + ": " + preferredContainers.size() + " containers found.");
         remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, preferredContainers, invalidContainers);
 
         if (remainingItems.getAmount() != 0) {
@@ -537,6 +568,7 @@ public class Storage {
                 getPreferredContainersByMaterial().put(itemKey.getType(), new ArrayList<>(preferredContainersByMaterial));
             }
 
+            sendDebugMessage(player, "Inseting into preferred containers for material " + itemKey.getType() + ": " + preferredContainersByMaterial.size() + " containers found.");
             remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, preferredContainersByMaterial, invalidContainers);
         }
 
@@ -549,6 +581,7 @@ public class Storage {
                         .toList();
             }
 
+            sendDebugMessage(player, "Inseting into containers with item for item " + itemKey.getType() + ": " + containersWithItem.size() + " containers found.");
             remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, containersWithItem, invalidContainers);
         }
 
@@ -557,6 +590,7 @@ public class Storage {
                     .map(StorageContainer::getStorageContainer)
                     .toList();
 
+            sendDebugMessage(player, "Inseting into empty containers: " + emptyChests.size() + " containers found.");
             remainingItems = insertAndGetOverflow(player, remainingItems, itemKey, emptyChests, invalidContainers);
         }
 
@@ -575,16 +609,25 @@ public class Storage {
     }
 
     private ItemStack insertAndGetOverflow(Player player, ItemStack remainingItems, ItemStack itemKey, List<StorageContainer> containers, List<StorageContainer> invalidContainers) {
+        if (containers.isEmpty()) {
+            sendDebugMessage(player, "No containers to insert items into. Stopping.");
+            return remainingItems;
+        }
+
         for (StorageContainer container : containers) {
+            sendDebugMessage(player, "Trying to insert items into container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ());
             if (remainingItems.getAmount() == 0 || remainingItems.getType() == Material.AIR) {
+                sendDebugMessage(player, "No remaining items to insert. Stopping.");
                 break;
             }
             if (!container.isValid()) {
+                sendDebugMessage(player, "Container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ() + " is not valid. Skipping.");
                 invalidContainers.add(container);
                 continue;
             }
 
             if (!container.isAllowedPutItem(player, remainingItems)) {
+                sendDebugMessage(player, "Player is not allowed to put items into container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ() + ". Skipping.");
                 continue;
             }
 
@@ -593,60 +636,89 @@ public class Storage {
             Inventory chestInv = container.getInventory();
 
             if (!EventUtils.isAllowedPutItem(player, chestInv)) {
+                sendDebugMessage(player, "Player is not allowed to put items into inventory of container at " + container.getBlock().getX() + ", " + container.getBlock().getY() + ", " + container.getBlock().getZ() + ". Skipping.");
                 continue;
             }
 
+            ItemStack logItemStack = remainingItems.clone();
             int oldAmount = remainingItems.getAmount();
 
             remainingItems = chestInv.addItem(remainingItems).get(0);
             container.update();
             if (remainingItems == null) {
+                sendDebugMessage(player, "No remaining items to insert. Stopping.");
                 remainingItems = new ItemStack(Material.AIR);
             }
 
-            int newAmount = oldAmount - remainingItems.getAmount();
-            ItemStack itemStack = remainingItems.clone();
-            itemStack.setAmount(newAmount);
+            int logAmount = oldAmount - remainingItems.getAmount();
+            logItemStack.setAmount(logAmount);
 
-            LogBlock.logChestInsert(player, block, itemStack);
+            LogBlock.logChestInsert(player, block, logItemStack);
 
             updateContainer(container, itemKey);
         }
+        sendDebugMessage(player, "Remaining items after trying to insert into containers: " + remainingItems.getAmount());
         return remainingItems;
     }
 
     public void updateContainer(StorageContainer container, ItemStack... itemKeys) {
         Map<Block, Boolean> itemsChests = new HashMap<>();
         Block block = container.getBlock();
+        container.update();
         Inventory containerInv = container.getInventory();
+        Location loc = container.getBlock().getLocation();
 
-        for (ItemStack itemKey : itemKeys) {
+        sendDebugMessage(loc, "Updating container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " for items: " + Arrays.toString(itemKeys));
+
+        if (containerInv != null) {
+            sendDebugMessage(loc, "Container inventory contents:" + Arrays.toString(containerInv.getContents()));
+        } else {
+            sendDebugMessage(loc, "Container inventory is null.");
+        }
+
+
+        for (ItemStack itemKeysSrc : itemKeys) {
+            ItemStack itemKey = itemKeysSrc.clone();
+            itemKey.setAmount(1);
+
             if (getItemsContainers().get(itemKey) != null) {
                 itemsChests = getItemsContainers().get(itemKey);
             }
 
             if (containerInv != null && containerInv.containsAtLeast(itemKey, 1)) {
+                sendDebugMessage(loc, "Container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " contains item " + itemKey.getType() + " which is similar to item key. Marking container as fullstack for this item until proven otherwise.");
 
                 itemsChests.put(block, true);
 
                 for (ItemStack item : containerInv.getContents()) {
                     if (item != null && item.isSimilar(itemKey) && item.getAmount() != item.getMaxStackSize()) {
+                        sendDebugMessage(loc, "Container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " contains item " + item.getType() + " which is similar to item key " + itemKey.getType() + " but has amount " + item.getAmount() + " which is less than max stack size " + item.getMaxStackSize() + ". Marking container as non fullstack for this item.");
                         itemsChests.put(block, false);
                         break;
                     }
                 }
 
             } else {
+                sendDebugMessage(loc, "Container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " does not contain item " + itemKey.getType() + " which is similar to item key. Removing container from item containers.");
                 itemsChests.remove(block);
             }
 
             getItemsContainers().put(itemKey, itemsChests);
+
+
+            Map<Block, Boolean> newItemsChests = getItemsContainers().get(itemKey);
+
+            sendDebugMessage(loc, "After updating container for item key " + itemKey.getType() + ", items containers are: " + newItemsChests.entrySet().stream()
+                    .map(entry -> entry.getKey().getX() + "," + entry.getKey().getY() + "," + entry.getKey().getZ() + "=" + entry.getValue())
+                    .reduce("", (a, b) -> a + " " + b));
         }
 
         if (containerInv == null || containerInv.firstEmpty() == -1) {
+            sendDebugMessage(loc, "Container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " is not empty. Removing from empty containers list if it is in there.");
             getEmptyContainers().remove(block);
         } else {
             if (!getEmptyContainers().contains(block)) {
+                sendDebugMessage(loc, "Container at " + block.getX() + ", " + block.getY() + ", " + block.getZ() + " is empty. Adding to empty containers list.");
                 getEmptyContainers().add(block);
             }
         }

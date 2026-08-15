@@ -25,7 +25,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +47,12 @@ public class StorageGUI
     private static final MessageKey AMOUNT_MK = new LunaticMessageKey("amount")
             .defaultMessage("en", "Amount: %amount%")
             .defaultMessage("de", "Menge: %amount%");
+    private static final MessageKey WHITELIST_CONTAINERS_COUNT_MK = new LunaticMessageKey("whitelist_containers_count")
+            .defaultMessage("en", "Whitelist Containers: %amount%")
+            .defaultMessage("de", "Whitelist Container: %amount%");
+    private static final MessageKey WHITELIST_CONTAINERS_COUNT_NO_NBT_COUNT_MK = new LunaticMessageKey("whitelist_containers_count_no_nbt_count")
+            .defaultMessage("en", "Whitelist Containers (not matching NBT): %amount%")
+            .defaultMessage("de", "Whitelist Container (ohne übereinstimmende NBT): %amount%");
     private static final MessageKey PAGE_MK = new LunaticMessageKey("page")
             .defaultMessage("en", "Page %page%/%pages%")
             .defaultMessage("de", "Seite %page%/%pages%");
@@ -603,6 +608,19 @@ public class StorageGUI
         String amountText = getString(AMOUNT_MK).replace("%amount%", String.valueOf(amount));
         lore.add(amountText);
 
+        int whitelistContainersCount = getStorage().getPreferredContainersForItem(item).size();
+
+        int whitelistContainersCountNoNBT = getStorage().getPreferredContainersByMaterial(item.getType()).size();
+
+        String whitelistContainersCountText = getString(WHITELIST_CONTAINERS_COUNT_MK)
+                .replace("%amount%", String.valueOf(whitelistContainersCount));
+        String whitelistContainersCountNoNBTText = getString(WHITELIST_CONTAINERS_COUNT_NO_NBT_COUNT_MK)
+                .replace("%amount%", String.valueOf(whitelistContainersCountNoNBT));
+
+        lore.add("");
+        lore.add(whitelistContainersCountText);
+        lore.add(whitelistContainersCountNoNBTText);
+
         if (meta != null) {
             meta.setLore(lore);
         }
@@ -706,6 +724,14 @@ public class StorageGUI
         if (playerStorageGUI.containsKey(block)) {
             for (int id : playerStorageGUI.get(block).values()) {
                 getGUI(id).reloadGui();
+            }
+        }
+    }
+
+    public static void closeAllAtBlock(Block block) {
+        if (playerStorageGUI.containsKey(block)) {
+            for (int id : playerStorageGUI.get(block).values()) {
+                getGUI(id).closeForAllViewers();
             }
         }
     }
