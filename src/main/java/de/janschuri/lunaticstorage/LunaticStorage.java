@@ -18,7 +18,9 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -29,7 +31,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 
-public final class LunaticStorage extends JavaPlugin {
+public class LunaticStorage extends JavaPlugin {
 
     private static final String TEST_MODE_PROPERTY = "lunaticstorage.testMode";
 
@@ -41,6 +43,13 @@ public final class LunaticStorage extends JavaPlugin {
     private static PluginConfig pluginConfig;
     private GlowingBlocks glowingBlocks;
     private static boolean installedLogBlock = false;
+
+    public LunaticStorage() {
+    }
+
+    protected LunaticStorage(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        super(loader, description, dataFolder, file);
+    }
 
     @Override
     public void onEnable() {
