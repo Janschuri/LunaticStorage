@@ -1,7 +1,11 @@
-name: workflow.yml
+name: tests.yml
 
 on:
+  pull_request:
   push:
+    branches:
+      - master
+      - develop
 
 
 permissions:
@@ -9,7 +13,7 @@ permissions:
   packages: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -32,14 +36,15 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
-      - name: Build plugin
-        run: ./gradlew shadowJar --no-daemon
+      - name: Run MockBukkit test matrix
+        run: ./gradlew test --no-daemon
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: List JAR files
-        run: ls -l build/libs/*.jar
-      - name: Upload JAR artifacts
+      - name: Upload test reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: LunaticStorage-JAR.zip
-          path: build/libs/*.jar
+          name: test-reports
+          path: |
+            build/reports/tests
+            build/test-results

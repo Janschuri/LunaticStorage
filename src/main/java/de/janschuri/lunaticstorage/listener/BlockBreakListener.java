@@ -12,7 +12,6 @@ import de.janschuri.lunaticstorage.storage.StorageContainer;
 import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -117,6 +116,9 @@ public class BlockBreakListener implements Listener {
         Block block = event.getBlock();
 
         if (Utils.isPanel(block)) {
+            Storage storage = Storage.getStorage(block);
+            ItemStack storedStorageItem = storage.getStorageItem();
+            ItemStack storedRangeItem = storage.getRangeItem();
 
             Storage.removeStorage(block);
 
@@ -142,25 +144,34 @@ public class BlockBreakListener implements Listener {
             List<Item> newItems = new ArrayList<>();
 
             if (addBlockItem) {
-                    Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
-                    item.setItemStack(blockItem);
+                    Item item = player.getWorld().dropItem(block.getLocation(), blockItem);
                     newItems.add(item);
             }
 
             if (dataContainer.has(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                byte[] bytes = dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY);
-                ItemStack itemStack = ItemStackUtils.deserializeItemStack(bytes);
-                    Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
-                    item.setItemStack(itemStack);
+                ItemStack itemStack = storedStorageItem;
+                if (itemStack == null) {
+                    byte[] bytes = dataContainer.get(Key.STORAGE_ITEM, PersistentDataType.BYTE_ARRAY);
+                    itemStack = ItemStackUtils.deserializeItemStack(bytes);
+                }
+
+                if (itemStack != null) {
+                    Item item = player.getWorld().dropItem(block.getLocation(), itemStack);
                     newItems.add(item);
+                }
             }
 
             if (dataContainer.has(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY)) {
-                byte[] bytes = dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY);
-                ItemStack itemStack = ItemStackUtils.deserializeItemStack(bytes);
-                    Item item = (Item) player.getWorld().spawnEntity(block.getLocation(), EntityType.DROPPED_ITEM);
-                    item.setItemStack(itemStack);
+                ItemStack itemStack = storedRangeItem;
+                if (itemStack == null) {
+                    byte[] bytes = dataContainer.get(Key.RANGE_ITEM, PersistentDataType.BYTE_ARRAY);
+                    itemStack = ItemStackUtils.deserializeItemStack(bytes);
+                }
+
+                if (itemStack != null) {
+                    Item item = player.getWorld().dropItem(block.getLocation(), itemStack);
                     newItems.add(item);
+                }
             }
 
 

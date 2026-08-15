@@ -18,7 +18,9 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -29,7 +31,9 @@ import java.nio.file.Path;
 import java.util.*;
 
 
-public final class LunaticStorage extends JavaPlugin {
+public class LunaticStorage extends JavaPlugin {
+
+    private static final String TEST_MODE_PROPERTY = "lunaticstorage.testMode";
 
     private static Map<String, JSONObject> languagesMap = new HashMap<>();
     private static boolean debug;
@@ -40,19 +44,33 @@ public final class LunaticStorage extends JavaPlugin {
     private GlowingBlocks glowingBlocks;
     private static boolean installedLogBlock = false;
 
+    public LunaticStorage() {
+    }
+
+    protected LunaticStorage(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        super(loader, description, dataFolder, file);
+    }
+
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
         dataDirectory = getDataFolder().toPath();
-        glowingBlocks = new GlowingBlocks(this);
+
+        if (!isTestMode()) {
+            glowingBlocks = new GlowingBlocks(this);
+        }
 
         loadConfig();
-        fetchLocales();
+        if (!isTestMode()) {
+            fetchLocales();
+        }
         loadLocales();
 
-        int pluginId = 24545;
-        Metrics metrics = new Metrics(this, pluginId);
+        if (!isTestMode()) {
+            int pluginId = 24545;
+            new Metrics(this, pluginId);
+        }
 
 
         PaperCommandAdapter commandAdapter = new PaperCommandAdapter();
@@ -72,6 +90,10 @@ public final class LunaticStorage extends JavaPlugin {
         if (Utils.classExists("de.diddiz.LogBlock.LogBlock")) {
             installedLogBlock = true;
         }
+    }
+
+    static boolean isTestMode() {
+        return Boolean.getBoolean(TEST_MODE_PROPERTY);
     }
 
     @Override
