@@ -13,22 +13,18 @@ import de.janschuri.lunaticlib.platform.paper.utils.ItemStackUtils;
 import de.janschuri.lunaticstorage.LunaticStorage;
 import de.janschuri.lunaticstorage.storage.Storage;
 import de.janschuri.lunaticstorage.storage.StorageContainer;
-import de.janschuri.lunaticstorage.utils.Logger;
 import de.janschuri.lunaticstorage.utils.Utils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -732,7 +728,7 @@ public class StorageGUI
         }
     }
 
-    public static void closeStorageGUIs(Block block) {
+    public static void closeAllAtBlock(Block block) {
         if (playerStorageGUI.containsKey(block)) {
             for (int id : playerStorageGUI.get(block).values()) {
                 getGUI(id).closeForAllViewers();

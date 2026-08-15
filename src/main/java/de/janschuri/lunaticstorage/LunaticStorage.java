@@ -77,6 +77,7 @@ public final class LunaticStorage extends JavaPlugin {
     @Override
     public void onDisable() {
         ContainerListGUI.destroyAll();
+        BlockBreakListener.clearDropDiffs();
     }
 
     public static LunaticStorage getInstance() {
