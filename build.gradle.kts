@@ -105,27 +105,27 @@ tasks.withType<Javadoc>() {
     options.encoding = "UTF-8"
 }
 
-data class MockBukkitSmokeTarget(
+data class MockBukkitTestTarget(
     val id: String,
     val artifact: String,
     val mockBukkitVersion: String,
     val junitVersion: String
 )
 
-val mockBukkitSmokeTargets = listOf(
-    MockBukkitSmokeTarget("119", "MockBukkit-v1.19", "2.147.2", "5.9.2"),
-    MockBukkitSmokeTarget("120", "MockBukkit-v1.20", "3.93.2", "5.10.3"),
-    MockBukkitSmokeTarget("121", "MockBukkit-v1.21", "3.133.2", "5.11.2")
+val mockBukkitTestTargets = listOf(
+    MockBukkitTestTarget("119", "MockBukkit-v1.19", "2.147.2", "5.9.2"),
+    MockBukkitTestTarget("120", "MockBukkit-v1.20", "3.93.2", "5.10.3"),
+    MockBukkitTestTarget("121", "MockBukkit-v1.21", "3.133.2", "5.11.2")
 )
 
 val sourceSets = extensions.getByType(SourceSetContainer::class.java)
 val mainSourceSet = sourceSets.named("main").get()
 
-val mockBukkitSmokeTasks = mockBukkitSmokeTargets.map { target ->
-    val sourceSetName = "mockbukkit${target.id}Smoke"
+val mockBukkitTestTasks = mockBukkitTestTargets.map { target ->
+    val sourceSetName = "mockbukkit${target.id}"
     val sourceSet = sourceSets.create(sourceSetName) {
-        java.srcDir("src/mockbukkitSmoke/java")
-        resources.srcDir("src/mockbukkitSmoke/resources")
+        java.srcDir("src/mockbukkitTest/java")
+        resources.srcDir("src/mockbukkitTest/resources")
 
         compileClasspath += mainSourceSet.output + mainSourceSet.compileClasspath
         runtimeClasspath += output + mainSourceSet.output + mainSourceSet.runtimeClasspath
@@ -135,7 +135,7 @@ val mockBukkitSmokeTasks = mockBukkitSmokeTargets.map { target ->
     dependencies.add("${sourceSetName}Implementation", "com.github.seeseemelk:${target.artifact}:${target.mockBukkitVersion}")
 
     tasks.register<Test>("${sourceSetName}Test") {
-        description = "Runs the MockBukkit smoke test against ${target.artifact} ${target.mockBukkitVersion}."
+        description = "Runs the MockBukkit test suite against ${target.artifact} ${target.mockBukkitVersion}."
         group = "verification"
 
         dependsOn(tasks.named(sourceSet.classesTaskName))
@@ -156,14 +156,15 @@ val mockBukkitSmokeTasks = mockBukkitSmokeTargets.map { target ->
     }
 }
 
-val mockBukkitSmokeAll = tasks.register("mockbukkitSmokeAll") {
-    description = "Runs the MockBukkit smoke test against all configured MockBukkit version lines."
+val mockBukkitMatrixTest = tasks.register("mockBukkitMatrixTest") {
+    description = "Runs the MockBukkit test suite against all configured MockBukkit version lines."
     group = "verification"
-    dependsOn(mockBukkitSmokeTasks)
+    dependsOn(mockBukkitTestTasks)
 }
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    forkEvery = 1
 
     systemProperty("lunaticstorage.testMode", "true")
 
@@ -173,11 +174,11 @@ tasks.withType<Test>().configureEach {
 }
 
 tasks.named<Test>("test") {
-    dependsOn(mockBukkitSmokeAll)
+    dependsOn(mockBukkitMatrixTest)
 }
 
 tasks.named("check") {
-    dependsOn(mockBukkitSmokeAll)
+    dependsOn(mockBukkitMatrixTest)
 }
 
 tasks.named<ProcessResources>("processResources") {

@@ -1,12 +1,12 @@
 package de.janschuri.lunaticstorage;
 
-import de.janschuri.lunaticstorage.support.MockBukkitSmokeTestBase;
+import de.janschuri.lunaticstorage.support.MockBukkitTestBase;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class LunaticStoragePluginSmokeTest extends MockBukkitSmokeTestBase {
+class LunaticStoragePluginTest extends MockBukkitTestBase {
 
     @Test
     void loadsPluginJarAndDefaultConfigurationOnMockServer() {

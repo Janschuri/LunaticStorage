@@ -17,7 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public abstract class MockBukkitSmokeTestBase {
+public abstract class MockBukkitTestBase {
 
     private static final String PLUGIN_JAR_PROPERTY = "lunaticstorage.test.pluginJar";
 
