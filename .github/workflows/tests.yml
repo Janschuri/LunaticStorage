@@ -1,8 +1,11 @@
 name: tests.yml
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - master
+      - develop
 
 
 permissions:
