@@ -1,6 +1,8 @@
 name: workflow.yml
 
-on: [push]
+on:
+  push:
+  pull_request:
 
 
 permissions:
@@ -31,10 +33,18 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-${{ runner.os }}-
-      - name: Publish to GitHub Packages
-        run: ./gradlew build --no-daemon
+      - name: Run tests and build
+        run: ./gradlew test build --no-daemon
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            build/reports/tests/test
+            build/test-results/test
       - name: List JAR files
         run: ls -l build/libs/*.jar
       - name: Upload JAR artifacts

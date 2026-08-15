@@ -11,6 +11,8 @@ org-json-json = "20240303"
 org-bstats-bstats-bukkit = "3.0.1"
 de-diddiz-logblock = "1.19.0.0-SNAPSHOT"
 de-rapha149-signgui = "2.5.4"
+org-junit-jupiter = "5.12.2"
+com-github-seeseemelk-mockbukkit-v1-19 = "3.1.0"
 
 [libraries]
 de-janschuri-lunaticlib-paper = { module = "de.janschuri:lunaticlib-paper", version.ref = "de-janschuri-lunaticlib" }
@@ -22,3 +24,5 @@ org-json-json = { module = "org.json:json", version.ref = "org-json-json" }
 org-bstats-bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "org-bstats-bstats-bukkit" }
 de-diddiz-logblock = { module = "de.diddiz:logblock", version.ref = "de-diddiz-logblock" }
 de-rapha149-signgui = { module = "de.rapha149.signgui:signgui", version.ref = "de-rapha149-signgui" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "org-junit-jupiter" }
+mockbukkit-paper119 = { module = "com.github.seeseemelk:MockBukkit-v1.19", version.ref = "com-github-seeseemelk-mockbukkit-v1-19" }

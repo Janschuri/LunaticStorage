@@ -31,6 +31,8 @@ import java.util.*;
 
 public final class LunaticStorage extends JavaPlugin {
 
+    private static final String TEST_MODE_PROPERTY = "lunaticstorage.testMode";
+
     private static Map<String, JSONObject> languagesMap = new HashMap<>();
     private static boolean debug;
     private static Path dataDirectory;
@@ -45,14 +47,21 @@ public final class LunaticStorage extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         dataDirectory = getDataFolder().toPath();
-        glowingBlocks = new GlowingBlocks(this);
+
+        if (!isTestMode()) {
+            glowingBlocks = new GlowingBlocks(this);
+        }
 
         loadConfig();
-        fetchLocales();
+        if (!isTestMode()) {
+            fetchLocales();
+        }
         loadLocales();
 
-        int pluginId = 24545;
-        Metrics metrics = new Metrics(this, pluginId);
+        if (!isTestMode()) {
+            int pluginId = 24545;
+            new Metrics(this, pluginId);
+        }
 
 
         PaperCommandAdapter commandAdapter = new PaperCommandAdapter();
@@ -72,6 +81,10 @@ public final class LunaticStorage extends JavaPlugin {
         if (Utils.classExists("de.diddiz.LogBlock.LogBlock")) {
             installedLogBlock = true;
         }
+    }
+
+    static boolean isTestMode() {
+        return Boolean.getBoolean(TEST_MODE_PROPERTY);
     }
 
     @Override
